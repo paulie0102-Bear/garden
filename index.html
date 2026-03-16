@@ -2355,55 +2355,64 @@ function closeAllGardenModals() {
 
 // --- [ 初始化與存檔讀取 ] ---
 window.onload = () => {
-    // 1. 讀取存檔
-    const saved = localStorage.getItem('pokemaster_v60');
-    if(saved) {
-        const loaded = JSON.parse(saved);
-        s = { ...s, ...loaded }; 
+    try {
+        // 1. 讀取存檔
+        const saved = localStorage.getItem('pokemaster_v60');
+        if (saved) {
+            const loaded = JSON.parse(saved);
+            s = { ...s, ...loaded }; 
+        }
+
+        // 2. 確保關鍵變數存在（補丁防線）
+        s.claimedGifts = s.claimedGifts || [];
+        s.dailyWild = s.dailyWild || { claimed: false, lastDate: "" };
+        if (!s.tasks) s.tasks = { claimed: [], dailyDate: "", weeklyDate: "" };
+
+        // --- 勳章變數初始化 ---
+        s.selectedBadge = s.selectedBadge || null;
+
+        // --- 農場與探險系統初始化 ---
+        if (!s.farm) s.farm = {}; 
+        if (!s.farm.expedition) {
+            s.farm.expedition = {
+                region: '關都地區',
+                team: [null, null, null, null, null, null], // 6 個位置
+                selectedDish: null,
+                isExploring: false,
+                endTime: 0
+            };
+        }
+        // 確保 inv 和 dishes 存在以免報錯
+        s.farm.inv = s.farm.inv || {};
+        s.farm.dishes = s.farm.dishes || {};
+        
+        // 3. 執行重置檢查 (要在畫 UI 之前)
+        if (typeof checkTaskReset === 'function') checkTaskReset();
+
+        // 4. 設定 HTML 表單預設值
+        const recDateEl = document.getElementById('recDate');
+        const chartPickerEl = document.getElementById('chartMonthPicker');
+        if (recDateEl) recDateEl.valueAsDate = new Date();
+        if (chartPickerEl) chartPickerEl.value = new Date().toISOString().substring(0, 7);
+        
+        // 5. 更新所有按鈕與 UI
+        if (typeof updateGiftButtons === 'function') updateGiftButtons();
+        if (typeof lockClaimedGifts === 'function') lockClaimedGifts(); 
+
+        updateUI();
+        if (typeof renderTasks === 'function') renderTasks();
+        if (typeof initCarrier === 'function') initCarrier(); 
+
+        // 6. 啟動計時器
+        setInterval(tickMega, 1000);
+        
+        console.log("🚀 PokeMaster 啟動成功！當前狀態：", s);
+        if (typeof showAnnouncement === 'function') showAnnouncement();
+
+    } catch (e) {
+        console.error("❌ 啟動過程中發生錯誤:", e);
     }
-
-    // 2. 確保關鍵變數存在（補丁防線）
-    s.claimedGifts = s.claimedGifts || [];
-    s.dailyWild = s.dailyWild || { claimed: false, lastDate: "" };
-    if (!s.tasks) s.tasks = { claimed: [], dailyDate: "", weeklyDate: "" };
-
-// 在 initFarmProgress 或類似初始化位置加入
-if (!s.farm.expedition) {
-    s.farm.expedition = {
-        region: '關都地區',
-        team: [null, null, null, null, null, null], // 6 個位置
-        selectedDish: null,
-        isExploring: false,
-        endTime: 0
-    };
-}
-    
-    // 3. 執行重置檢查 (要在畫 UI 之前)
-    if (typeof checkTaskReset === 'function') checkTaskReset();
-
-    // 4. 設定 HTML 表單預設值
-    const recDateEl = document.getElementById('recDate');
-    const chartPickerEl = document.getElementById('chartMonthPicker');
-    if (recDateEl) recDateEl.valueAsDate = new Date();
-    if (chartPickerEl) chartPickerEl.value = new Date().toISOString().substring(0, 7);
-    
-    // 5. 更新所有按鈕與 UI
-    // 🔴 請確認你的解鎖函式到底叫哪個名稱，建議兩者都跑一次確保萬無一失
-    if (typeof updateGiftButtons === 'function') updateGiftButtons();
-    if (typeof lockClaimedGifts === 'function') lockClaimedGifts(); 
-
-    updateUI();
-    if (typeof renderTasks === 'function') renderTasks();
-    if (typeof initCarrier === 'function') initCarrier(); 
-
-    // 6. 啟動計時器
-    setInterval(tickMega, 1000);
-    
-    console.log("🚀 PokeMaster 啟動成功！當前狀態：", s);
-
-    showAnnouncement();
 };
-
 // 在你的全域變數 s 中加入 s.selectedBadge = null;
 
 const BADGE_DATA = {

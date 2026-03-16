@@ -2493,25 +2493,24 @@ function collectExpedition(team, resultResource) {
 }
 
 function selectTeamMember(slotIndex) {
-    // 取得玩家擁有的所有寶可夢 (假設儲存在 s.pkm 陣列中)
-    const myPokemons = s.pkm || []; 
+    const myPokemons = s.pkm || [];
     const currentTeam = s.farm.expedition.team;
 
     let html = `
     <div id="member-picker-modal" style="position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:90%; max-width:350px; max-height:70vh; background:white; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.5); z-index:10010; padding:20px; display:flex; flex-direction:column;">
         <h3 style="text-align:center; margin-top:0;">選擇小隊成員</h3>
-        <div style="flex:1; overflow-y:auto; display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; padding:5px;">
+        <div id="pkm-picker-list" style="flex:1; overflow-y:auto; display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; padding:5px;">
     `;
 
-    // 渲染寶可夢清單
     myPokemons.forEach((p, pkmIndex) => {
-        // 檢查這隻寶可夢是否已經在隊伍中
         const isInTeam = currentTeam.some(member => member && member.uniqueId === p.uniqueId);
+        const imgUrl = GARDEN.getGif(p.id); // <--- 先執行函數取得網址
         
+        // 使用更安全的拼接方式
         html += `
-            <div onclick="${isInTeam ? '' : `addMemberToSlot(${slotIndex}, ${pkmIndex})`}" 
-                 style="position:relative; background:#f5f5f5; border-radius:12px; padding:5px; text-align:center; cursor:${isInTeam ? 'not-allowed' : 'pointer'}; opacity:${isInTeam ? 0.4 : 1}; border: 2px solid ${isInTeam ? 'transparent' : '#eee'};">
-                <img src="${GARDEN.getGif(p.id)}" style="width:40px;height:40px;image-rendering:pixelated;">
+            <div onclick="${isInTeam ? '' : 'addMemberToSlot(' + slotIndex + ',' + pkmIndex + ')'}" 
+                 style="position:relative; background:#f5f5f5; border-radius:12px; padding:5px; text-align:center; cursor:${isInTeam ? 'not-allowed' : 'pointer'}; opacity:${isInTeam ? 0.4 : 1}; border: 2px solid #eee;">
+                <img src="${imgUrl}" style="width:40px;height:40px;image-rendering:pixelated;">
                 <div style="font-size:10px; color:#666;">Lv.${p.lv || 1}</div>
                 ${isInTeam ? '<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:10px; color:white; background:rgba(0,0,0,0.3); border-radius:10px;">隊伍中</div>' : ''}
             </div>
@@ -2524,8 +2523,7 @@ function selectTeamMember(slotIndex) {
     </div>
     `;
 
-    // 建立臨時容器
-    const div = document.createElement('div');
+    const div = document.getElementById('member-picker-container') || document.createElement('div');
     div.id = "member-picker-container";
     div.innerHTML = html;
     document.body.appendChild(div);
@@ -2558,33 +2556,32 @@ function closeMemberPicker() {
 
     
 function generateLogHTML(data) {
-    // data 包含：地區, 耗時, 獲得資源清單, 遭遇寶可夢資訊
+    const encounterImg = GARDEN.getGif(data.encounter.id); // <--- 關鍵修復：先拿網址
+    
+    // 資源清單也先處理成字串
+    const resourceItems = Object.entries(data.resources).map(([icon, count]) => 
+        '<div style="display:inline-block; background:white; border:1px solid #ddd; padding:4px 8px; border-radius:4px; margin:2px;">' + icon + ' x ' + count + '</div>'
+    ).join('');
+
     return `
     <div style="background:#f9f9f9; border:2px solid #333; padding:15px; font-family:monospace; line-height:1.6;">
         <div style="text-align:center; border-bottom:1px dashed #ccc; padding-bottom:10px; margin-bottom:10px;">
             <strong style="font-size:16px;">探險回歸報告</strong><br>
             <span style="font-size:12px; color:#666;">地點：${data.location} | 耗時：${data.hours}h</span>
         </div>
-        
         <div style="margin-bottom:15px;">
             <div style="font-weight:bold; color:#d32f2f;">📦 採集物資：</div>
-            ${Object.entries(data.resources).map(([icon, count]) => `
-                <div style="display:inline-block; background:white; border:1px solid #ddd; padding:4px 8px; border-radius:4px; margin:2px;">
-                    ${icon} x ${count}
-                </div>
-            `).join('')}
-            ${data.multiplier > 1 ? `<div style="font-size:11px; color:#fbc02d;">★ ${data.whiteName} 讓產量提升至 ${data.multiplier * 100}%！</div>` : ''}
+            ${resourceItems}
+            ${data.multiplier > 1 ? '<div style="font-size:11px; color:#fbc02d;">★ ' + data.whiteName + ' 讓產量提升至 ' + (data.multiplier * 100) + '%！</div>' : ''}
         </div>
-
         <div style="display:flex; align-items:center; background:#fff; padding:10px; border-radius:8px; border:1px solid #eee;">
-            <img src="${GARDEN.getGif(data.encounter.id)}" style="width:50px; height:50px; image-rendering:pixelated; margin-right:15px;">
+            <img src="${encounterImg}" style="width:50px; height:50px; image-rendering:pixelated; margin-right:15px;">
             <div>
                 <div style="font-weight:bold;">📍 地區奇遇</div>
                 <div style="font-size:12px;">遇見了 <strong>${data.encounter.name}</strong>！</div>
-                <div style="font-size:12px; color:#666;">對料理感到滿意，好感度 ${data.hearts}</div>
+                <div style="font-size:12px; color:#666;">好感度 ${data.hearts}</div>
             </div>
         </div>
-        
         <button onclick="confirmLog()" style="width:100%; margin-top:15px; padding:10px; background:#4caf50; color:white; border:none; border-radius:5px; cursor:pointer;">確認收好物資</button>
     </div>
     `;

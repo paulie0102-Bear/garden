@@ -4749,6 +4749,116 @@ function closeExpeditionPage(){
 
 }
 
+function selectTeamMember(slotIndex){
+
+    const myPokemons = s.pkm || [];
+
+    let html = `
+    <div id="member-picker-modal"
+    style="
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    width:90%;
+    max-width:350px;
+    max-height:70vh;
+    background:white;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.5);
+    z-index:10010;
+    padding:20px;
+    display:flex;
+    flex-direction:column">
+
+    <h3 style="text-align:center;margin-top:0">選擇小隊成員</h3>
+
+    <div style="
+    flex:1;
+    overflow-y:auto;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px">
+    `;
+
+    myPokemons.forEach((p,index)=>{
+
+        const img = GARDEN.getGif(p.id);
+
+        html += `
+        <div onclick="addMemberToSlot(${slotIndex},${index})"
+        style="
+        background:#f5f5f5;
+        border-radius:10px;
+        padding:5px;
+        text-align:center;
+        cursor:pointer">
+
+        <img src="${img}"
+        style="width:40px;height:40px;image-rendering:pixelated">
+
+        <div style="font-size:10px">
+        Lv.${p.lv || 1}
+        </div>
+
+        </div>
+        `;
+
+    });
+
+    html += `
+    </div>
+
+    <button onclick="closeMemberPicker()"
+    style="
+    margin-top:15px;
+    width:100%;
+    padding:10px;
+    border:none;
+    background:#eee;
+    border-radius:10px">
+
+    取消
+
+    </button>
+
+    </div>
+    `;
+
+    let div=document.getElementById("member-picker-container");
+
+    if(!div){
+        div=document.createElement("div");
+        div.id="member-picker-container";
+        document.body.appendChild(div);
+    }
+
+    div.innerHTML=html;
+
+}
+    function addMemberToSlot(slotIndex,pkmIndex){
+
+    const p=s.pkm[pkmIndex];
+
+    s.farm.expedition.team[slotIndex]={
+        id:p.id,
+        uniqueId:p.uniqueId,
+        lv:p.lv||1
+    };
+
+    closeMemberPicker();
+
+    openExpeditionPage();
+
+}
+    function closeMemberPicker(){
+
+    const div=document.getElementById("member-picker-container");
+
+    if(div) div.remove();
+
+}
+    
 </script>
 </body>
 </html>

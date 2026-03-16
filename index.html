@@ -1720,6 +1720,18 @@ function renderGarden() {
                     `;
                 }).join('')}
             </div>
+            
+            <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+    <div onclick="openExpeditionPage()" style="padding: 12px; background: linear-gradient(135deg, #6dd5ed, #2193b0); color: white; border-radius: 12px; cursor: pointer; text-align: center; box-shadow: 0 4px 15px rgba(33,147,176,0.3);">
+        <div style="font-size: 20px;">🚀</div>
+        <div style="font-size: 11px; font-weight: bold;">冒險小隊</div>
+    </div>
+    
+    <div onclick="openEventNotice()" style="padding: 12px; background: linear-gradient(135deg, #ff9966, #ff5e62); color: white; border-radius: 12px; cursor: pointer; text-align: center; box-shadow: 0 4px 15px rgba(255,94,98,0.3);">
+        <div style="font-size: 20px;">📢</div>
+        <div style="font-size: 11px; font-weight: bold;">活動公告</div>
+    </div>
+</div>
             <button onclick="closeAllGardenModals()" style="margin-top:20px; width:100%; padding:10px; border:none; background:#eee; border-radius:10px; cursor:pointer; font-weight:bold;">關閉</button>
         </div>
 
@@ -2202,6 +2214,65 @@ function submitQuest() {
     }
 }
 
+function collectExpedition(team, resultResource) {
+    /* team: 當前小隊成員數組 [{color: 'red', ...}, {color: 'black', ...}, {tag: 'white', power: 2.0}]
+       resultResource: 基礎計算後的資源對象，例如 { '🥩': 4, '🌾': 2 }
+    */
+
+    // 1. 獲取白標倍率 (實力派 2.0 / 成長派 1.5 / 無 1.0)
+    const whiteMember = team.find(m => m.tag === 'white');
+    const multiplier = whiteMember ? whiteMember.power : 1.0;
+
+    // 2. 遍歷探險獲得的資源，並加入原本的 s.farm.inv
+    Object.keys(resultResource).forEach(type => {
+        const amount = Math.floor(resultResource[type] * multiplier);
+        
+        // 對接點：直接累加到你原本的 s.farm.inv 對象
+        s.farm.inv[type] = (s.farm.inv[type] || 0) + amount;
+        
+        console.log(`[探險回歸] 獲得 ${type} x ${amount} (含倍率加成)`);
+    });
+
+    // 3. 觸發存檔與畫面更新
+    if(typeof saveGameData === 'function') saveGameData();
+    renderGarden(); 
+}
+
+function generateLogHTML(data) {
+    // data 包含：地區, 耗時, 獲得資源清單, 遭遇寶可夢資訊
+    return `
+    <div style="background:#f9f9f9; border:2px solid #333; padding:15px; font-family:monospace; line-height:1.6;">
+        <div style="text-align:center; border-bottom:1px dashed #ccc; padding-bottom:10px; margin-bottom:10px;">
+            <strong style="font-size:16px;">探險回歸報告</strong><br>
+            <span style="font-size:12px; color:#666;">地點：${data.location} | 耗時：${data.hours}h</span>
+        </div>
+        
+        <div style="margin-bottom:15px;">
+            <div style="font-weight:bold; color:#d32f2f;">📦 採集物資：</div>
+            ${Object.entries(data.resources).map(([icon, count]) => `
+                <div style="display:inline-block; background:white; border:1px solid #ddd; padding:4px 8px; border-radius:4px; margin:2px;">
+                    ${icon} x ${count}
+                </div>
+            `).join('')}
+            ${data.multiplier > 1 ? `<div style="font-size:11px; color:#fbc02d;">★ ${data.whiteName} 讓產量提升至 ${data.multiplier * 100}%！</div>` : ''}
+        </div>
+
+        <div style="display:flex; align-items:center; background:#fff; padding:10px; border-radius:8px; border:1px solid #eee;">
+            <img src="${GARDEN.getGif(data.encounter.id)}" style="width:50px; height:50px; image-rendering:pixelated; margin-right:15px;">
+            <div>
+                <div style="font-weight:bold;">📍 地區奇遇</div>
+                <div style="font-size:12px;">遇見了 <strong>${data.encounter.name}</strong>！</div>
+                <div style="font-size:12px; color:#666;">對料理感到滿意，好感度 ${data.hearts}</div>
+            </div>
+        </div>
+        
+        <button onclick="confirmLog()" style="width:100%; margin-top:15px; padding:10px; background:#4caf50; color:white; border:none; border-radius:5px; cursor:pointer;">確認收好物資</button>
+    </div>
+    `;
+}
+
+
+    
 function wishStar() {
     const f = s.farm;
     const today = new Date().toLocaleDateString();

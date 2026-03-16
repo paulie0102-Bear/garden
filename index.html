@@ -1273,7 +1273,7 @@ let s = {
     lvl: 1,           // 玩家等級
     exp: 0,           // 當前經驗值
     nextExp: 100,      // 升級門檻
-
+selectedBadge:null,
     farm: {
         inv: { "🌾": 0, "🥗": 0, "🐟": 0, "🦐": 0, "🥩": 0, "🥚": 0 }, // 素材倉庫
         dishes: {},          // 料理成品倉庫
@@ -1281,11 +1281,19 @@ let s = {
         friendship: 0,       // 夥伴親密度 (影響掉落率)
         lastLootTime: Date.now(), // 上次領取 6 小時獎勵的時間
         quest: "🌾🐟🥩",     // 當前夥伴想吃的料理 (預設一個)
-        prod: {
-            bulbasaur: { type: null, end: 0 },
-            squirtle: { type: null, end: 0 },
-            charmander: { type: null, end: 0 },
-            pikachu: { type: null, end: 0, slots: [null, null, null] }
+       expedition:{
+            region:"關都地區",
+            team:[null,null,null,null,null,null],
+            selectedDish:null,
+            isExploring:false,
+            endTime:0
+        },
+
+        prod:{
+            bulbasaur:{type:null,end:0},
+            squirtle:{type:null,end:0},
+            charmander:{type:null,end:0},
+            pikachu:{type:null,end:0,slots:[null,null,null]}
         }
     }
 };

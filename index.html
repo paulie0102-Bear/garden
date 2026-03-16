@@ -1,1 +1,4267 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <link rel="icon" href="data:,">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PokeMaster v60.0 - 終極記帳冒險</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        :root { 
+            --p: #2d5a27; --bg: #f0f2f5; --text: #2c3e50; --accent: #f1c40f;
+            --mega: #9b59b6; --danger: #e74c3c; --white: #ffffff; --dark: #222;
+        }
+        body { font-family: -apple-system, "Noto Sans TC", sans-serif; background: #000; margin: 0; color: var(--text); overflow: hidden; }
+        
+        /* 頁面層級 */
+        /* 基礎頁面設定 */
+/* 基礎頁面設定 */
+.page { 
+    display: none; 
+    width: 100vw; 
+    height: 100vh; 
+    background: var(--bg); 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    z-index: 1000; 
+    overflow-y: auto; 
+    box-sizing: border-box; 
+}
 
+/* 統一使用 .active 類別 */
+.page.active { 
+    display: block !important; 
+    animation: slideUp 0.3s ease-out; 
+}
+
+@keyframes slideUp { 
+    from { transform: translateY(20px); opacity: 0; } 
+    to { transform: translateY(0); opacity: 1; } 
+}
+        /* 戰鬥舞台 */
+        .battle-stage { height: 260px; position: relative; background: linear-gradient(#87ceeb 60%, #9cd39c 60%); border-bottom: 4px solid #333; overflow: hidden; }
+        .buddy-box { position: absolute; bottom: 30px; left: 40px; width: 110px; transition: 0.3s; z-index: 5; }
+        .enemy-box { position: absolute; top: 40px; right: 40px; width: 100px; text-align: center; }
+        #ballOverlay { position: absolute; width: 40px; display: none; z-index: 100; }
+       .hp-bar { 
+    width: 100%; 
+    height: 12px; 
+    background: #222 !important; 
+    border-radius: 6px; 
+    overflow: hidden; 
+    margin-top: 8px; 
+    border: 1px solid #000;
+    position: relative;
+    z-index: 20;
+}
+
+
+
+/* 基礎設定：移除原本的背景色，保留動畫 */
+#hpFill { 
+    height: 100%; 
+    width: 100%; 
+    display: block !important;
+    transition: width 0.5s ease, background-color 0.3s ease; /* 增加顏色過渡動畫 */
+}
+
+/* 狀態 1：健康 (50% 以上) */
+.hp-green { background-color: #4caf50 !important; }
+
+/* 狀態 2：虛弱 (25% ~ 50%) */
+.hp-yellow { background-color: #ffeb3b !important; }
+
+/* 狀態 3：瀕死 (25% 以下) */
+.hp-red { background-color: #f44336 !important; }
+        .encounter-progress { position: absolute; top: 10px; left: 10px; width: 120px; font-size: 10px; background: rgba(255,255,255,0.7); padding: 5px; border-radius: 5px; }
+
+        
+        /* 底部控制面板 (2列4欄) */
+        .control-panel { 
+            display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(2, 1fr);
+            gap: 2px; background: #111; height: 140px; position: fixed; bottom: 60px; width: 100%; padding: 5px; box-sizing: border-box; 
+        }
+        .btn-nav { background: #333; color: white; border: none; font-size: 12px; border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.2s; }
+        .btn-nav:active { background: #555; }
+        .btn-nav i { font-size: 20px; margin-bottom: 4px; }
+
+        /* 通用元件 */
+        .card { background: var(--white); border-radius: 12px; padding: 15px; margin: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .msg-box { height: 45px; background: #fff; padding: 10px 15px; font-weight: bold; border-bottom: 1px solid #ddd; color: var(--p); display: flex; align-items: center; }
+        .btn-back { background: var(--dark); color: white; width: calc(100% - 20px); padding: 15px; margin: 10px; margin-bottom: 30px; border: none; border-radius: 10px; font-weight: bold; }
+        .res-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; text-align: center; }
+        .res-icon { width: 30px; height: 30px; object-fit: contain; }
+
+        /* 進化選擇對話框專用樣式 */
+        #evoDialog { border: none; border-radius: 20px; padding: 20px; box-shadow: 0 10px 50px rgba(0,0,0,0.4); width: 85%; max-width: 350px;z-index: 2000 !important; /* 🔴 加上這一行，確保它在商店頁面 (1000) 之上 */ }
+        #evoDialog::backdrop { background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
+        .evo-flex { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 15px 0; }
+        .evo-card { border: 2px solid #eee; border-radius: 15px; padding: 10px; text-align: center; cursor: pointer; width: 80px; }
+        .evo-card:hover { border-color: var(--accent); background: #fffdf0; }
+        .evo-card img { width: 60px; height: 60px; }
+
+        /* 動畫庫 */
+        .ball-throw { display: block !important; animation: ballCurve 0.8s forwards ease-in; }
+        .ball-shake { display: block !important; animation: ballShake 0.5s 3; }
+        @keyframes ballCurve { 0% { left: 60px; bottom: 60px; } 100% { left: 230px; bottom: 160px; transform: scale(0.7) rotate(720deg); } }
+        @keyframes ballShake { 0%, 100% { transform: translate(230px, -160px) rotate(0deg); } 25% { transform: translate(230px, -160px) rotate(15deg); } 75% { transform: translate(230px, -160px) rotate(-15deg); } }
+        .mega-fx { filter: drop-shadow(0 0 10px var(--mega)); animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .gotcha-text {
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    
+    /* 漸層色彩 */
+    background: linear-gradient(to bottom, #FFF59D 0%, #FFD600 50%, #FF8F00 100%);
+    
+    /* --- 兼容性定義區 --- */
+    -webkit-background-clip: text; /* Safari & Chrome 舊版 */
+    background-clip: text;         /* 標準屬性 (Firefox & 現代瀏覽器) */
+    -webkit-text-fill-color: transparent; /* 必須搭配 -webkit 前綴才能生效 */
+    
+    /* 視覺增強 */
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8)) 
+            drop-shadow(2px 4px 4px rgba(0, 0, 0, 0.5));
+            
+    font-size: 52px;
+    font-weight: 900;
+    font-family: "Arial Black", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    z-index: 2000;
+    display: none;
+    letter-spacing: 4px;
+    white-space: nowrap;
+}
+    </style>
+<style>
+  /* 舞台：草叢與寶可夢演戲的地方 */
+  .encounter-stage {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    margin: 0 auto;
+    overflow: hidden; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* 草叢設定：深綠色、鋸齒狀 */
+  .grass-half {
+    position: absolute;
+    width: 55%;
+    height: 100%;
+    background: #2d5a27; 
+    z-index: 10;
+    transition: transform 0.7s ease-in-out;
+    pointer-events: none !important; /* 確保點擊可以穿透草叢 */
+}
+  .grass-left { 
+    left: 0; 
+    clip-path: polygon(0% 100%, 100% 100%, 100% 20%, 80% 40%, 60% 10%, 40% 40%, 20% 0%, 0% 30%); 
+  }
+  .grass-right { 
+    right: 0; 
+    clip-path: polygon(0% 100%, 100% 100%, 100% 30%, 80% 0%, 60% 40%, 40% 10%, 20% 40%, 0% 20%); 
+  }
+
+  /* 寶可夢圖片：初始設定為縮小且全黑 */
+  #enemyImg {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    transform: scale(0.1); 
+    filter: brightness(0); 
+    opacity: 0;
+    z-index: 5;
+    transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                filter 1.2s ease-in-out, 
+                opacity 0.4s ease;
+  }
+
+  /* 動畫啟動開關：草叢散開、寶可夢跳出 */
+  .encounter-active #enemyImg { transform: scale(1); filter: brightness(1); opacity: 1; }
+  .encounter-active .grass-left { transform: translateX(-110%); }
+  .encounter-active .grass-right { transform: translateX(110%); }
+</style>
+<style>
+  /* --- 搜尋明細清單項 (整合版) --- */
+
+.csv-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s;
+}
+
+/* 1. 日期 */
+.csv-date {
+    width: 90px;
+    font-weight: bold;
+    color: #444;
+    flex-shrink: 0;
+    font-family: monospace;
+}
+
+/* 2. 類別 (給個小標籤感) */
+.csv-cat {
+    width: 70px;
+    color: #666;
+    font-size: 13px;
+    background: #f0f0f0;
+    text-align: center;
+    padding: 2px 6px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+/* 3. 備註 (自動填滿) */
+.csv-note {
+    flex: 1;
+    min-width: 0;
+    font-size: 14px;
+    color: #888;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 文字過長自動顯示 ... */
+}
+
+/* 4. 金額 */
+.csv-amt {
+    width: 80px;
+    text-align: right;
+    font-weight: bold;
+    color: #e67e22; /* 暖橘色，醒目但不刺眼 */
+    flex-shrink: 0;
+}
+
+/* 📱 手機版調整：自動轉為兩排佈局 */
+@media (max-width: 480px) {
+    .csv-item {
+        flex-wrap: wrap;
+        padding: 10px;
+        gap: 5px;
+    }
+
+    /* 第一排：日期與類別 */
+    .csv-date { width: auto; flex: 1; }
+    .csv-cat { width: auto; }
+
+    /* 第二排：備註與金額 */
+    .csv-note { 
+        width: 65%; 
+        flex: none; 
+        order: 3; /* 強制排在後面 */
+        padding-top: 5px;
+        border-top: 1px dashed #eee;
+    }
+    .csv-amt { 
+        width: 30%; 
+        flex: 1; 
+        order: 4; 
+        padding-top: 5px;
+        border-top: 1px dashed #eee;
+    }
+}
+</style>
+<style>
+    /* -------------------------------------------
+   這一段請直接貼在 <style> 的最後面 
+------------------------------------------- */
+#evoDialog {
+    z-index: 2000 !important; 
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: none;
+    padding: 20px;
+    margin: 0; 
+    border-radius: 15px;
+    box-shadow: 0 5px 30px rgba(0,0,0,0.5);
+    background: white; 
+    pointer-events: auto !important;
+}
+
+.btn-doc {
+    position: relative;
+    z-index: 1001; 
+    pointer-events: auto !important;
+    cursor: pointer !important; 
+}
+
+#evoDialog::backdrop {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(3px);
+}
+</style>
+<style>
+/* --- [修正版] 寶貝球主題圖鑑 (解決層級遮擋問題) --- */
+
+/* 1. 最外層：大寶貝球外殼 */
+.pball-shell {
+    background: linear-gradient(to bottom, #e3350d 46%, #333 46%, #333 54%, #fff 54%);
+    border: 25px solid #222; 
+    border-radius: 60px; 
+    padding: 30px 17px; 
+    margin: 8px 8px 40px 8px; 
+    box-shadow: 0 15px 30px rgba(0,0,0,0.5), inset -10px -10px 0 rgba(0,0,0,0.1);
+    position: relative;
+    /* 🚩 修正：建立新的層疊上下文，確保內部 z-index 生效 */
+    z-index: 0; 
+}
+
+/* 🚩 關鍵修正：焊接延伸黑底座 */
+.pball-shell::after {
+    content: "";
+    position: absolute;
+    /* 🚩 修正：負值定位，讓底座與黑色邊框完美融合並覆蓋在內容邊角 */
+    right: -15px; 
+    bottom: -15px; 
+    width: 110px;
+    height: 115px;
+    background: #222; 
+    border-radius: 50px 20px 60px 25px; 
+    /* 🚩 修正：層級提高，必須大於螢幕容器的 z-index */
+    z-index: 3; 
+    box-shadow: -5px -5px 15px rgba(0,0,0,0.3);
+    pointer-events: none; /* 確保點擊能穿透到下方的 B 鍵區域 */
+}
+
+/* 2. 中間方框：嵌入的圖鑑主體 */
+.dex-container {
+    display: flex;
+    background: #333; 
+    border: 4px solid #444;
+    border-radius: 10px;
+    height: calc(100vh - 240px); 
+    overflow: hidden;
+    position: relative;
+    /* 🚩 修正：層級降低，避免蓋過延伸黑底 */
+    z-index: 1; 
+}
+
+/* --- [3, 4, 5 功能區塊 100% 原始代碼，無更動] --- */
+.dex-sidebar {
+    width: 45%;
+    background: #51ad60; 
+    overflow-y: auto;
+    border-right: 4px solid #222;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+.dex-item {
+    padding: 12px 8px 12px 38px;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    color: #1a1a1a;
+    font-size: 14px;
+    position: relative;
+    cursor: pointer;
+    font-family: monospace;
+}
+
+.dex-item::before {
+    content: "";
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    border: 2px solid #333;
+    border-radius: 50%;
+    background: 
+        radial-gradient(circle at center, #fff 15%, #333 15.5%, #333 25%, transparent 25.5%),
+        linear-gradient(to bottom, #ff0000 44%, #333 44%, #333 56%, #fff 56%);
+}
+
+.dex-item.active { background: rgba(255, 255, 255, 0.4); font-weight: bold; }
+.dex-item.active::before { animation: pball-bounce 0.6s infinite ease-in-out; }
+
+@keyframes pball-bounce {
+    0%, 100% { transform: translateY(-50%) scale(1); }
+    50% { transform: translateY(-80%) scale(1.1); }
+}
+
+.dex-main {
+    width: 55%;
+    background: #dedede;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px 5px;
+    overflow-y: auto;
+}
+
+/* --- [新 B 鍵區] 修正定位與層級 --- */
+.dex-b-button-wrapper {
+    position: absolute;
+    /* 🚩 修正：將 B 鍵推向右下角邊框交界處 */
+    right: -5px; 
+    bottom: 5px; 
+    width: 85px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    /* 🚩 修正：最高層級，保證可點擊離開 */
+    z-index: 10; 
+}
+
+.dex-close-btn {
+    width: 50px;
+    height: 50px;
+    background: #c0392b;
+    border: 4px solid #111;
+    border-radius: 50%;
+    color: white;
+    font-weight: bold;
+    font-size: 22px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 5px 0 #851e13;
+    transition: all 0.1s;
+    user-select: none;
+}
+
+.dex-b-button-wrapper:active .dex-close-btn {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 #851e13;
+}
+
+.btn-label {
+    color: #777;
+    font-size: 11px;
+    font-weight: bold;
+    margin-top: 6px;
+    letter-spacing: 1px;
+}
+</style>
+<style>
+/* --- 每日野外寶可夢動畫樣式 --- */
+
+/* 1. 容器基礎定位 */
+.wild-encounter-unit {
+    position: fixed; /* 確保它浮動在所有 UI 之上 */
+    cursor: pointer;
+    z-index: 100;
+}
+
+/* 2. 初始狀態：模擬寶石版 NPC 挑戰氣泡 */
+.wild-encounter-unit .exclamation {
+    position: absolute;
+    top: -50px; /* 稍微再往上提一點，給氣泡空間 */
+    left: 50%;
+    transform: translateX(-50%) scale(0);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 100;
+
+    /* 🚩 氣泡外框設計 */
+    background: #fff; /* 白色底框 */
+    border: 3px solid #333; /* 黑色深邊框 */
+    border-radius: 8px; /* 寶石版風格的圓角 */
+    padding: 2px 10px;
+    
+    /* 🚩 字體設計 */
+    color: #ff3e3e; /* 經典紅色 */
+    font-weight: 900;
+    font-size: 28px;
+    font-family: "Courier New", Courier, monospace; /* 像素感字體 */
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+}
+
+/* 🚩 增加氣泡下方的小尾巴 (尖角) */
+.wild-encounter-unit .exclamation::after {
+    content: "";
+    position: absolute;
+    bottom: -10px; /* 貼在框框底部 */
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid #333; /* 黑色尖角邊框 */
+}
+
+/* 🚩 氣泡內部的白色小尖角 (蓋在黑色上面) */
+.wild-encounter-unit .exclamation::before {
+    content: "";
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #fff; /* 白色尖角中心 */
+    z-index: 1;
+}
+
+/* 🚩 當觸發顯示時的動畫效果 (模擬驚訝的震動感) */
+.wild-encounter-unit.show-exclamation .exclamation {
+    transform: translateX(-50%) scale(1.2); /* 稍微放大增加衝擊力 */
+    opacity: 1;
+    animation: exclamation-pop 0.4s ease-out;
+}
+
+@keyframes exclamation-pop {
+    0% { transform: translateX(-50%) scale(0); }
+    50% { transform: translateX(-50%) scale(1.4); } /* 瞬間撐大 */
+    100% { transform: translateX(-50%) scale(1.2); }
+}
+
+/* 3. 初始狀態：寶可夢圖片 */
+.wild-encounter-unit img {
+    transition: transform 0.2s ease; /* 設定平滑放大的動畫時間 */
+}
+
+/* 4. 【重點】點擊後啟動的狀態 (JS 會幫忙加上這個 class) */
+.active-encounter img {
+    transform: scale(1.6); /* 圖片放大到 1.6 倍 */
+}
+
+.active-encounter .exclamation {
+    opacity: 1; /* 變回不透明 */
+    transform: translateX(-50%) scale(1.3); /* 驚嘆號彈跳出來並放大 */
+}
+</style>
+
+<style>
+    /* 後花園全螢幕背景 */
+#garden-overlay {
+    background: linear-gradient(180deg, #e8f5e9 0%, #c8e6c9 100%) !important;
+    animation: slideIn 0.3s ease-out;
+}
+
+/* 讓素材和料理看起來有漂浮感 */
+#garden-overlay .card-mini {
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 15px;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+@keyframes slideIn {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+/* 像素圖案最佳化 */
+#garden-overlay img {
+    image-rendering: pixelated;
+    transition: transform 0.2s;
+}
+
+#garden-overlay img:hover {
+    transform: scale(1.1) rotate(5deg);
+}
+</style>
+<style>
+    /* 讓公告內的捲軸變窄、變圓潤 */
+    #news-overlay div::-webkit-scrollbar {
+        width: 4px;
+    }
+    #news-overlay div::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 10px;
+    }
+    @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+</style>
+
+</head>
+<body>
+
+<div id="mainPage">
+
+    <div class="battle-stage">
+
+        <div id="gotcha" class="gotcha-text">抓到寶可夢了!</div>
+
+        <div class="encounter-progress">遭遇進度: <span id="enc-prog">0</span> / 200</div>
+
+        <div class="buddy-box"><img id="buddyImg" src="" style="width:100%; height:100px; object-fit:contain;"></div>
+
+        <div class="enemy-box" id="enemyArea" style="display:none;">
+
+    <div id="enemyName" ...></div>
+
+    <div class="hp-bar">
+    <div id="hpFill"></div>
+</div>
+
+   
+
+    <div id="encounterStage" class="encounter-stage">
+
+        <div class="grass-half grass-left"></div>
+
+        <div class="grass-half grass-right"></div>
+
+        <img id="enemyImg" src="">
+
+    </div>
+
+</div>
+        <img id="ballOverlay" src="">
+    </div>
+
+    <div id="msg" class="msg-box">記錄生活的每一刻，同時踏上寶可夢訓練家的旅程！</div>
+
+    <div id="inputArea" class="card">
+        <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:8px; margin-bottom:8px;">
+            <input type="date" id="recDate" style="padding:8px; border:1px solid #ccc; border-radius:5px;">
+            <select id="recCat" style="padding:8px; border:1px solid #ccc; border-radius:5px;">
+                <option>飲食</option><option>交通</option><option>娛樂</option><option>購物</option><option>居家</option><option>醫療</option><option>其他</option>
+            </select>
+        </div>
+        <div style="display:flex; gap:8px; margin-bottom:8px;">
+            <input id="recNote" type="text" placeholder="消費備註..." style="flex:1; padding:10px; border:1px solid #ccc; border-radius:5px;">
+            <input id="recAmt" type="number" placeholder="金額" style="width:90px; padding:10px; border:1px solid #ccc; border-radius:5px;">
+        </div>
+        <button onclick="record()" style="background:var(--p); color:white; width:100%; padding:14px; border:none; border-radius:8px; font-weight:bold; font-size:16px;">記帳並探索冒險</button>
+    </div>
+
+    <div id="battleActions" class="card" style="display:none; border:2px solid var(--p);">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+            <button onclick="attack()" style="background:#e74c3c; color:white; padding:12px; border:none; border-radius:8px;">⚔️ 攻擊 (降低HP)</button>
+            <button onclick="tryMega()" style="background:var(--mega); color:white; padding:12px; border:none; border-radius:8px;">🧬 MEGA 進化</button>
+        </div>
+        <div style="display:flex; gap:8px;">
+            <select id="ballSelect" style="flex:1; padding:10px;"></select>
+            <button onclick="throwBall()" style="background:var(--p); color:white; padding:0 25px; border:none; border-radius:8px; font-weight:bold;">投球</button>
+        </div>
+        <div id="turnInfo" style="font-size:11px; color:gray; margin-top:8px; text-align:center;">最大回合：7 (在此之前不會逃跑)</div>
+    </div>
+
+    <div class="control-panel">
+        <button class="btn-nav" onclick="openPage('dexPage')">📖<br>圖鑑</button>
+        <button class="btn-nav" onclick="openPage('statusPage')">👤<br>玩家</button>
+        <button class="btn-nav" onclick="openPage('bagPage')">🎒<br>背包</button>
+        <button class="btn-nav" onclick="openPage('taskPage')">🎯<br>任務</button>
+        <button class="btn-nav" onclick="openPage('shopPage')">💰<br>商店</button>
+        <button class="btn-nav" onclick="openPage('chartPage')">📈<br>統計</button>
+        <button class="btn-nav" onclick="openPage('historyPage')">📜<br>紀錄</button>
+        <button class="btn-nav" onclick="openPage('adminPage')">⚙️<br>設定</button>
+    </div>
+</div>
+
+<dialog id="evoDialog" style="border:none; border-radius:20px; padding:20px; background:#2d2d2d; color:white; box-shadow:0 10px 30px rgba(0,0,0,0.5); max-width: 90vw;">
+    <h3 id="evoTitle" style="margin:0 0 20px 0; text-align:center; color:var(--p); letter-spacing:2px;">🔮 選擇進化目標</h3>
+    
+    <div id="evoOptions" class="evo-flex" style="display:flex; gap:15px; justify-content:center; flex-wrap:wrap; margin-bottom:20px;">
+        </div>
+    
+    <button onclick="document.getElementById('evoDialog').close()" 
+            style="width:100%; padding:12px; background:rgba(255,255,255,0.1); color:#ccc; border:none; border-radius:12px; cursor:pointer; font-weight:bold;">
+        取消
+    </button>
+</dialog>
+
+<div id="dexPage" class="page" style="display:none;">
+    <div class="pball-shell">
+        <div class="dex-container">
+            <div class="dex-sidebar" id="dexNav"></div>
+            
+            <div class="dex-main">
+                <h3 id="dexTitle" style="margin: 0 0 10px 0; color: #333; font-size: 18px; font-family: monospace;">No.???</h3>
+                
+                <div class="dex-image-container" style="background: white; border: 3px solid #333; border-radius: 12px; padding: 10px; position: relative;">
+                    <img id="dexImg" src="" style="width: 130px; height: 130px; object-fit: contain;">
+                    <div id="megaTag" style="position: absolute; top: 5px; right: 8px; font-size: 18px; display: none;">🧬</div>
+                </div>
+
+                <div id="dexCtrl" style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%;">
+                    <button onclick="setDexShiny(false)" class="btn-dex-sm">一般型態</button>
+                    <button onclick="setDexShiny(true)" id="shinyBtn" class="btn-dex-sm">✨ 閃光</button>
+                    
+                    <div id="megaGroup" style="grid-column: span 2; display: none; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 5px;">
+                        <button id="mBtnSingle" onclick="toggleMega('mega')" style="grid-column: span 2; background: #9b59b6; color: white; border: 2px solid #333; padding: 8px; border-radius: 8px; font-weight: bold; font-size: 12px;">🧬 Mega 進化</button>
+                        <button id="mBtnX" onclick="toggleMega('x')" style="background: #3498db; color: white; border: 2px solid #333; padding: 8px; border-radius: 8px; font-weight: bold; font-size: 12px;">Mega X</button>
+                        <button id="mBtnY" onclick="toggleMega('y')" style="background: #e67e22; color: white; border: 2px solid #333; padding: 8px; border-radius: 8px; font-weight: bold; font-size: 12px;">Mega Y</button>
+                    </div>
+
+                    <button onclick="assignBuddy()" style="grid-column: span 2; background: #dc0a2d; color: white; padding: 12px; border: 2px solid #333; border-radius: 25px; margin-top: 8px; font-weight: bold; font-size: 14px; box-shadow: 0 4px rgba(0,0,0,0.2);">就決定是你了！</button>
+                </div>
+            </div> 
+        </div> <div class="dex-b-button-wrapper" onclick="back()">
+            <div class="dex-close-btn">B</div>
+        </div>
+        
+    </div> </div>
+
+
+<div id="guidePage" class="page" style="background: #1a1a1a; color: white; display: none;">
+    <div style="padding: 25px; max-width: 500px; margin: 0 auto;">
+        
+        <div style="margin-bottom: 30px; text-align: center;">
+            <h2 style="margin: 0; color: var(--p); letter-spacing: 4px; font-size: 1.5em;">📖 遊戲規則導引</h2>
+        </div>
+
+        <div style="background: #2d2d2d; border-radius: 15px; margin-bottom: 20px; border-left: 5px solid var(--p); box-shadow: 0 4px 15px rgba(0,0,0,0.3); padding: 20px;">
+            <h3 style="margin-top: 0; color: var(--p); font-size: 1.1em; margin-bottom: 15px;">🌟 啟程，從研究所開始</h3>
+            <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px;">
+                <ul style="padding-left: 20px; line-height: 2; margin: 0; color: #eee; font-size: 0.95em;">
+                    <li>訓練回饋：<span style="color: #4caf50;">捕捉</span> 或 <span style="color: #ffeb3b;">打倒</span> 寶可夢皆能累積經驗值。</li>
+                    <li>成長之道：<span style="color: var(--p); font-weight: bold;">提升等級</span> 與 <span style="color: #ff5252;">降低對手 HP</span>，是成功捕捉的不二法門。</li>
+                    <li>訓練家等級：Lv.<span id="guideLvl">1</span> (每級永久增加 <span style="color: var(--p);">1.5%</span> 捕捉率)。</li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="background: #2d2d2d; border-radius: 15px; border-left: 5px solid #666; box-shadow: 0 4px 15px rgba(0,0,0,0.3); padding: 20px;">
+            <h3 style="margin-top: 0; color: #eee; font-size: 1.1em; margin-bottom: 15px;">⚔️ 記帳戰鬥機制</h3>
+            <ul style="padding-left: 20px; line-height: 1.8; margin: 0; color: #ccc; font-size: 0.95em;">
+                <li>消費感應：每累積消費滿 <span style="color: white; font-weight: bold;">200 元</span>，觸發一次戰鬥。</li>
+                <li style="color: #ff8dfb; margin: 8px 0;">
+                    ✨ <span style="font-weight: bold;">Mega 進化的神秘磁場：</span>進化期間，隱藏的<span style="text-shadow: 0 0 5px #ff8dfb; color: white;">閃光寶可夢</span>將更容易現身！
+                </li>
+                <li style="margin-top: 15px; border-top: 1px dashed #555; padding-top: 15px; color: #f1c40f;">
+                    <strong>🏆 終極認可：</strong><br>
+                    努力是值得的，時間會證明一切。<br>
+                    持續記帳滿 <span style="color: white; font-weight: bold;">100 天</span>，將獲得來自冠軍的認可。
+                </li>
+            </ul>
+        </div>
+        
+        <button onclick="back()" style="width: 100%; margin-top: 35px; padding: 18px; background: var(--p); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1.1em; box-shadow: 0 6px 15px rgba(0,0,0,0.4); cursor: pointer; transition: transform 0.2s;">
+            開始冒險！
+        </button>
+    </div>
+</div>
+
+
+<div id="statusPage" class="page">
+    <div class="card" style="position: relative; padding-top: 30px;"> <div id="selected-badge-display" class="badge-avatar-wrap" onclick="openBadgeModal()">
+            <img id="current-badge-img" src="" style="display: none;">
+            <div id="no-badge-txt">配戴<br>勳章</div>
+        </div>
+        <h3>👤 訓練家資訊</h3>
+               <div style="margin-right: 110px;"> </div> <p>當前稱號：<b id="st-title" style="color:var(--mega);">初出茅廬</b></p>
+        <p>訓練家等級：<b id="st-level" style="color:var(--accent);">Lv. 1</b></p>
+        <p>圖鑑進度：<span id="st-dex-count">0</span> / 493</p>
+        
+           <div style="font-size:14px; line-height:1.8;">
+            <div>🎯 綜合捕捉率：<b id="st-catch-rate">30%</b></div>
+            <div>✨ 綜合閃光率：<b id="st-shiny-rate">5%</b></div>
+            <div id="mega-timer" style="color:var(--mega); display:none;">🧬 Mega 強化中：<span id="mega-time-left">00:00</span></div>
+        </div>
+    </div>
+
+<button onclick="renderGarden(); GARDEN.processLoot();" 
+    style="background:#2ecc71; color:white; width:calc(100% - 20px); padding:15px; border:none; border-radius:10px; font-weight:bold; margin:10px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; gap:8px;">
+    <span>🌿</span> 進入秘密花園
+</button>
+
+    <button class="btn-back" onclick="back()">✖ 關閉</button>
+</div>
+<div id="badgeModal" class="badge-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; backdrop-filter:blur(5px);">
+    <div style="background:#1a1a1a; margin:5% auto; padding:20px; width:85%; max-width:400px; max-height: 85vh; border-radius:15px; border:2px solid #444; color:white; position:relative; display: flex; flex-direction: column;">
+        
+        <span onclick="closeBadgeModal()" style="position:absolute; right:15px; top:10px; font-size:24px; cursor:pointer; z-index: 10;">&times;</span>
+        
+        <h3 style="text-align:center; color:gold; margin-bottom:10px;">🏆 圖鑑勳章館</h3>
+        <p style="font-size:12px; text-align:center; color:#888; margin-bottom:15px;">點擊已解鎖的勳章進行配戴</p>
+        
+        <div id="badge-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; overflow-y: auto; padding-right: 5px;">
+            </div>
+    </div>
+</div>
+
+
+<div id="bagPage" class="page">
+    <div class="card">
+        <h3>🎒 我的背包</h3>
+        <div id="bag-items" class="res-grid"></div>
+        <hr>
+        
+        <p>進化石進度 (<span id="p-evo-txt">0</span>/5)</p>
+        <div class="hp-bar"><div id="p-evo-bar" style="height:100%; background:var(--accent); width:0%;"></div></div>
+        <p>Mega石進度 (<span id="p-mega-txt">0</span>/5)</p>
+        <div class="hp-bar"><div id="p-mega-bar" style="height:100%; background:var(--mega); width:0%;"></div></div>
+        <hr>
+        
+        <button onclick="performEvolve()" style="background:#e67e22; color:white; width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold;">🧬 使用 1 顆進化石</button>
+    </div>
+    <button class="btn-back" onclick="back()">✖ 關閉</button>
+</div>
+
+<div id="taskPage" class="page">
+    <div class="card">
+        <h3>🎯 任務中心</h3>
+        <div id="taskList" style="max-height:70vh; overflow-y:auto;"></div>
+    </div>
+    <button class="btn-back" onclick="back()">✖ 關閉</button>
+</div>
+
+<div id="shopPage" class="page">
+    <div class="card">
+        <h3>💰 精靈商店 (可用 P$: <span id="shop-bal">0</span>)</h3>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:10px;">
+                <span><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" style="vertical-align:middle"> 精靈球 (P$ 200)</span>
+                <button onclick="buy('poke', 200)" style="background:var(--p); color:white; border:none; padding:8px 15px; border-radius:5px;">購買</button>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:10px;">
+                <span><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/great-ball.png" style="vertical-align:middle"> 超級球 (P$ 500)</span>
+                <button onclick="buy('great', 500)" style="background:var(--p); color:white; border:none; padding:8px 15px; border-radius:5px;">購買</button>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png" style="vertical-align:middle"> 高級球 (P$ 700)</span>
+                <button onclick="buy('ultra', 700)" style="background:var(--p); color:white; border:none; padding:8px 15px; border-radius:5px;">購買</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top:15px; border: 2px solid #3498db; background: #fdfefe; padding: 15px; border-radius: 12px;">
+    <h3 style="color:#2980b9; margin-bottom:12px;">🎓 冒險，從研究所開始</h3>
+    <p style="font-size:12px; color:#7f8c8d; margin-bottom:10px;">領取後可獲得 5 顆精靈球並開啟御三家捕捉戰鬥</p>
+    
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+        <button id="btn-gift-oak" onclick="openGiftSelector('oak', false)" class="btn-doc" style="display:flex; align-items:center; gap:8px; padding: 8px; text-align:left; border: 1.5px dashed #3498db; background:#fff; border-radius:12px;">
+            <div style="width:35px; height:35px; flex-shrink:0; background:rgba(0,0,0,0.05); border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/151.png" style="width:100%; height:auto;">
+            </div>
+            <span style="font-weight:bold; font-size:13px; color:#2c3e50;">關都地區｜大木博士啟程禮</span>
+        </button>
+
+        <button id="btn-gift-elm" onclick="openGiftSelector('elm', false)" class="btn-doc" style="display:flex; align-items:center; gap:8px; padding: 8px; text-align:left; border: 1.5px dashed #3498db; background:#fff; border-radius:12px;">
+            <div style="width:35px; height:35px; flex-shrink:0; background:rgba(0,0,0,0.05); border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/175.png" style="width:100%; height:auto;">
+            </div>
+            <span style="font-weight:bold; font-size:13px; color:#2c3e50;">城都地區｜空木博士啟程禮</span>
+        </button>
+
+        <button id="btn-gift-birch" onclick="openGiftSelector('birch', false)" class="btn-doc" style="display:flex; align-items:center; gap:8px; padding: 8px; text-align:left; border: 1.5px dashed #3498db; background:#fff; border-radius:12px;">
+            <div style="width:35px; height:35px; flex-shrink:0; background:rgba(0,0,0,0.05); border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/261.png" style="width:100%; height:auto;">
+            </div>
+            <span style="font-weight:bold; font-size:13px; color:#2c3e50;">豐緣地區｜小田卷博士啟程禮</span>
+        </button>
+
+        <button id="btn-gift-rowan" onclick="openGiftSelector('rowan', false)" class="btn-doc" style="display:flex; align-items:center; gap:8px; padding: 8px; text-align:left; border: 1.5px dashed #3498db; background:#fff; border-radius:12px;">
+            <div style="width:35px; height:35px; flex-shrink:0; background:rgba(0,0,0,0.05); border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/396.png" style="width:100%; height:auto;">
+            </div>
+            <span style="font-weight:bold; font-size:13px; color:#2c3e50;">神奧地區｜山梨博士啟程禮</span>
+        </button>
+    </div>
+</div>
+
+<div class="card" style="margin-top:15px; border: 2px solid #f1c40f; background: #fffdf5; padding: 15px; border-radius: 12px;">
+    <h3 style="color:#d4af37; margin-bottom:12px;">🏆 冠軍的認可</h3>
+    <p style="font-size:12px; color:#7f8c8d; margin-bottom:10px;">獲得 5 顆高級球，並開啟**必閃**傳奇寶可夢戰鬥</p>
+    
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+        <button id="btn-gift-red" onclick="onChampionBtnClick('red')" class="btn-champion" style="display:flex; align-items:center; gap:8px; padding: 8px; text-align:left; border: 1.5px solid #f1c40f; background:#fff; border-radius:12px;">
+            <div style="width:35px; height:35px; flex-shrink:0; background:rgba(212,175,55,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png" style="width:100%; height:auto;">
+            </div>
+            <span style="font-weight:bold; font-size:13px; color:#b8860b;">關都地區｜赤紅的傳記祝福</span>
+        </button>
+
+        <button id="btn-gift-lance" onclick="onChampionBtnClick('lance')" class="btn-champion" style="display:flex; align-items:center; gap:8px; padding: 8px; text-align:left; border: 1.5px solid #f1c40f; background:#fff; border-radius:12px;">
+            <div style="width:35px; height:35px; flex-shrink:0; background:rgba(212,175,55,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/149.png" style="width:100%; height:auto;">
+            </div>
+            <span style="font-weight:bold; font-size:13px; color:#b8860b;">城都地區｜阿渡的龍之覺醒</span>
+        </button>
+
+        <button id="btn-gift-steven" onclick="onChampionBtnClick('steven')" class="btn-champion" style="display:flex; align-items:center; gap:8px; padding: 8px; text-align:left; border: 1.5px solid #f1c40f; background:#fff; border-radius:12px;">
+            <div style="width:35px; height:35px; flex-shrink:0; background:rgba(212,175,55,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/376.png" style="width:100%; height:auto;">
+            </div>
+            <span style="font-weight:bold; font-size:13px; color:#b8860b;">豐緣地區｜大吾的鋼鐵意志</span>
+        </button>
+
+        <button id="btn-gift-cynthia" onclick="onChampionBtnClick('cynthia')" class="btn-champion" style="display:flex; align-items:center; gap:8px; padding: 8px; text-align:left; border: 1.5px solid #f1c40f; background:#fff; border-radius:12px;">
+            <div style="width:35px; height:35px; flex-shrink:0; background:rgba(212,175,55,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/445.png" style="width:100%; height:auto;">
+            </div>
+            <span style="font-weight:bold; font-size:13px; color:#b8860b;">神奧地區｜竹蘭的遺跡之魂</span>
+        </button>
+    </div>
+</div>
+
+    <button class="btn-back" onclick="back()">✖ 關閉</button>
+</div>
+
+<style>
+/* 博士按鈕美化樣式 */
+.btn-doc {
+    background: #ffffff;
+    border: 1px solid #3498db;
+    color: #2980b9;
+    padding: 12px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: bold;
+    line-height: 1.4;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.btn-doc:hover:not(:disabled) {
+    background: #e1f5fe;
+    border-color: #0288d1;
+    transform: translateY(-1px);
+}
+.btn-doc:disabled {
+    background: #f5f5f5;
+    border-color: #dcdcdc;
+    color: #aaaaaa;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+/* 🏆 冠軍按鈕合體版：保留封印感 + 增加勳章 */
+.btn-champion {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    background: linear-gradient(135deg, #fff9e6 0%, #ffffff 100%); /* ● 保留你的淺金底 */
+    border: 1.5px solid #f1c40f; /* ● 保留你的實線邊框 */
+    color: #b8860b; /* ● 保留你的暗金色文字 */
+    padding: 10px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: bold;
+    line-height: 1.4;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(241, 196, 15, 0.2);
+    width: 100%;
+}
+
+.btn-champion:hover:not(:disabled) {
+    background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%); /* ● 保留你的 Hover 深金 */
+    color: #ffffff;
+    border-color: #d4af37;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(243, 156, 18, 0.3);
+}
+
+/* 🔒 封印狀態：結合你的虛線框設計 */
+.btn-champion:disabled {
+    background: #f9f9f9 !important;
+    border: 1.5px dashed #cccccc !important; /* ● 保留你的虛線封印感 */
+    color: #bbbbbb !important;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+    filter: grayscale(1);
+}
+
+/* ★ 新增：寶可夢勳章小框框 (確保在金色背景上清晰) */
+.champion-medal {
+    width: 32px; /* 稍微縮小以配合你的 11px 字體 */
+    height: 32px;
+    background: white;
+    border: 1.5px solid #f1c40f;
+    border-radius: 50%;
+    margin-right: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.champion-medal img {
+    width: 120%; /* 讓圖片大一點 */
+    height: auto;
+}
+
+.champion-text {
+    text-align: left;
+}
+
+
+/* 勳章大頭貼容器 - 霸氣放大版 */
+.badge-avatar-wrap {
+    position: absolute;
+    top: 45px;         /* 稍微往上調，對齊稱號頂端 */
+    right: 20px;       /* 靠右邊界 */
+    width: 135px;      /* 顯著放大 */
+    height: 135px;     /* 保持正方形 */
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* 增加深色半透明圓角底座，讓金色勳章更跳出來 */
+    background: rgba(0, 0, 0, 0.25); 
+    border-radius: 15px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+}
+
+#current-badge-img {
+    width: 125px !important;   /* 圖片本體也放大 */
+    height: 125px !important;
+    image-rendering: pixelated; /* 像素銳利化 */
+    filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.7));
+    object-fit: contain;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* 滑鼠移上去的動態反饋 */
+#current-badge-img:hover {
+    transform: scale(1.1) rotate(3deg);
+}
+
+/* 文字保護：確保左側文字有足夠空間，不會被 135px 的大勳章擋住 */
+.card p, .card h3 {
+    margin-right: 150px; 
+}
+
+</style>
+
+<div id="chartPage" class="page">
+    <div class="card">
+        <div style="display:flex; gap:5px; margin-bottom:10px;">
+            <button onclick="switchChart('year')" style="flex:1; padding:10px; border-radius:5px; border:1px solid #ddd; background:#f8f9fa; cursor:pointer;">年統計</button>
+            <button onclick="switchChart('month')" style="flex:1; padding:10px; border-radius:5px; border:1px solid #ddd; background:#f8f9fa; cursor:pointer;">月統計</button>
+            <button onclick="switchChart('cat')" style="flex:1; padding:10px; border-radius:5px; border:1px solid #ddd; background:#f8f9fa; cursor:pointer;">月分類</button>
+        </div>
+
+        <div id="chartControls" style="margin-bottom:15px; display:none; gap:10px; align-items:center; background:#fff9db; padding:10px; border-radius:5px;">
+            <label for="chartMonthPicker" style="font-size:14px; color:#666;">選擇月份：</label>
+            <input type="month" id="chartMonthPicker" onchange="renderCharts()" style="flex:1; padding:5px; border:1px solid #ccc; border-radius:4px;">
+        </div>
+
+        <div style="position:relative; height:300px; width:100%;">
+            <canvas id="chartCanvas"></canvas>
+        </div>
+    </div>
+
+    <button class="btn-back" onclick="back()" style="width:100%; margin-top:15px; padding:12px; background:#e74c3c; color:white; border:none; border-radius:5px; cursor:pointer;">✖ 關閉圖表</button>
+</div>
+
+<div id="historyPage" class="page">
+    <div class="card">
+        <h3>📱 我的手機載具</h3>
+        <div style="background: white; padding: 15px; border-radius: 10px; text-align: center; border: 1px dashed #ccc;">
+            <div id="barcodeContainer" style="display: none; margin-bottom: 10px;">
+                <img id="barcodeImg" style="max-width: 100%; height: 80px;">
+                <div id="barcodeText" style="font-family: monospace; font-weight: bold; letter-spacing: 2px;"></div>
+            </div>
+            
+            <div style="display: flex; gap: 5px;">
+                <input type="text" id="carrierInput" placeholder="範例: /ABC+123" 
+                       style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; text-transform: uppercase;">
+                <button onclick="saveCarrier()" style="background: var(--p); color: white; border: none; padding: 0 15px; border-radius: 5px;">儲存</button>
+            </div>
+        </div>
+
+        <hr style="margin: 20px 0;">
+
+        <h3>📜 紀錄與載入</h3>
+        <button onclick="document.getElementById('csvFile').click()" style="background:var(--p); color:white; width:100%; padding:15px; border:none; border-radius:10px; margin-bottom:15px;">📑 導入財政部 CSV 載具資料</button>
+        <input type="file" id="csvFile" style="display:none" onchange="handleCSV(event)">
+        
+        <div id="csvPreviewArea" style="display:none; margin-top:20px; padding:10px; border:2px dashed #ccc; border-radius:10px;">
+            <h3>📋 匯入預覽</h3>
+            <h4 id="importCount" style="margin: 5px 0; color: var(--p); font-size: 14px;">預覽資料數量: 0</h4>
+            <p style="font-size:12px; color:gray;">(在此修改分類後點擊「正式導入」)</p>
+            <div id="previewList" style="max-height:300px; overflow-y:auto; margin-bottom:10px;"></div>
+            <div style="display:flex; gap:10px;">
+                <button onclick="confirmImport()" style="flex:1; background:#28a745; color:white; padding:10px; border:none; border-radius:5px;">✅ 正式導入</button>
+                <button onclick="cancelImport()" style="flex:1; background:#6c757d; color:white; padding:10px; border:none; border-radius:5px;">✖ 取消</button>
+            </div>
+        </div>
+
+        <hr>
+
+        <p style="font-size:13px; color:gray; margin-bottom: 5px;">手動紀錄查詢</p>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-bottom:10px;">
+            <input type="date" id="hStart" style="padding: 8px; border: 1px solid #ddd; border-radius: 5px;"> 
+            <input type="date" id="hEnd" style="padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+        </div>
+        <button onclick="searchHistory()" style="background:var(--dark); color:white; width:100%; padding:10px; border:none; border-radius:5px;">搜尋明細</button>
+        
+        <div id="historyList" style="margin-top:10px; max-height:200px; overflow-y:auto; border: 1px solid #eee; border-radius: 5px; background: #fafafa;"></div>
+    </div> <button class="btn-back" onclick="back()" 
+            style="margin: 15px auto 30px auto; display: block; width: calc(100% - 24px); box-sizing: border-box;">
+        ✖ 關閉
+    </button>
+</div>
+
+
+<div id="adminPage" class="page">
+    <div class="card">
+        <h3>⚙️ 設定與管理</h3>
+        <button onclick="exportData()" style="background:#2980b9; color:white; width:100%; padding:12px; margin-bottom:10px; border:none; border-radius:5px;">💾 匯出全存檔 </button>
+        <input type="file" id="importFile" style="display:none" onchange="importData(event)">
+        <button onclick="document.getElementById('importFile').click()" style="background:#27ae60; color:white; width:100%; padding:12px; margin-bottom:10px; border:none; border-radius:5px;">📂 讀取存檔 </button>
+        <hr>
+        <p style="font-size:12px; color:gray;">區間清理：匯出檔案並刪除明細（統計總額保留）</p>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-bottom:10px;">
+            <input type="date" id="lightStart"> <input type="date" id="lightEnd">
+        </div>
+        <button onclick="lighten()" style="background:var(--mega); color:white; width:100%; padding:10px; border:none; border-radius:5px;">🧹 執行區間清理並匯出</button>
+        <hr>
+        <button onclick="openPage('guidePage')" style="background:var(--accent); color:black; width:100%; padding:12px; border:none; border-radius:5px;">📖 遊戲與記帳規則導引</button>
+        <button onclick="resetAll()" style="background:var(--danger); color:white; width:100%; padding:12px; border:none; border-radius:5px; margin-top:20px;">🔥 重置所有數據</button>
+    </div>
+    <button class="btn-back" onclick="back()">✖ 關閉</button>
+</div>
+
+<script>
+// --- [ 1. 這裡：植入名稱資料庫 ] ---
+const POKEMON_NAMES = [
+    "", // 0 號佔位
+    "妙蛙種子","妙蛙草","妙蛙花","小火龍","火恐龍","噴火龍","傑尼龜","卡米龜","水箭龜","綠毛蟲",
+    "鐵甲蛹","巴大蝶","獨角蟲","鐵殼蛹","大針蜂","波波","比比鳥","大比鳥","小拉達","拉達",
+    "烈雀","大嘴雀","阿柏蛇","阿柏怪","皮卡丘","雷丘","穿山鼠","穿山王","尼多蘭","尼多娜",
+    "尼多后","尼多朗","尼多力諾","尼多王","皮皮","皮可西","六尾","九尾","胖丁","胖可丁",
+    "超音蝠","大嘴蝠","走路草","臭臭花","霸王花","派拉斯","派拉斯特","毛球","摩魯蛾","地鼠",
+    "三地鼠","喵喵","貓老大","可達鴨","哥達鴨","猴怪","火爆猴","卡蒂狗","風速狗","蚊香蝌蚪",
+    "蚊香君","蚊香泳士","凱西","勇基拉","胡地","腕力","豪力","怪力","喇叭芽","口呆花",
+    "大食花","瑪瑙水母","毒刺水母","小拳石","隆隆石","隆隆岩","小火馬","烈焰馬","呆呆獸","呆殼獸",
+    "小磁怪","三合一磁怪","大蔥鴨","嘟嘟","嘟嘟利","小海獅","白海獅","臭泥","臭臭泥","大舌貝",
+    "刺甲貝","鬼斯","鬼斯通","耿鬼","大岩蛇","催眠貘","引夢貘人","大鉗蟹","巨鉗蟹","霹靂電球",
+    "頑皮雷彈","蛋蛋","椰蛋樹","卡拉卡拉","嘎啦嘎啦","飛腿郎","快拳郎","大舌頭","瓦斯彈","雙彈瓦斯",
+    "獨角犀牛","鑽角犀獸","吉利蛋","蔓藤怪","袋獸","墨海馬","海刺龍","角金魚","金魚王","海星星",
+    "寶石海星","魔牆人偶","飛天螳螂","迷唇姐","電擊獸","鴨嘴火獸","凱羅斯","肯泰羅","鯉魚王","暴鯉龍",
+    "拉普拉斯","百變怪","伊布","水伊布","雷伊布","火伊布","多邊獸","菊石獸","多刺菊石獸","化石盔",
+    "鐮刀盔","化石翼龍","卡比獸","急凍鳥","閃電鳥","火焰鳥","迷你龍","哈克龍","快龍","超夢",
+    "夢幻","菊草葉","月桂葉","大竺葵","火球鼠","火岩鼠","火暴獸","小鋸鱷","藍鱷","大力鱷",
+    "尾立","大尾立","咕咕","貓頭夜鷹","芭瓢蟲","安瓢蟲","圓絲蛛","阿利多斯","叉字蝠","燈籠魚",
+    "電燈怪","皮丘","皮寶寶","寶寶丁","波克比","波克基古","天然雀","天然鳥","咩利羊","茸茸羊",
+    "電龍","美麗花","瑪力露","瑪力露麗","胡說樹","牛蛙君","毽子草","毽子花","毽子棉","長尾怪手",
+    "向日種子","向日花怪","陽陽瑪","烏波","沼王","太陽伊布","月亮伊布","黑暗鴉","呆呆王","夢妖",
+    "未知圖騰","果然翁","麒麟奇","榛果球","佛烈托斯","土龍弟弟","天蠍","大鋼蛇","布魯","布魯皇",
+    "千針魚","巨鉗螳螂","壺壺","赫拉克羅斯","狃拉","熊寶寶","圈圈熊","熔岩蟲","熔岩蝸牛","小山豬",
+    "長毛豬","太陽珊瑚","鐵炮魚","章魚桶","信使鳥","巨翅飛魚","盔甲鳥","戴魯比","黑魯加","刺龍王",
+    "小小象","頓甲","多邊獸Ⅱ","驚角鹿","圖圖犬","巴爾郎","柯波朗","迷唇娃","電擊怪","鴨嘴寶寶",
+    "大奶罐","幸福蛋","雷公","炎帝","水君","幼基拉斯","沙基拉斯","班基拉斯","洛奇亞","鳳王",
+    "雪拉比","木守宮","森林蜥蜴","蜥蜴王","火稚雞","力壯雞","火焰雞","水躍魚","沼躍魚","巨沼怪",
+    "土狼犬","大狼犬","蛇紋熊","直衝熊","刺尾蟲","甲殼繭","狩獵鳳蝶","盾甲繭","毒粉蛾","蓮葉童子",
+    "蓮帽小童","樂天河童","橡實果","長鼻葉","狡猾天狗","傲骨燕","大王燕","長翅鷗","大嘴鷗","拉魯拉絲",
+    "奇魯莉安","沙奈朵","溜溜糖球","雨翅蛾","蘑蘑菇","斗笠菇","懶人獺","過動猿","請假王","土居忍士",
+    "鐵面忍者","脫殼忍者","咕妞妞","吼爆彈","爆音怪","幕下力士","超力王","露力麗","朝北鼻","向尾喵",
+    "優雅貓","勾魂眼","大嘴娃","可可多拉","可多拉","波士可多拉","瑪沙那","恰雷姆","落雷獸","雷電獸",
+    "正電拍拍","負電拍拍","電螢蟲","甜甜螢","毒薔薇","溶食獸","吞食獸","利牙魚","巨牙鯊","吼吼鯨",
+    "吼鯨王","呆火駝","噴火駝","煤炭龜","跳跳豬","噗噗豬","晃晃斑","大顎蟻","超音波幼蟲","沙漠蜻蜓",
+    "沙漠奈亞","夢歌仙人掌","青綿鳥","七夕青鳥","貓鼬斬","飯匙蛇","月石","太陽岩","泥泥鰍","地震鯰",
+    "龍蝦小兵","鐵螯龍蝦","天秤偶","念力土土偶","觸手百合","搖籃百合","太古羽蟲","太古盔甲","笨笨魚","美納斯",
+    "飄浮泡泡","變隱龍","怨影娃娃","詛咒娃娃","夜巡靈","夜巨人","熱帶龍","風鈴鈴","阿勃梭魯","小果然",
+    "雪童子","冰鬼護","海豹球","海魔獅","帝牙海獅","珍珠貝","獵斑魚","櫻花魚","古空棘魚","愛心魚",
+    "寶貝龍","甲殼龍","暴飛龍","鐵啞鈴","金屬怪","巨金怪","雷吉洛克","雷吉艾斯","雷吉斯奇魯","拉帝亞斯",
+    "拉帝歐斯","蓋歐卡","固拉多","烈空坐","基拉祈","代歐奇希斯","草苗龜","樹林龜","土台龜","小火焰猴",
+    "猛火猴","烈焰猴","波加曼","波皇子","帝王拿波","姆克兒","姆克鳥","姆克鷹","大牙狸","大尾狸",
+    "圓法師","音箱蟀","小貓怪","勒克貓","倫琴貓","含羞苞","羅絲雷朵","頭蓋龍","戰槌龍","盾甲龍",
+    "護城龍","結草兒","結草貴婦","紳士蛾","三蜜蜂","蜂女王","帕奇利茲","泳圈鼬","浮潛鼬","櫻花寶",
+    "櫻花兒","無殼海兔","海兔獸","雙尾怪手","飄飄球","隨風球","卷卷耳","長耳兔","夢妖魔","烏鴉頭頭",
+    "魅力喵","東施喵","鈴鐺響","臭鼬噗","坦克臭鼬","銅鏡怪","青銅鐘","盆才怪","魔尼尼","小福蛋",
+    "聒噪鳥","花岩怪","圓陸鯊","尖牙陸鯊","烈咬陸鯊","小卡比獸","利歐路","路卡利歐","怪河馬","河馬獸",
+    "鉗尾蠍","龍王蠍","不良蛙","毒骷蛙","尖牙籠","螢光魚","霓虹魚","小球飛魚","雪笠怪","暴雪王",
+    "瑪狃拉","自爆磁怪","大舌舔","超甲狂犀","巨蔓藤","電擊魔獸","鴨嘴炎獸","波克基斯","梅卡陽瑪","葉伊布",
+    "冰伊布","天蠍王","象牙豬","多邊獸Ｚ","艾路雷朵","大朝北鼻","黑夜魔靈","雪妖女","洛托姆","由克希",
+    "艾姆利多","亞克諾姆","帝牙盧卡","帕路奇亞","席多藍恩","雷吉奇卡斯","騎拉帝納","克雷色利亞","霏歐納","瑪納霏",
+    "達克萊伊","謝米","阿爾宙斯"
+];
+// 安全獲取名字的函式，防止 ID 超過 493 時報錯
+// ==========================================
+// --- 戰鬥隊列控制系統 ---
+let battleQueue = 0;     // 儲存待發生的戰鬥場次
+let isInBattle = false;  // 戰鬥狀態鎖
+let currentAmount = 0;   // 暫存本次消費金額
+let curE = null;         // 當前寶可夢
+let turn = 0;            // 回合數
+let currentChartType = 'year';
+
+// --- [ 3. 基礎工具函式 ] ---
+function getPkmnName(id) {
+    return POKEMON_NAMES[id] || `No.${id}`;
+}
+function getLvlBonus() {
+    // 每升 1 級，基礎捕捉率增加 1.5%
+    return Math.floor((s.lvl - 1) * 1.5);
+}
+
+
+// --- [ 核心數據結構 ] ---
+const API = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites";
+const MEGA_ABLE = [
+    1, 2, 3,     // 妙蛙種子、妙蛙草、妙蛙花
+    4, 5, 6,     // 小火龍、火恐龍、噴火龍
+    7, 8, 9,     // 傑尼龜、卡米龜、水箭龜
+    13, 14, 15,  // 獨角蟲、鐵殼蛹、大針蜂
+    16, 17, 18,  // 波波、比比鳥、大比鳥
+    63, 64, 65,  // 凱西、勇基拉、胡地
+    79, 80,      // 呆呆獸、呆殼獸
+    92, 93, 94,  // 鬼斯、鬼斯通、耿鬼
+    95, 208,     // 大岩蛇、大鋼蛇
+    115,         // 袋獸
+    123, 212,    // 飛天螳螂、巨鉗螳螂
+    127,         // 大甲 (凱羅斯)
+    129, 130,    // 鯉魚王、暴鯉龍
+    142,         // 化石翼龍
+    150,         // 超夢
+    179, 180, 181, // 咩利羊、茸茸羊、電龍
+    214,         // 赫拉克羅斯
+    228, 229,    // 戴魯比、黑魯加
+    246, 247, 248, // 幼基拉斯、沙基拉斯、班基拉斯
+    252, 253, 254, // 木守宮、森林蜥蜴、蜥蜴王
+    255, 256, 257, // 火稚雞、力壯雞、火焰雞
+    258, 259, 260, // 水躍魚、沼躍魚、巨沼怪
+    280, 281, 282, // 拉魯拉絲、奇魯莉安、沙奈朵
+    302,         // 勾魂眼
+    303,         // 大嘴娃
+    304, 305, 306, // 可可多拉、可多拉、波士可多拉
+    307, 308,    // 瑪沙那、恰雷姆
+    309, 310,    // 落雷獸、雷電獸
+    318, 319,    // 利牙魚、巨牙鯊
+    322, 323,    // 呆火駝、噴火駝
+    333, 334,    // 青綿鳥、七夕青鳥
+    353, 354,    // 怨影娃娃、詛咒娃娃
+    359,         // 阿勃梭魯
+    361, 362,    // 雪童子、冰鬼護
+    371, 372, 373, // 寶貝龍、甲殼龍、暴飛龍
+    374, 375, 376, // 鐵啞鈴、金屬怪、巨金怪
+    380,         // 拉帝亞斯
+    381,         // 拉帝歐斯
+    382,         // 蓋歐卡
+    383,         // 固拉多
+    384,         // 烈空坐
+    427, 428,    // 卷卷耳、長耳兔
+    443, 444, 445, // 圓陸鯊、尖牙陸鯊、烈咬陸鯊
+    447, 448,    // 利歐路、路卡利歐
+    459, 460,    // 雪笠怪、暴雪王
+    475          // 艾路雷朵
+];
+// 分支進化字典
+const EVO_BRANCHES = {
+    60: [61, 186], 79: [80, 199], 133: [134, 135, 136, 196, 197, 470, 471],
+    236: [237, 106, 107], 280: [281, 475], 290: [291, 292], 361: [362, 478],
+    125: [466], 126: [467], 114: [465], 113: [242], 137: [233]
+};
+
+// --- [ 核心數據結構：新增等級系統與狀態鎖 ] ---
+let s = {
+    bal: 1000, 
+    pool: 0, 
+    items: {poke:10, great:5, ultra:1, master:1, stone:1, mstone:1},
+    prog: {evo:0, mega:0}, 
+    buddyId: 25,
+    isShinyBuddy: false, 
+    owned: [25,133], 
+    shinyOwned: [], 
+    megaUntil: 0, 
+    currentMegaType: "",
+    hist: [], 
+    yearSums: {}, 
+    catSums: {}, 
+    tasks: {dailyDate: "", dRec: 0, dCatch: 0, wRec: 0, wCatch: 0, mRec: 0, mCatch: 0, claimed: []},
+    // --- [ 個人式修正：新增等級屬性 ] ---
+    lvl: 1,           // 玩家等級
+    exp: 0,           // 當前經驗值
+    nextExp: 100,      // 升級門檻
+
+    farm: {
+        inv: { "🌾": 0, "🥗": 0, "🐟": 0, "🦐": 0, "🥩": 0, "🥚": 0 }, // 素材倉庫
+        dishes: {},          // 料理成品倉庫
+        knownRecipes: [],    // 已解鎖的食譜公式 (圖鑑)
+        friendship: 0,       // 夥伴親密度 (影響掉落率)
+        lastLootTime: Date.now(), // 上次領取 6 小時獎勵的時間
+        quest: "🌾🐟🥩",     // 當前夥伴想吃的料理 (預設一個)
+        prod: {
+            bulbasaur: { type: null, end: 0 },
+            squirtle: { type: null, end: 0 },
+            charmander: { type: null, end: 0 },
+            pikachu: { type: null, end: 0, slots: [null, null, null] }
+        }
+    }
+};
+
+const DOCTOR_DATA = {
+    'oak':   { name: '關都地區｜大木博士的啟程禮', ids: [1, 4, 7], sceneIconId: 151 }, 
+    'elm':   { name: '城都地區｜空木博士的啟程禮', ids: [152, 155, 158], sceneIconId: 175 },
+    'birch': { name: '豐緣地區｜小田卷博士的啟程禮', ids: [252, 255, 258], sceneIconId: 261 }, 
+    'rowan': { name: '神奧地區｜山梨博士的啟程禮', ids: [387, 390, 393], sceneIconId: 396 }
+};
+
+const CHAMPION_DATA = {
+    'red':    { name: '關都地區｜赤紅的傳奇祝福', ids: [131, 143, 149] }, // 拉普拉斯、卡比獸、快龍
+    'lance':  { name: '城都地區｜阿渡的龍之覺醒', ids: [230, 248, 212] }, // 刺龍王、班基拉斯、巨鉗螳螂
+    'steven': { name: '豐緣地區｜大吾的鋼鐵意志', ids: [376, 373, 306] }, // 巨金怪、暴飛龍、波士可多拉
+    'cynthia':{ name: '神奧地區｜竹蘭的遺跡之魂', ids: [445, 448, 350] }  // 烈咬陸鯊、路卡利歐、美納斯
+};
+
+const GARDEN = {
+    // 1. 食譜對照表
+    recipes: {
+        "🌾🐟🥩": { name: "陸海空豪華便當", icon: "🍱" },
+        "🌾🐟🥚": { name: "滑蛋鮮魚粥", icon: "🥣" },
+        "🌾🦐🥩": { name: "鮮蝦燒肉飯", icon: "🍛" },
+        "🌾🦐🥚": { name: "黃金蝦仁炒飯", icon: "🍤" },
+        "🥗🐟🥩": { name: "海陸健身沙拉", icon: "🥗" },
+        "🥗🐟🥚": { name: "時蔬魚排歐姆蛋", icon: "🍳" },
+        "🥗🦐🥩": { name: "鮮蝦時蔬快炒", icon: "🥘" },
+        "🥗🦐🥚": { name: "嫩蝦蔬菜蒸蛋", icon: "🍮" }
+    },
+
+    // 2. 核心獎勵引擎 (每 6 小時計算一次)
+    processLoot: () => {
+        const now = Date.now();
+        let elapsed = now - s.farm.lastLootTime;
+        
+        // 限制最多累積 24 小時，避免太久沒玩導致獎勵過量
+        if (elapsed > 86400000) elapsed = 86400000; 
+
+        const count = Math.floor(elapsed / 21600000); // 計算有幾個 6 小時
+        
+        if (count > 0) {
+            // 親密度等級 (最高 Lv.10)
+            const fsLv = Math.min(Math.floor(s.farm.friendship / 100), 10);
+            let rewards = [];
+            
+            for(let i=0; i<count; i++) {
+                const rand = Math.random() * 100;
+                
+                // --- 依照你要求的機率權重進行判定 ---
+                if (rand < (1 + fsLv * 0.6)) { 
+                    // Mega石: 1% -> 上限 7%
+                    s.items.mstone++;
+                    rewards.push("🌀Mega石");
+                } else if (rand < (3 + fsLv * 1.6)) { 
+                    // 進化石: 2% -> 上限 13% (3 + 10 = 13)
+                    s.items.stone++;
+                    rewards.push("💎進化石");
+                } else if (rand < (10 + fsLv * 2.5)) { 
+                    // 高級球: 7% -> 15% (10 + 5 = 15)
+                    s.items.ultra++;
+                    rewards.push("🟡高級球");
+                } else if (rand < (25 + fsLv * 2.5)) { 
+                    // 超級球: 15% 穩定固定
+                    s.items.great++;
+                    rewards.push("🔵超級球");
+                } else if (rand < (50 + fsLv * 4.5)) { 
+                    // 寶貝球: 25% -> 20% (隨等級調降，讓位給高級獎勵)
+                    s.items.poke++;
+                    rewards.push("🔴寶貝球");
+                } else {
+                    // 金幣: 50% -> 30% (Lv.10)
+                    s.bal += 100;
+                    rewards.push("💰P$100");
+                }
+            }
+            
+            s.farm.lastLootTime = now - (elapsed % 21600000);
+            alert(`❤️ 夥伴在野外巡邏 ${count * 6} 小時，帶回了：\n${rewards.join('、')}`);
+            
+            // 如果你有存檔和更新介面的函式，在這裡執行
+            if (typeof saveGameData === 'function') saveGameData();
+            if (typeof updateUI === 'function') updateUI();
+        }
+    },
+
+    // 取得 API 圖示
+    getGif: (id) => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${id}.gif`,
+    
+    // 時間顯示格式化
+    getTimeStr: (ms) => {
+        const diff = ms - Date.now();
+        if (diff <= 0) return "✅ 完工！";
+        const m = Math.floor(diff / 60000), sec = Math.floor((diff % 60000) / 1000);
+        return `${m}m ${sec}s`;
+    }
+};
+
+const WORLD_DATA = {
+    "Kanto": {
+        name: "關都",
+        color: "#2ecc71",
+        icon: "🌱",
+        starters: ["🍃 妙蛙種子", "💧 傑尼龜", "🔥 小火龍"],
+        starterIds: [1, 7, 4],
+        challengers: [
+            // 0-7 道館館主
+            { name: "小剛", badge: "岩石勳章", taunt: "我的意志堅如磐石！" },
+            { name: "小霞", badge: "藍色勳章", taunt: "讓你見識一下水之幻影！" },
+            { name: "馬志士", badge: "橙色勳章", taunt: "嘿！感受一下電擊的威力吧！" },
+            { name: "莉佳", badge: "彩虹勳章", taunt: "花朵的香氣會讓你沉醉..." },
+            { name: "阿杏", badge: "粉紅勳章", taunt: "忍者的戰術，你跟得上嗎？" },
+            { name: "娜姿", badge: "金黃勳章", taunt: "我早已預見了你的失敗。" },
+            { name: "夏伯", badge: "深紅勳章", taunt: "火焰的熱情足以燃燒一切！" },
+            { name: "坂木", badge: "綠色勳章", taunt: "歡迎來到大地之王的領地。" },
+            // 8-11 四天王
+            { name: "科拿", badge: "天王挑戰", taunt: "冰冷的氣息會凍結你的鬥志。" },
+            { name: "希巴", badge: "天王挑戰", taunt: "這就是鍛鍊到極致的力量！" },
+            { name: "菊子", badge: "天王挑戰", taunt: "老朽的幽靈會讓你領悟恐懼。" },
+            { name: "阿渡", badge: "天王挑戰", taunt: "在龍的憤怒下顫抖吧！" },
+            // 12 冠軍
+            { name: "青綠", badge: "冠軍獎盃", taunt: "雖然你很努力，但最強的是我！" }
+        ]
+    },
+    "Johto": {
+        name: "城都",
+        color: "#f1c40f",
+        icon: "🏮",
+        starters: ["🍃 菊草葉", "💧 小巨鱷", "🔥 火球鼠"],
+        starterIds: [152, 158, 155],
+        challengers: [
+            { name: "阿筆", badge: "昆蟲勳章", taunt: "蟲系寶可夢的深奧，你懂嗎？" },
+            { name: "小茜", badge: "正式勳章", taunt: "大奶罐！讓他們看看你的厲害！" },
+            { name: "小松", badge: "魅影勳章", taunt: "我看見了隱藏在陰影中的未來。" },
+            { name: "阿四", badge: "打擊勳章", taunt: "每日瀑布修行，肉體即是武器！" },
+            { name: "蜜柑", badge: "鋼鐵勳章", taunt: "溫柔且堅硬，這就是鋼鐵之魂。" },
+            { name: "柳伯", badge: "冰川勳章", taunt: "在嚴寒中磨練意志吧。" },
+            { name: "小椿", badge: "升龍勳章", taunt: "我才是世界上最強的龍使者！" },
+            { name: "阿速", badge: "飛翼勳章", taunt: "飛向更高遠的天空吧！" },
+            { name: "一樹", badge: "天王挑戰", taunt: "這場戰鬥將會非常華麗。" },
+            { name: "阿桔", badge: "天王挑戰", taunt: "體會忍術的神祕與恐怖吧。" },
+            { name: "希巴", badge: "天王挑戰", taunt: "力量！我追求的就是純粹的力量！" },
+            { name: "梨花", badge: "天王挑戰", taunt: "強不強不重要，重要的是喜歡。" },
+            { name: "阿渡", badge: "冠軍獎盃", taunt: "來吧，展現你挑戰冠軍的實力！" }
+        ]
+    },
+    "Hoenn": {
+        name: "豐緣",
+        color: "#3498db",
+        icon: "🌊",
+        starters: ["🍃 木守宮", "💧 水躍魚", "🔥 火稚雞"],
+        starterIds: [252, 258, 255],
+        challengers: [
+            { name: "杜娟", badge: "岩石勳章", taunt: "在訓練家學校學到的知識是不會輸的。" },
+            { name: "藤樹", badge: "拳擊勳章", taunt: "這股大浪，你能夠衝過去嗎？" },
+            { name: "鐵旋", badge: "電力勳章", taunt: "哈哈哈！充滿電力的感覺真好！" },
+            { name: "亞莎", badge: "烈焰勳章", taunt: "稍微有點緊張...但火焰是不會滅的！" },
+            { name: "千里", badge: "天秤勳章", taunt: "作為父親，我會用全力應戰。" },
+            { name: "娜琪", badge: "白羽勳章", taunt: "與鳥兒一同在天空中起舞吧。" },
+            { name: "楓與南", badge: "心靈勳章", taunt: "我們的心是合而為一的！" },
+            { name: "亞當", badge: "雨滴勳章", taunt: "優雅，是水之戰鬥的最高境界。" },
+            { name: "花月", badge: "天王挑戰", taunt: "嘿！盡情享受這場惡戰吧！" },
+            { name: "芙蓉", badge: "天王挑戰", taunt: "與幽靈共舞的感覺如何？" },
+            { name: "波妮", badge: "天王挑戰", taunt: "冰冷的空氣能讓頭腦冷靜。" },
+            { name: "源治", badge: "天王挑戰", taunt: "在海上磨練出來的龍之魂！" },
+            { name: "代後", badge: "冠軍獎盃", taunt: "最終，我才是最強且最尊貴的。" }
+        ]
+    },
+    "Sinnoh": {
+        name: "神奧",
+        color: "#bdc3c7",
+        icon: "❄️",
+        starters: ["🍃 草苗龜", "💧 波加曼", "🔥 小火焰猴"],
+        starterIds: [387, 393, 390],
+        challengers: [
+            { name: "瓢太", badge: "石炭勳章", taunt: "化石的硬度，就是我的防禦！" },
+            { name: "菜種", badge: "森林勳章", taunt: "植物的生命力可是很驚人的。" },
+            { name: "阿李", badge: "鋪石勳章", taunt: "赤腳戰鬥才是訓練的真諦。" },
+            { name: "吉憲", badge: "濕地勳章", taunt: "哈哈哈！大濕地在呼喚我！" },
+            { name: "梅卡", badge: "礦山勳章", taunt: "我就是鋼鐵般的男人！" },
+            { name: "梅麗莎", badge: "遺跡勳章", taunt: "跳舞吧！展現你的魅力！" },
+            { name: "鈴菜", badge: "冰河勳章", taunt: "集中注意力，冰雪會指引你。" },
+            { name: "電次", badge: "燈塔勳章", taunt: "終於有個能讓我燃起鬥志的人了。" },
+            { name: "阿柳", badge: "天王挑戰", taunt: "蟲系寶可夢是最美的藝術。" },
+            { name: "菊野", badge: "天王挑戰", taunt: "穩重的大地會包容一切。" },
+            { name: "大葉", badge: "天王挑戰", taunt: "燃燒吧！熱情就是要像火焰一樣！" },
+            { name: "悟松", badge: "天王挑戰", taunt: "超能力的奧秘，你準備好接觸了嗎？" },
+            { name: "竹蘭", badge: "冠軍獎盃", taunt: "你的眼神很堅定，讓我看看你的極限吧！" }
+        ]
+    }
+};
+
+
+/* --- 存檔初始化引擎 (修正版) --- */
+function initFarmProgress() {
+    // 1. 確保基礎 farm 結構
+    if (!s.farm) s.farm = { inv: {}, dishes: {}, knownRecipes: [], friendship: 0 };
+    
+    // 2. 確保 regionProg 及其內部的 stats 結構 (關鍵修復點)
+    if (!s.farm.regionProg) s.farm.regionProg = {};
+    if (!s.farm.regionProg.stats) s.farm.regionProg.stats = {};
+    
+    // 3. 確保基本屬性有預設值
+    if (!s.farm.regionProg.currentView) s.farm.regionProg.currentView = "Kanto";
+    if (!s.farm.regionProg.unlockedRegions) s.farm.regionProg.unlockedRegions = ["Kanto"];
+
+    // 4. 安全地遍歷 WORLD_DATA
+    // 增加檢查確保 WORLD_DATA 存在
+    if (typeof WORLD_DATA !== 'undefined') {
+        Object.keys(WORLD_DATA).forEach(regionId => {
+            // 如果這個地區的進度還沒建立，才建立它
+            if (!s.farm.regionProg.stats[regionId]) {
+                s.farm.regionProg.stats[regionId] = {
+                    gymsBeaten: 0,
+                    isChampion: false
+                };
+            }
+        });
+    }
+
+    // 5. 確保生產數據結構
+    if (!s.farm.prod) s.farm.prod = {};
+    if (!s.farm.prod.pikachu) {
+        s.farm.prod.pikachu = { 
+            slots: [null, null, null], 
+            end: 0 
+        };
+    }
+}
+
+/* --- 核心公式：計算全局採集加速倍率 (嚴格對標版) --- */
+function getGlobalSpeedBuff() {
+    let totalBuff = 0;
+
+    Object.keys(s.farm.regionProg.stats).forEach(regionId => {
+        const b = s.farm.regionProg.stats[regionId].gymsBeaten;
+        
+        if (b >= 13) {
+            // 規則：擊敗冠軍後，該區固定提供 50%
+            totalBuff += 0.50; 
+        } else {
+            // 規則：未通關時按進度累加
+            if (b > 0) {
+                // 1-8 徽章：每個 3% (最多 24%)
+                const gymCount = Math.min(b, 8);
+                totalBuff += gymCount * 0.03;
+            }
+            if (b > 8) {
+                // 9-12 四天王：每個 5% (最多 20%)
+                const eliteCount = Math.min(b - 8, 4);
+                totalBuff += eliteCount * 0.05;
+            }
+            // 注意：進度為 12 時，總計是 24% + 20% = 44%
+            // 當擊敗第 13 位(冠軍)時，會直接跳到上面 if 的 50%
+        }
+    });
+
+    // 上限設定：例如有四個地區全通關，加成就是 200% (時間縮短非常多)
+    return totalBuff; 
+}
+
+/* --- 地區切換分頁 UI --- */
+function renderRegionTabs() {
+    // 安全檢查：確保資料存在，避免報錯
+    if (!s.farm || !s.farm.regionProg) return "";
+
+    const prog = s.farm.regionProg;
+    const unlocked = prog.unlockedRegions || ["Kanto"]; // 已解鎖的地區
+    const currentView = prog.currentView || "Kanto";   // 目前選中的地區
+
+    return `
+        <div style="display:flex; justify-content:center; gap:8px; margin:15px 0; overflow-x:auto; padding:5px; -webkit-overflow-scrolling:touch;">
+            ${unlocked.map(rid => {
+                const data = WORLD_DATA[rid];
+                if (!data) return ""; // 預防資料庫沒這個地區
+                
+                const isActive = (currentView === rid);
+                
+                return `
+                    <div onclick="s.farm.regionProg.currentView='${rid}'; renderGarden();" 
+                        style="
+                            padding:6px 15px; 
+                            border-radius:20px; 
+                            font-size:13px; 
+                            cursor:pointer; 
+                            white-space:nowrap;
+                            transition: all 0.2s;
+                            background: ${isActive ? data.color : '#eee'};
+                            color: ${isActive ? 'white' : '#666'};
+                            border: 1px solid ${isActive ? 'transparent' : '#ccc'};
+                            font-weight: ${isActive ? 'bold' : 'normal'};
+                            box-shadow: ${isActive ? '0 2px 5px rgba(0,0,0,0.2)' : 'none'};
+                        ">
+                        ${data.icon} ${data.name}
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+}
+
+function renderGarden() {
+    // 1. 初始化與數據校驗
+    initFarmProgress(); 
+    if (typeof initExtendedFarm === 'function') initExtendedFarm(); // 確保多線程存檔結構存在
+    
+    const f = s.farm;
+    const prog = f.regionProg;
+    const rid = prog.currentView || "Kanto";
+    const curData = WORLD_DATA[rid];
+    const curStats = prog.stats[rid];
+    const beaten = curStats.gymsBeaten;
+    const partnerId = s.buddyId || 25;
+
+    // 2. 建立 Overlay 外殼
+    let overlay = document.getElementById('garden-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'garden-overlay';
+        overlay.style = "position:fixed; top:0; left:0; width:100%; height:100%; z-index:9999; overflow-y:auto; font-family:sans-serif; text-align:center; background:#f8f9fa;";
+        document.body.appendChild(overlay);
+    }
+
+    // 3. 計算進度
+    if (f.feedCount === undefined) f.feedCount = 0;
+    const progressPercent = (f.feedCount / 5) * 100;
+    const starterNames = curData.starters.map(n => n.includes(' ') ? n.split(' ')[1] : n);
+    const starterIds = curData.starterIds || [1, 7, 4];
+
+    // 4. 渲染主內容
+    overlay.innerHTML = `
+        <div style="padding:20px; max-width:500px; margin:auto; padding-bottom:100px; background:linear-gradient(180deg, ${curData.color}15 0%, #f8f9fa 300px);">
+            <button onclick="document.getElementById('garden-overlay').remove(); if(window.updateUI) updateUI();" 
+                style="float:left; padding:8px 15px; border-radius:10px; border:none; background:#333; color:white; cursor:pointer;">⬅ 返回</button>
+            <h2 style="margin:10px 0;">🌳 秘密花園</h2>
+            
+            ${renderRegionTabs()}
+
+            <div style="background:white; border-radius:15px; padding:10px; margin-bottom:10px; box-shadow:0 2px 5px rgba(0,0,0,0.05);">
+                <b>❤️ 親密度 Lv.${Math.floor(f.friendship/100)}</b>
+                <div style="width:100%; background:#eee; height:10px; border-radius:5px; margin-top:5px; margin-bottom:10px;">
+                    <div style="width:${f.friendship%100}%; background:#ff5252; height:100%; border-radius:5px;"></div>
+                </div>
+                <div style="font-size: 13px; color: #666;">⏱️ 下次巡邏：<span style="font-weight:bold; color:#2ecc71;">${getPatrolTimeStr()}</span></div>
+            </div>
+
+            <div style="background:white; border-radius:15px; padding:12px; margin-bottom:15px; box-shadow:0 2px 5px rgba(0,0,0,0.05); border: 1px solid #ffe0b2;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <span style="font-size:14px; font-weight:bold; color:#e67e22;">✨ 驚喜邂逅進度</span>
+                    <span style="font-size:12px; color:#e67e22;">${f.feedCount} / 5</span>
+                </div>
+                <div style="width:100%; background:#eee; height:12px; border-radius:6px; overflow:hidden;">
+                    <div style="width:${progressPercent}%; background:linear-gradient(90deg, #f1c40f, #ff9800); height:100%;"></div>
+                </div>
+            </div>
+
+            <div style="background:white; border-radius:20px; padding:15px; margin-bottom:20px; box-shadow:0 4px 15px rgba(0,0,0,0.05); border:2px solid ${curData.color};">
+                ${renderChallengeSection(rid, curStats)}
+                <hr style="border:0; border-top:1px dashed #ddd; margin:15px 0;">
+                <div style="display:flex; justify-content:space-between;">
+                    ${renderWorker(`${rid}_w1`, starterIds[0], ['🌾', '🥗'], starterNames[0])}
+                    ${renderWorker(`${rid}_w2`, starterIds[1], ['🐟', '🦐'], starterNames[1])}
+                    ${renderWorker(`${rid}_w3`, starterIds[2], ['🥩', '🥚'], starterNames[2])}
+                </div>
+            </div>
+
+            <div style="background:white; border-radius:20px; padding:15px; box-shadow:0 4px 15px rgba(0,0,0,0.05); margin-bottom:20px;">
+                <img src="${GARDEN.getGif(25)}" style="width:50px; image-rendering:pixelated;">
+                <h4 style="margin:5px 0;">皮卡丘主廚團隊</h4>
+                ${renderCookingLines()}
+            </div>
+
+           <div style="display:flex; gap:10px; justify-content:center; margin:15px 0;">
+        
+        <div style="flex:1; background:#fff3e0; border-radius:20px; padding:15px; border:2px solid #ffe0b2; text-align:center;">
+            <div style="font-size:11px; color:#e65100; font-weight:bold; margin-bottom:5px;">🏠 夥伴餵食</div>
+            <img src="${GARDEN.getGif(partnerId)}" style="width:60px; height:60px; image-rendering:pixelated;">
+            <p style="font-size:13px; margin:8px 0;">想吃：<b>${GARDEN.recipes[f.quest]?.icon || '❓'}</b></p>
+            <button onclick="submitQuest()" style="background:#e65100; color:white; border:none; padding:8px 15px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:12px; width:100%;">餵食夥伴</button>
+            <div style="font-size:10px; color:#a0522d; margin-top:5px;">進度：${f.feedCount}/${f.maxFeed || 5}</div>
+        </div>
+
+        <div style="flex:1; background:#fffde7; border-radius:20px; padding:15px; border:2px solid #fff59d; text-align:center;">
+            <div style="font-size:11px; color:#f57f17; font-weight:bold; margin-bottom:5px;">🌟 管家基拉祈</div>
+            <img src="${GARDEN.getGif(385)}" style="width:60px; height:60px; image-rendering:pixelated;">
+            <p style="font-size:13px; margin:8px 0;">想吃：<b>${GARDEN.recipes[f.quest_jirachi || '🌾🐟🥩']?.icon || '❓'}</b></p>
+            <button onclick="wishStar()" style="background:#fbc02d; color:#5d4037; border:none; padding:8px 15px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:12px; width:100%;">願望星碎</button>
+            <div style="font-size:10px; color:#f57f17; margin-top:5px;">
+                ${f.lastWishDate === new Date().toLocaleDateString() ? '💤 沉睡中' : '✨ 今日可用'}
+            </div>
+        </div>
+
+    </div>
+
+            <div style="margin-top: 30px; display: flex; justify-content: center; gap: 15px;">
+                <button onclick="toggleGardenModal('farm-inv')" style="background: #795548; color: white; padding: 12px 20px; border: none; border-radius: 8px; flex: 1; cursor:pointer;">📦 儲存箱</button>
+                <button onclick="toggleGardenModal('recipe-book')" style="background: #e67e22; color: white; padding: 12px 20px; border: none; border-radius: 8px; flex: 1; cursor:pointer;">📜 食譜圖鑑</button>
+            </div>
+        </div>
+
+        
+        <div id="farm-inv-modal" class="garden-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:85%; max-width:350px; background:white; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.3); z-index:10001; padding:20px;">
+            <h3 style="margin:0 0 15px 0; color:#5d4037; text-align:center;">🧺 素材儲存箱</h3>
+            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;">
+                ${Object.entries(f.inv).map(([emoji, count]) => `
+                    <div onclick="autoFillSlot('${emoji}'); toggleGardenModal('farm-inv');" style="padding:10px; background:#f9f9f9; border-radius:12px; cursor:pointer; border:1px solid #eee; text-align:center;">
+                        <div style="font-size:28px;">${emoji}</div>
+                        <div style="font-size:14px; font-weight:bold; color:#333;">x${count}</div>
+                    </div>
+                `).join('')}
+            </div>
+            <button onclick="closeAllGardenModals()" style="margin-top:20px; width:100%; padding:10px; border:none; background:#eee; border-radius:10px; cursor:pointer; font-weight:bold;">關閉</button>
+        </div>
+
+        <div id="recipe-book-modal" class="garden-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:90%; max-width:380px; max-height:70vh; overflow-y:auto; background:white; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.3); z-index:10001; padding:20px;">
+            <h3 style="margin:0 0 15px 0; color:#e65100; text-align:center;">📜 料理圖鑑</h3>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                ${Object.entries(GARDEN.recipes).map(([formula, data]) => {
+                    const isKnown = s.farm.knownRecipes.includes(formula);
+                    const count = s.farm.dishes[data.icon] || 0;
+                    const ing = [...formula]; 
+                    return `
+                        <div style="display:flex; align-items:center; justify-content:space-between; background:${isKnown ? '#fff3e0' : '#f5f5f5'}; padding:10px; border-radius:12px; border:1px solid ${isKnown ? '#ffe0b2' : '#ddd'};">
+                            <div style="display:flex; align-items:center; gap:3px; font-size:16px;">
+                                <span>${isKnown?ing[0]:'❓'}</span>+<span>${isKnown?ing[1]:'❓'}</span>+<span>${isKnown?ing[2]:'❓'}</span>=<span>${isKnown?data.icon:'❔'}</span>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-size:12px; font-weight:bold; color:${isKnown?'#e65100':'#999'};">${isKnown?data.name:'未知料理'}</div>
+                                <div style="font-size:11px; color:#666;">持有: ${count}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+            <button onclick="closeAllGardenModals()" style="margin-top:20px; width:100%; padding:10px; border:none; background:#eee; border-radius:10px; cursor:pointer; font-weight:bold;">關閉</button>
+        </div>
+
+        <div id="garden-modal-overlay" onclick="closeAllGardenModals()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10000;"></div>
+    `;
+}
+
+function renderChallengeSection(rid, curStats) {
+    const data = WORLD_DATA[rid];
+    const beaten = curStats.gymsBeaten || 0;
+    const isCompleted = beaten >= 13;
+    const regionColor = data.color || "#ffcb05";
+
+    // --- 1. 【最上方】質感圓點徽章盒 (4x2) ---
+    let badgesHtml = `
+    <div style="background: #2a2a2a; border: 3px inset #444; border-radius: 12px; padding: 12px; margin-bottom: 15px; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">`;
+
+    for (let i = 0; i < 8; i++) {
+        const isWon = beaten > i;
+        badgesHtml += `
+    <div style="
+        width: 32px; height: 32px; border-radius: 50%; 
+        background: ${isWon ? `radial-gradient(circle at 30% 30%, #fff 0%, ${regionColor} 20%, ${regionColor} 50%, #000 55%, ${regionColor} 60%, #000 100%)` : '#1a1a1a'};
+        border: 2px solid ${isWon ? '#fff' : '#444'};
+        box-shadow: ${isWon ? `0 0 8px ${regionColor}, inset -2px -2px 5px rgba(0,0,0,0.5)` : 'inset 2px 2px 5px rgba(0,0,0,0.8)'};
+        display: flex; align-items: center; justify-content: center;">
+    </div>`;
+    }
+    badgesHtml += '</div>';
+
+    // 天王進度 (5個星星)
+    badgesHtml += `<div style="display: flex; justify-content: center; gap: 8px; margin-top: 10px; padding-top: 8px; border-top: 1px dashed #555;">`;
+    for (let i = 8; i < 13; i++) {
+        const isWon = beaten > i;
+        badgesHtml += `<div style="font-size: 16px; color: ${isWon ? '#ffeb3b' : '#444'}; text-shadow: ${isWon ? '0 0 5px #fff' : 'none'};">★</div>`;
+    }
+    badgesHtml += '</div></div>';
+
+    // --- 2. 處理通關或挑戰狀態 ---
+    if (isCompleted) {
+        return `
+            <div style="text-align:center;">
+                ${badgesHtml}
+                <h3 style="color:${regionColor}; margin:10px 0 0 0;">🏆 ${data.name} 殿堂元勳</h3>
+            </div>`;
+    }
+
+    const target = data.challengers[beaten];
+    
+    // --- 3. 組合最終 HTML (徽章 -> 名字/語錄 -> 按鈕) ---
+    return `
+        <div style="text-align:center; padding: 5px;">
+            ${badgesHtml}
+
+            <div style="margin: 10px 0;">
+                <div style="font-size:11px; color:#888; letter-spacing:1px; margin-bottom:4px;">NEXT CHALLENGER (${beaten}/13)</div>
+                <div style="font-size:22px; font-weight:bold; color:#333;">${target.name}</div>
+                <div style="color:${regionColor}; font-size:14px; font-style:italic; margin-top:6px; min-height:40px; display:flex; align-items:center; justify-content:center; padding:0 10px;">
+                    「 ${target.taunt} 」
+                </div>
+            </div>
+
+            <button onclick="executeChallenge('${rid}', ${beaten})" style="
+                margin-top:5px; padding:15px; border-radius:25px; border:none; 
+                background:${regionColor}; color:white; font-weight:bold; font-size:16px;
+                cursor:pointer; width:100%; box-shadow:0 4px 0 rgba(0,0,0,0.2);
+                transition: transform 0.1s;
+            " onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
+                進行挑戰：${target.badge}
+            </button>
+        </div>
+    `;
+}
+
+/* --- 萬用挑戰邏輯：一套公式處理所有地區 --- */
+function executeChallenge(regionId, beatenCount) {
+    const f = s.farm;
+    const knownCount = f.knownRecipes.length;
+    
+    // 1. 門檻檢查：必須解鎖 8 種以上食譜
+    if (knownCount < 8) {
+        alert(`❌ 實力不足！你需要研發出至少 8 種食譜才能開始挑戰。（目前：${knownCount}/8）`);
+        return;
+    }
+
+    // 2. 判定目前的消耗規則
+    let cost = {}; // 用來記錄要扣掉哪些料理與數量
+    
+    if (beatenCount < 8) {
+        // --- 道館階段：任意料理 * 10 ---
+        // 找到玩家身上總數最多的那種料理來扣
+        const bestDish = Object.entries(f.dishes).find(([name, count]) => count >= 10);
+        if (!bestDish) {
+            alert("❌ 挑戰失敗！你需要至少 10 個相同的料理作為門票。");
+            return;
+        }
+        cost[bestDish[0]] = 10;
+
+    } else {
+        // --- 四天王 (8-11) 或 冠軍 (12) 階段 ---
+        const requiredCount = (beatenCount < 12) ? 5 : 8; // 四天王 5 種, 冠軍 8 種
+        
+        // 篩選出目前玩家身上持有的料理種類
+        const availableDishes = Object.entries(f.dishes)
+            .filter(([name, count]) => count >= 1)
+            .map(([name]) => name);
+
+        if (availableDishes.length < requiredCount) {
+            alert(`❌ 挑戰失敗！你需要準備 ${requiredCount} 種不同的料理各 1 個。（目前持有：${availableDishes.length} 種）`);
+            return;
+        }
+
+        // 從持有的料理中隨機抽取指定數量
+        const selected = availableDishes.sort(() => 0.5 - Math.random()).slice(0, requiredCount);
+        selected.forEach(name => cost[name] = 1);
+    }
+
+    // 3. 執行扣除並更新進度
+    const confirmMsg = beatenCount < 12 ? `準備好挑戰 ${WORLD_DATA[regionId].challengers[beatenCount].name} 了嗎？` : "這就是最後的冠軍戰了！準備好了嗎？";
+    
+    if (confirm(confirmMsg)) {
+        // 扣除料理
+        for (let [dishName, amount] of Object.entries(cost)) {
+            f.dishes[dishName] -= amount;
+        }
+
+        // 增加進度
+        s.farm.regionProg.stats[regionId].gymsBeaten += 1;
+        
+        // 檢查是否擊敗冠軍
+        if (s.farm.regionProg.stats[regionId].gymsBeaten === 13) {
+            s.farm.regionProg.stats[regionId].isChampion = true;
+            // 如果通關，可以自動開啟下一個地區的解鎖權限（例如自動開啟城都）
+            unlockNextRegion(regionId);
+            alert(`🎊 太強了！你擊敗了冠軍，成為 ${WORLD_DATA[regionId].name} 地區的新傳說！\n採集與烹飪位已獲得全面提升！`);
+        } else {
+            alert(`🎉 成功擊敗 ${WORLD_DATA[regionId].challengers[beatenCount].name}！\n獲得了 ${WORLD_DATA[regionId].challengers[beatenCount].badge}！`);
+        }
+
+        // 重新渲染畫面
+        renderGarden();
+    }
+}
+
+/* 輔助函式：自動解鎖下一個邏輯 */
+function unlockNextRegion(currentId) {
+    const regions = Object.keys(WORLD_DATA);
+    const currentIndex = regions.indexOf(currentId);
+    if (currentIndex !== -1 && currentIndex < regions.length - 1) {
+        const nextId = regions[currentIndex + 1];
+        if (!s.farm.regionProg.unlockedRegions.includes(nextId)) {
+            s.farm.regionProg.unlockedRegions.push(nextId);
+        }
+    }
+}
+
+/* --- 擴充初始化：確保多地區與多料理線結構 --- */
+function initExtendedFarm() {
+    if (!s.farm.prod) s.farm.prod = {};
+    
+    // 每個地區固定 3 個工人位 (例如: Kanto_w1, Kanto_w2, Kanto_w3)
+    Object.keys(WORLD_DATA).forEach(rid => {
+        for (let i = 1; i <= 3; i++) {
+            const key = `${rid}_w${i}`;
+            if (!s.farm.prod[key]) s.farm.prod[key] = { type: null, end: 0 };
+        }
+    });
+
+    // 4 條獨立料理線 (cook_0 到 cook_3)
+    for (let i = 0; i < 4; i++) {
+        const key = `cook_${i}`;
+        if (!s.farm.prod[key]) s.farm.prod[key] = { type: null, end: 0, slots: [null, null, null] };
+    }
+}
+// 每秒更新一次後花園內的計時器文字
+setInterval(() => {
+    const timerEl = document.getElementById('patrol-timer');
+    if (timerEl) {
+        timerEl.innerText = getPatrolTimeStr();
+    }
+}, 1000);
+
+// 計算時間的輔助函式
+function getPatrolTimeStr() {
+    if (!s.farm) return "計算中...";
+    const nextLoot = s.farm.lastLootTime + 21600000; // 6小時
+    const diff = nextLoot - Date.now();
+    
+    if (diff <= 0) return "🎁 獎勵準備就緒！";
+    
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const sec = Math.floor((diff % 60000) / 1000);
+    
+    // 補零讓時間格式更整齊 (例如 05:09:01)
+    return `${h}h ${String(m).padStart(2, '0')}m ${String(sec).padStart(2, '0')}s`;
+}
+
+function renderCookingLines() {
+    const completedCount = Object.values(s.farm.regionProg.stats).filter(stat => stat.gymsBeaten >= 13).length;
+    let html = '';
+
+    for (let i = 0; i < 4; i++) {
+        const isUnlocked = (i === 0 || i <= completedCount);
+        const p = s.farm.prod[`cook_${i}`];
+        const isBusy = p.end > Date.now();
+        const isDone = p.end !== 0 && !isBusy;
+
+        // 定義每一格的循環選項
+        const slotOptions = [
+            ['🌾', '🥗'], // 第一格：草屬
+            ['🐟', '🦐'], // 第二格：水屬
+            ['🥩', '🥚']  // 第三格：火屬
+        ];
+
+        html += `
+            <div style="margin:10px 0; padding:10px; background:${isUnlocked ? '#fff9f0' : '#f5f5f5'}; border-radius:12px; border:1px solid ${isUnlocked ? '#ffe0b2' : '#ddd'};">
+                <div style="font-size:11px; color:#e67e22; margin-bottom:5px; text-align:left;">料理 #${i+1}</div>
+                ${isUnlocked ? `
+                    <div style="display:flex; justify-content:center; gap:8px;">
+                        ${p.slots.map((slt, sIdx) => `
+                            <div onclick="${isBusy ? '' : `cycleSlot(${i}, ${sIdx})`}" 
+                                 style="width:45px; height:45px; background:white; border:2px dashed ${sIdx==0?'#4caf50':sIdx==1?'#2196f3':'#f44336'}; border-radius:10px; line-height:45px; font-size:24px; cursor:pointer;">
+                                 ${slt || '？'}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="margin-top:10px;">
+                        ${isDone ? `<button onclick="collectDish(${i})" style="background:#ff9800; color:white; border:none; padding:8px 20px; border-radius:10px; cursor:pointer; font-weight:bold;">完成領取</button>` :
+                          isBusy ? `<span style="font-size:13px; color:#666; font-weight:bold;">⏳ ${GARDEN.getTimeStr(p.end)}</span>` :
+                          `<button onclick="startCook(${i})" style="background:#4caf50; color:white; border:none; padding:8px 20px; border-radius:10px; cursor:pointer; font-weight:bold;">開始烹飪</button>`}
+                    </div>
+                ` : `<div style="font-size:12px; color:#999; padding:15px;">🔒 尚未解鎖 (需通關前一地區)</div>`}
+            </div>
+        `;
+    }
+    return html;
+}
+
+/* --- 生產、料理與餵食控制 --- */
+
+function renderWorker(key, id, opts, name) {
+    if (!s.farm.prod[key]) s.farm.prod[key] = { type: null, end: 0 };
+    const p = s.farm.prod[key];
+    const isDone = p.end !== 0 && p.end <= Date.now();
+    const isBusy = p.end > Date.now();
+
+    return `
+    <div style="width:30%; text-align:center; display:flex; flex-direction:column; align-items:center;">
+        <div style="font-size:10px; color:#666; margin-bottom:4px; font-weight:bold;">${name}</div>
+        
+        <div style="
+            width: 55px; height: 55px; 
+            background: radial-gradient(circle, #fff 0%, #f0f0f0 100%); 
+            border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 5px;
+        ">
+            <img src="${GARDEN.getGif(id)}" style="
+                width: 42px; 
+                height: 42px; 
+                object-fit: contain; /* 關鍵：確保圖片比例正常，不壓扁 */
+                image-rendering: pixelated; 
+                ${isBusy ? 'filter:grayscale(0.8); opacity:0.6' : ''}
+            ">
+        </div>
+
+        <div style="margin-top:2px; width:100%;">
+            ${isDone ? 
+                `<button onclick="collectFarm('${key}')" style="background:#ffd700; border:none; border-radius:8px; font-size:10px; padding:6px 0; cursor:pointer; font-weight:bold; width:100%; box-shadow:0 2px 0 #b89b00;">領取</button>` : 
+              isBusy ? 
+                `<div style="font-size:10px; color:#777; font-weight:bold; background:#eee; border-radius:10px; padding:2px 0;">${GARDEN.getTimeStr(p.end)}</div>` : 
+                `<div style="display:flex; gap:3px; justify-content:center;">
+                    <button onclick="startFarm('${key}','${opts[0]}')" style="flex:1; padding:4px 0; border-radius:6px; border:1px solid #ddd; background:white; cursor:pointer; font-size:12px; font-family:inherit;">${opts[0]}</button>
+                    <button onclick="startFarm('${key}','${opts[1]}')" style="flex:1; padding:4px 0; border-radius:6px; border:1px solid #ddd; background:white; cursor:pointer; font-size:12px; font-family:inherit;">${opts[1]}</button>
+                </div>`}
+        </div>
+    </div>`;
+}
+
+// 2. 開始生產 (基礎 4 小時，隨道館進度縮短)
+function startFarm(pk, type) {
+    // 預防重疊點擊
+    if(s.farm.prod[pk].end > Date.now()) return;
+
+    const baseTime = 14400000; // 原本的 4 * 60 * 60 * 1000
+    
+    // 計算加速：打贏越多道館，時間越短
+    // 假設 buff 為 0.1 (10%)，時間會變成 4 * 0.9 = 3.6 小時
+    const buff = typeof getGlobalSpeedBuff === 'function' ? getGlobalSpeedBuff() : 0;
+    const actualWaitTime = baseTime * (1 - buff);
+
+    s.farm.prod[pk].type = type;
+    s.farm.prod[pk].end = Date.now() + actualWaitTime;
+
+    renderGarden();
+    
+    // 確保存檔
+    if(typeof saveGameData === 'function') saveGameData();
+}
+
+// 3. 領取素材 (保持原本邏輯，確保安全性)
+function collectFarm(pk) {
+    const p = s.farm.prod[pk];
+    
+    // 安全檢查：時間還沒到或沒在生產就跳出
+    if(p.end > Date.now() || p.end === 0) return;
+
+    // 領取獎勵：保持原本的 inv 邏輯
+    const type = p.type;
+    s.farm.inv[type] = (s.farm.inv[type] || 0) + 1;
+
+    // 重置狀態
+    p.type = null;
+    p.end = 0;
+
+    renderGarden();
+
+    // 確保存檔
+    if(typeof saveGameData === 'function') saveGameData();
+    
+    // 提示玩家
+    console.log(`[Farm] 成功領取了 ${type}！`);
+}
+
+// 4. 皮卡丘料理槽點擊 (手動選擇)
+// 紀錄當前正在操作哪一條線、哪一個格子
+let currentEditingLine = 0;
+let currentEditingSlot = 0;
+
+function cycleSlot(lineIdx, slotIdx) {
+    const p = s.farm.prod[`cook_${lineIdx}`];
+    // 固定的屬性清單
+    const options = [
+        ['🌾', '🥗'], // 第一格：草
+        ['🐟', '🦐'], // 第二格：水
+        ['🥩', '🥚']  // 第三格：火
+    ];
+    
+    const possible = options[slotIdx];
+    const current = p.slots[slotIdx];
+
+    // 如果當前是第一個選項就換第二個，否則換第一個
+    p.slots[slotIdx] = (current === possible[0]) ? possible[1] : possible[0];
+
+    renderGarden(); 
+    console.log(`線路 ${lineIdx} 第 ${slotIdx} 格已切換為: ${p.slots[slotIdx]}`);
+}
+
+function setCookSlot(lineIdx, slotIdx) {
+    currentEditingLine = lineIdx;
+    currentEditingSlot = slotIdx;
+    
+    // 開啟儲存箱 Modal
+    toggleGardenModal('farm-inv');
+}
+
+// 5. 倉庫快速填充邏輯
+function autoFillSlot(emoji) {
+    const f = s.farm;
+    const lineKey = `cook_${currentEditingLine}`;
+    
+    // 僅純粹顯示在格子上，不扣庫存
+    f.prod[lineKey].slots[currentEditingSlot] = emoji;
+
+    closeAllGardenModals();
+    renderGarden();
+}
+
+function startCook(i) {
+    const p = s.farm.prod[`cook_${i}`];
+    
+    // 檢查三格是否都有選東西 (非 null 或 ？)
+    if (p.slots.some(s => s === null)) return alert("請放滿三種材料！");
+    
+    const [s1, s2, s3] = p.slots;
+    
+    // 原版扣除判定
+    if (s.farm.inv[s1] > 0 && s.farm.inv[s2] > 0 && s.farm.inv[s3] > 0) {
+        s.farm.inv[s1]--;
+        s.farm.inv[s2]--;
+        s.farm.inv[s3]--;
+        
+        p.end = Date.now() + 3600000; // 1小時
+        
+        renderGarden();
+        if(typeof saveGameData === 'function') saveGameData();
+    } else {
+        alert("材料不足，快去生產吧！");
+    }
+}
+
+function collectDish(lineIdx) {
+    const f = s.farm;
+    const lineKey = `cook_${lineIdx}`;
+    const p = f.prod[lineKey];
+    
+    // 取得格子內容
+    const s1 = p.slots[0]; // 草
+    const s2 = p.slots[1]; // 水
+    const s3 = p.slots[2]; // 火
+
+    // 強制按照你菜單的「草水火」順序組合字串，確保 100% 匹配
+    const formula = s1 + s2 + s3;
+    const dish = GARDEN.recipes[formula];
+
+    if (dish) {
+        // 1. 10% 機率出兩份
+        const isDouble = Math.random() < 0.1;
+        const amount = isDouble ? 2 : 1;
+
+        // 2. 增加料理庫存
+        f.dishes[dish.icon] = (f.dishes[dish.icon] || 0) + amount;
+        
+        // 3. 紀錄到已知食譜
+        if (!f.knownRecipes.includes(formula)) {
+            f.knownRecipes.push(formula);
+        }
+
+        // 4. 增加邂逅進度 (1/5)
+        if (f.feedCount === undefined) f.feedCount = 0;
+        f.feedCount = Math.min(5, f.feedCount + 1);
+
+        // 5. 提示訊息 (拿掉飯糰，只顯示你的料理)
+        let msg = isDouble ? `✨ 雙倍驚喜！獲得了 2 份 ${dish.icon} ${dish.name}！` : `😋 獲得了 ${dish.icon} ${dish.name}！`;
+        if (f.feedCount >= 5) msg += `\n💖 驚喜邂逅已準備就緒！`;
+        alert(msg);
+    }
+
+    // --- 重置線路狀態 ---
+    p.end = 0; 
+    
+    renderGarden();
+    if (typeof saveGameData === 'function') saveGameData();
+}
+
+// 8. 餵食夥伴 (親密度增加)
+function submitQuest() {
+    const f = s.farm;
+    const targetFormula = f.quest;
+    const recipe = GARDEN.recipes[targetFormula];
+
+    if (!recipe) return;
+
+    if (f.dishes[recipe.icon] > 0) {
+        // 扣除料理、增加親密度、增加邂逅進度
+        f.dishes[recipe.icon]--;
+        f.friendship += 20; 
+        f.feedCount++;
+
+        // 判斷是否滿 5 次，觸發必閃戰鬥
+        if (f.feedCount >= (f.maxFeed || 5)) {
+            f.feedCount = 0;
+            alert("✨ 夥伴感受到了極大的誠意！一場特殊的邂逅開始了！");
+            const partnerId = s.buddyId || 25;
+            executeClaimGift('GARDEN_BONUS', partnerId, true);
+            const overlay = document.getElementById('garden-overlay');
+            if (overlay) overlay.remove();
+            return;
+        }
+
+        // 更換隨機任務（必不重複）
+        const keys = Object.keys(GARDEN.recipes);
+        let nextQuest = targetFormula;
+        if (keys.length > 1) {
+            while (nextQuest === targetFormula) {
+                nextQuest = keys[Math.floor(Math.random() * keys.length)];
+            }
+        }
+        f.quest = nextQuest;
+
+        alert(`❤️ 餵食成功！夥伴進度：${f.feedCount}/${f.maxFeed || 5}`);
+        renderGarden();
+        if(typeof updateUI === 'function') updateUI();
+        if(typeof saveGameData === 'function') saveGameData();
+    } else {
+        alert(`你需要 ${recipe.icon} ${recipe.name} 才能餵食夥伴喔！`);
+    }
+}
+
+function wishStar() {
+    const f = s.farm;
+    const today = new Date().toLocaleDateString();
+    
+    // 每日限一次檢查
+    if (f.lastWishDate === today) return alert("🌟 基拉祈正在沉睡... 明天再試吧！");
+
+    // 取得基拉祈想吃的料理 (設定為獨立於夥伴的 quest_jirachi)
+    const targetFormula = f.quest_jirachi || Object.keys(GARDEN.recipes)[0];
+    const recipe = GARDEN.recipes[targetFormula];
+
+    if (f.dishes[recipe.icon] > 0) {
+        if (!confirm(`是否消耗 ${recipe.icon} 向管家基拉祈許願發動【願望星碎】？\n(將瞬間完成全地區素材採集)`)) return;
+
+        f.dishes[recipe.icon]--;
+        f.lastWishDate = today;
+
+        // 【願望星碎】核心邏輯
+        Object.keys(f.prod).forEach(key => {
+            if (key.includes('_w')) {
+                const worker = f.prod[key];
+                if (worker.type) {
+                    const isLucky = Math.random() < 0.2;
+                    f.inv[worker.type] = (f.inv[worker.type] || 0) + (isLucky ? 2 : 1);
+                    worker.end = 0;
+                }
+            }
+        });
+
+        // 刷新基拉祈下一次想吃的料理
+        const keys = Object.keys(GARDEN.recipes);
+        f.quest_jirachi = keys[Math.floor(Math.random() * keys.length)];
+
+        alert(`🌠 願望實現了！全地區素材已瞬移至儲存箱！`);
+        renderGarden();
+        if(typeof saveGameData === 'function') saveGameData();
+    } else {
+        alert(`管家基拉祈想吃 ${recipe.icon} ${recipe.name}，目前庫存不足！`);
+    }
+}
+
+// 9. 方框控制函式
+function toggleGardenModal(type) {
+    const modal = document.getElementById(type + '-modal');
+    const overlay = document.getElementById('garden-modal-overlay');
+    closeAllGardenModals();
+    if (modal && overlay) {
+        modal.style.display = 'block';
+        overlay.style.display = 'block';
+    }
+}
+
+function closeAllGardenModals() {
+    document.querySelectorAll('.garden-modal').forEach(m => m.style.display = 'none');
+    const overlay = document.getElementById('garden-modal-overlay');
+    if (overlay) overlay.style.display = 'none';
+}
+
+
+// --- [ 初始化與存檔讀取 ] ---
+window.onload = () => {
+    // 1. 讀取存檔
+    const saved = localStorage.getItem('pokemaster_v60');
+    if(saved) {
+        const loaded = JSON.parse(saved);
+        s = { ...s, ...loaded }; 
+    }
+
+    // 2. 確保關鍵變數存在（補丁防線）
+    s.claimedGifts = s.claimedGifts || [];
+    s.dailyWild = s.dailyWild || { claimed: false, lastDate: "" };
+    if (!s.tasks) s.tasks = { claimed: [], dailyDate: "", weeklyDate: "" };
+
+    // 3. 執行重置檢查 (要在畫 UI 之前)
+    if (typeof checkTaskReset === 'function') checkTaskReset();
+
+    // 4. 設定 HTML 表單預設值
+    const recDateEl = document.getElementById('recDate');
+    const chartPickerEl = document.getElementById('chartMonthPicker');
+    if (recDateEl) recDateEl.valueAsDate = new Date();
+    if (chartPickerEl) chartPickerEl.value = new Date().toISOString().substring(0, 7);
+    
+    // 5. 更新所有按鈕與 UI
+    // 🔴 請確認你的解鎖函式到底叫哪個名稱，建議兩者都跑一次確保萬無一失
+    if (typeof updateGiftButtons === 'function') updateGiftButtons();
+    if (typeof lockClaimedGifts === 'function') lockClaimedGifts(); 
+
+    updateUI();
+    if (typeof renderTasks === 'function') renderTasks();
+    if (typeof initCarrier === 'function') initCarrier(); 
+
+    // 6. 啟動計時器
+    setInterval(tickMega, 1000);
+    
+    console.log("🚀 PokeMaster 啟動成功！當前狀態：", s);
+
+    showAnnouncement();
+};
+
+// 在你的全域變數 s 中加入 s.selectedBadge = null;
+
+const BADGE_DATA = {
+    kanto:  { id: 1, req: [25, 150, 151], name: "關都始源" },
+    johto:  { id: 2, req: [149, 249, 250], name: "城都龍魂" },
+    hoenn:  { id: 3, req: [382, 383, 384, 376], name: "豐緣隕石" },
+    sinnoh: { id: 4, req: [484, 483, 487, 445], name: "神奧神話" },
+    
+    // --- 新增擴充勳章 ---
+    arceus:     { id: 5,  req: [493], name: "創世神話：始源之光的萬物之主" },
+    palkia:     { id: 6,  req: [484], name: "空間裂縫：虛空維度的編織者" },
+    dialga:     { id: 7,  req: [483], name: "時光鐘塔：永恆刻度的守望者" },
+    giratina:   { id: 8,  req: [487], name: "幽冥之主：反轉維度的交響" },
+    rayquaza_s: { id: 9,  req: [384], name: "蒼穹斷章：終焉的黑閃光" },
+    birds:      { id: 10, req: [144, 145, 146], name: "天際霸主：極限屬性的共鳴" },
+    jirachi:    { id: 11, req: [385], name: "千年之約：星海間的許願星" },
+    latios_as:  { id: 12, req: [380, 381], name: "心靈羈絆：靈魂水滴的守護詩" },
+    beasts:     { id: 13, req: [243, 244, 245], name: "大地之魂：聖灰中的奔放力量" },
+    mew_mewtwo: { id: 14, req: [150, 151], name: "遺傳之謎：始源與超越的碰撞" },
+    ho_oh:      { id: 15, req: [250], name: "天際神諭：神聖火與鈴鐺塔" },
+    lugia:      { id: 16, req: [249], name: "深海霸權：旋渦島的鎮魂曲" },
+    dreams:     { id: 17, req: [488, 491], name: "夢境雙生：新月與噩夢的交織" },
+    groudon_p:  { id: 18, req: [383], name: "斷崖之劍：熔岩大地的覺醒" },
+    kyogre_p:   { id: 19, req: [382], name: "根源波動：始源之海的咆哮" },
+    regigigas:  { id: 20, req: [486, 377, 378, 379], name: "永恆遺產：拖動大陸的巨人" }
+};
+
+function showAnnouncement() {
+    // 1. 開發者總開關 (想關閉公告時改為 true)
+    const isMaintenance = false; 
+    if (isMaintenance) return;
+
+    // 2. 取得今日日期與玩家儲存的狀態
+    const today = new Date().toDateString();
+    const hideDate = localStorage.getItem('hide_announcement_date');
+
+    // 3. 如果玩家今天已經勾選過「不再顯示」，則不執行彈窗
+    if (hideDate === today) return;
+
+    const news = document.createElement('div');
+    news.id = 'news-overlay';
+    news.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:20000; display:flex; align-items:center; justify-content:center; font-family:sans-serif;";
+    
+    news.innerHTML = `
+        <div style="background:white; width:85%; max-width:400px; border-radius:20px; position:relative; overflow:hidden; animation: popIn 0.3s ease-out;">
+            <div onclick="closeNews()" style="position:absolute; top:10px; right:15px; font-size:24px; cursor:pointer; color:#999; font-weight:bold;">×</div>
+            
+            <div style="background:var(--p, #e67e22); padding:20px; text-align:center;">
+                <h2 style="margin:0; color:white; letter-spacing:2px;">📜 冒險者日報</h2>
+            </div>
+            
+            <div style="padding: 20px; color: #333;">
+    
+    <div style="max-height: 250px; overflow-y: auto; padding-right: 5px; margin-bottom: 15px; text-align: left; font-size: 14px; line-height: 1.6;">
+        <b style="color: #e67e22;">【系統更新內容】</b><br>
+        • 🍱 舌尖上的冠軍聯盟，與料理團隊一起攻克各個地區!<br>
+        • 👤 玩家頁面新增徽章系統，快來蒐集圖鑑，獲取最適合自己的徽章。<br>
+        • 👤 玩家頁面新增秘密花園系統！想與特殊的夥伴來一場邂逅嗎?<br>
+        • ❤️ 增加親密度系統，提高親密度有助於增加掛機獎勵的機率。<br>
+        • 🎒 調整背包配置，將進化石進度與mega石進度移至背包頁面。<br>
+        • 📖 再次遇到已捕捉過的寶可夢時，編號前方會帶有寶貝球的標記。<br>
+        • ⚙️ 隨機野怪以及每日任務的重置時間調整為午夜12點。<br>
+    </div>
+
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+
+    <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:15px; padding: 5px;">
+    <input type="checkbox" id="no-more-today" style="width:18px; height:18px; cursor:pointer; margin:0;">
+    <label for="no-more-today" style="font-size:14px; color:#666; cursor:pointer; user-select:none; padding: 5px 0;">
+        今日不再顯示此公告
+    </label>
+</div>
+
+    <button onclick="closeNews()" 
+        style="width: 100%; padding: 12px; background: #333; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer;">
+        進入遊戲
+    </button>
+            </div>
+        </div>
+        <style>
+            @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        </style>
+    `;
+    document.body.appendChild(news);
+}
+
+// 關閉公告並存檔狀態
+function closeNews() {
+    const isChecked = document.getElementById('no-more-today').checked;
+    if (isChecked) {
+        const today = new Date().toDateString();
+        localStorage.setItem('hide_announcement_date', today);
+    }
+    document.getElementById('news-overlay').remove();
+}
+
+
+function openBadgeModal() {
+    document.getElementById('badgeModal').style.display = "block";
+    const grid = document.getElementById('badge-grid');
+    grid.innerHTML = ""; // 清空重繪
+
+    // --- 新增：確保網格在不同螢幕下自動調整列數 ---
+    grid.style.display = "grid";
+    grid.style.gridTemplateColumns = "repeat(auto-fill, minmax(140px, 1fr))";
+    grid.style.gap = "15px";
+
+    Object.keys(BADGE_DATA).forEach(key => {
+        const data = BADGE_DATA[key];
+        const owned = data.req.filter(id => s.owned.includes(id));
+        const isUnlocked = owned.length === data.req.length;
+        const missingNames = data.req.filter(id => !s.owned.includes(id)).map(id => getPkmnName(id));
+
+        const slot = document.createElement('div');
+        const isActive = s.selectedBadge === data.id;
+
+        // 樣式優化：固定高度確保整齊
+        slot.style.cssText = `
+            text-align:center; 
+            padding:12px 10px; 
+            background:#252525; 
+            border-radius:12px; 
+            border:2px solid ${isActive ? 'gold' : '#444'}; 
+            box-shadow: ${isActive ? '0 0 15px rgba(255,215,0,0.3)' : 'none'};
+            cursor:pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 160px; /* 確保長名稱有足夠空間 */
+        `;
+        
+        const imgStyle = isUnlocked ? "filter:drop-shadow(0 0 5px rgba(255,215,0,0.3));" : "filter:grayscale(1) brightness(0.2); opacity:0.4;";
+        
+        // 內容優化：針對長標題限制顯示高度
+        slot.innerHTML = `
+            <img src="https://paulie0102-bear.github.io/Bear/img/mega/${data.id}.png" 
+                 style="width:75px; height:75px; object-fit:contain; image-rendering:pixelated; ${imgStyle}">
+            
+            <div style="font-size:11px; margin-top:8px; color:${isUnlocked ? 'gold' : '#666'}; 
+                        font-weight:bold; line-height:1.2; flex-grow:1; display:flex; align-items:center;">
+                ${data.name}
+            </div>
+            
+            <div style="font-size:10px; color:#888; margin-top:5px;">
+                ${owned.length} / ${data.req.length}
+            </div>
+        `;
+
+        slot.onclick = () => {
+            if (isUnlocked) {
+                selectBadge(data.id);
+                openBadgeModal(); // 點擊後重新整理，讓「選中金框」立即切換
+            } else {
+                alert(`🔴 尚未解鎖\n【${data.name}】\n————————————————\n還需要捕捉以下寶可夢：\n${missingNames.join('、')}`);
+            }
+        };
+
+        // 加上 hover 效果讓質感更好
+        slot.onmouseenter = () => { if(isUnlocked) slot.style.borderColor = "gold"; };
+        slot.onmouseleave = () => { if(!isActive) slot.style.borderColor = "#444"; };
+
+        grid.appendChild(slot);
+    });
+}
+
+function selectBadge(badgeId) {
+    s.selectedBadge = badgeId;
+    alert("配戴成功！");
+    closeBadgeModal();
+    updateUI(); // 確保主介面更新
+}
+
+function closeBadgeModal() {
+    document.getElementById('badgeModal').style.display = "none";
+}
+
+
+
+function checkTaskReset() {
+    const now = new Date();
+    const today = now.toDateString(); // 取得今天的標記 (e.g., "Thu Mar 12 2026")
+    
+    // --- [ 修正部分：使用副本計算週一 ] ---
+    const tempDate = new Date(now); 
+    const day = tempDate.getDay(); 
+    const diff = tempDate.getDate() - day + (day === 0 ? -6 : 1); 
+    // 使用 tempDate 計算，不會影響到下面每日判定用的 now
+    const mondayDate = new Date(tempDate.setDate(diff)).toDateString();
+
+    let hasChanged = false;
+
+    // 1. 每日重置判定
+    if (s.tasks.dailyDate !== today) {
+        s.tasks.dailyDate = today;
+        s.tasks.dRec = 0;   
+        s.tasks.dCatch = 0; 
+
+        // ✅ 加入建議：同步重置每日野生怪標記
+        if (s.dailyWild) {
+            s.dailyWild.claimed = false;
+        }
+
+        // 過濾掉所有包含 'daily' 字眼的已領取 ID
+        s.tasks.claimed = s.tasks.claimed.filter(id => !id.includes('daily'));
+        hasChanged = true;
+    }
+
+    // 2. 每週重置判定 (每週一重置)
+    if (s.tasks.weeklyDate !== mondayDate) {
+        s.tasks.weeklyDate = mondayDate;
+        s.tasks.wRec = 0;   
+        s.tasks.wCatch = 0; 
+
+        // 過濾掉所有包含 'weekly' 字眼的已領取 ID
+        s.tasks.claimed = s.tasks.claimed.filter(id => !id.includes('weekly'));
+        hasChanged = true;
+    }
+
+    if (hasChanged) {
+        saveGameData(); // 🏆 呼叫你剛剛寫的這個函式
+        
+        if (typeof renderTasks === 'function') renderTasks();
+        if (typeof updateUI === 'function') updateUI();
+        if (typeof updateGiftButtons === 'function') updateGiftButtons();
+        
+        console.log("📅 [系統] 偵測到跨日，已自動存檔並重置任務。");
+    }
+
+};
+
+// 新增第二個參數 isChampion，預設為 false
+function openGiftSelector(docKey, isChampion = false) {
+    console.log("🎁 開啟選擇器:", docKey, "冠軍模式:", isChampion);
+
+    // 1. 安全檢查 (維持原樣)
+    if (s.claimedGifts && s.claimedGifts.includes(docKey)) {
+        console.log("此禮物已領取過");
+        return;
+    }
+
+    // 2. 根據身分切換資料來源 (維持原樣)
+    const dataSet = isChampion ? CHAMPION_DATA : DOCTOR_DATA;
+    const gift = dataSet[docKey];
+    
+    if (!gift) {
+        console.error(`找不到資料！Key: ${docKey}`);
+        return;
+    }
+
+    const dialog = document.getElementById('evoDialog');
+    const container = document.getElementById('evoOptions');
+    if (!dialog || !container) return;
+
+    // 3. 更改標題 (★ 新增：如果是冠軍，字體變金色)
+    const title = dialog.querySelector('h3');
+    if (title) {
+        title.innerText = gift.name;
+        title.style.color = isChampion ? "#b8860b" : "#2c3e50";
+    }
+
+    // 4. 清空內容並產生新卡片
+    container.innerHTML = ""; 
+    gift.ids.forEach(id => {
+        const name = (typeof getPkmnName === 'function') ? getPkmnName(id) : "No." + id;
+        const card = document.createElement('div');
+        card.className = 'evo-card';
+        card.style.cursor = "pointer";
+        
+        // ★ 關鍵修改：這裡加入了你想要的「圓形勳章框框」
+        // 我們用一個 div 把圖片包起來，並加上白色背景與圓形邊框
+        card.innerHTML = `
+            <div class="champion-medal" style="margin: 0 auto 10px; width:60px; height:60px; background:white; border:2px solid #f1c40f; border-radius:50%; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                <img src="${API}/pokemon/${id}.png" style="width:90%">
+            </div>
+            <p style="font-weight:bold; margin:0;">${name}</p>
+        `;
+        
+        card.onclick = () => {
+            if(confirm(`確定要選擇 ${name} 嗎？`)) {
+                // 記得把 isChampion 傳下去，這樣 executeClaimGift 才知道要給閃光
+                executeClaimGift(docKey, id, isChampion);
+                dialog.close();
+            }
+        };
+        container.appendChild(card);
+    });
+
+    dialog.showModal();
+}
+
+
+// --- [ 2. UI 處理：鎖定已領取的禮物 ] ---
+function lockClaimedGifts() {
+    if (!s.claimedGifts) return;
+    
+    const days = getAccountAge();
+    const champions = ['red', 'lance', 'steven', 'cynthia'];
+
+    // 1. 定義每個冠軍專屬的台詞
+    const championMessages = {
+        'red': '赤紅正在白銀山巔修練...',
+        'lance': '龍之使者的試煉尚未開啟',
+        'steven': '大吾正忙於挖掘罕見原石',
+        'cynthia': '竹蘭正在調查神奧的神話'
+    };
+
+    // 處理已領取的獎勵
+    s.claimedGifts.forEach(docKey => {
+        const btn = document.getElementById(`btn-gift-${docKey}`);
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = "✅ 已領取";
+            btn.style.opacity = "0.5";
+        }
+    });
+
+    // 2. 處理未滿 100 天的冠軍按鈕
+    champions.forEach(key => {
+        const btn = document.getElementById(`btn-gift-${key}`);
+        if (btn && !s.claimedGifts.includes(key) && days < 100) {
+            btn.disabled = false; // 保持可以點擊
+            btn.style.opacity = "1"; // 確保不是灰底
+            
+            // 💡 關鍵：根據 key 抓取台詞，並補上剩餘天數
+            const msg = championMessages[key] || "冠軍的認可";
+            btn.innerText = `🔒 ${msg} (剩 ${100 - days} 天)`;
+        }
+    });
+}
+
+// --- [ 3. 冠軍按鈕點擊判定 ] ---
+function checkChampionUnlock(key) {
+    const days = getAccountAge();
+    if (days < 100) {
+        alert(`🔒 這是冠軍的認可。\n你需要持續記帳滿 100 天才能領取！（目前：${days}/100 天）`);
+        return false;
+    }
+    return true;
+}
+
+window.executeClaimGift = function(key, pokemonId, isChampion = false) {
+    console.log(`🎁 開始領取流程: ${key}, ID: ${pokemonId}, 冠軍模式: ${isChampion}`);
+
+    if (!s.claimedGifts) s.claimedGifts = [];
+
+    // ★ 1. 設定特殊戰鬥標記
+    s.isGiftBattle = true;      // 讓 throwBall 知道這是 100% 捕捉
+    s.forceShiny = isChampion;  // 冠軍贈禮 = 必閃
+
+    // ★ 2. 獎勵發放
+    if (isChampion) {
+        s.items.ultra = (s.items.ultra || 0) + 5; // 冠軍給高級球
+    } else {
+        s.items.poke = (s.items.poke || 0) + 5;   // 博士給普通球
+    }
+
+    // ★ 3. 紀錄領取狀態
+    if (!s.claimedGifts.includes(key)) {
+        s.claimedGifts.push(key);
+    }
+    
+    // ● 4. 存檔
+    if (typeof saveData === 'function') {
+        saveData();
+    } else {
+        localStorage.setItem('pokemaster_v60', JSON.stringify(s));
+    }
+
+    // ★ 5. UI 更新 (立刻讓按鈕變灰、變虛線)
+    if (typeof updateUI === 'function') updateUI();
+    if (typeof updateGiftButtons === 'function') updateGiftButtons();
+    
+    // ★ 6. 先關閉視窗，稍微延遲後再觸發戰鬥
+    if (typeof back === 'function') back(); 
+
+    setTimeout(() => {
+        if (typeof spawnEnemy === 'function') {
+            console.log("⚔️ 傳送寶可夢進入戰鬥場景...");
+            spawnEnemy(pokemonId);
+        } else {
+            console.error("找不到 spawnEnemy 函式！");
+        }
+    }, 150); // 延遲 150 毫秒，讓畫面切換更平滑
+};
+
+/**
+ * ★ 全域門檻函式：點擊冠軍按鈕時的攔截器
+ * @param {string} key - 冠軍代號 ('red', 'lance', 'steven', 'cynthia')
+ */
+window.onChampionBtnClick = function(key) {
+    console.log("🏆 嘗試領取冠軍祝福:", key);
+
+    // ● 1. 取得帳號天數
+    const days = (typeof getAccountAge === 'function') ? getAccountAge() : 0;
+
+    // ★ 2. 判定邏輯對照
+    if (days < 100) {
+        // ● 功能：未達標，彈出提示
+        alert(`🔒 這是冠軍的認可。\n你需要持續記帳滿 100 天才能領取！（目前：${days}/100 天）`);
+    } else {
+        // ★ 功能：已達標，呼叫選擇器並傳入 isChampion = true
+        if (typeof openGiftSelector === 'function') {
+            openGiftSelector(key, true);
+        } else {
+            console.error("❌ 找不到 openGiftSelector 函式！");
+        }
+    }
+};
+
+
+
+// 2. 在 updateUI 附近加入這三個載具專用函式
+function initCarrier() {
+    const savedCarrier = localStorage.getItem('user_carrier');
+    if (savedCarrier) {
+        document.getElementById('carrierInput').value = savedCarrier;
+        renderBarcode(savedCarrier);
+    }
+}
+
+function saveCarrier() {
+    let code = document.getElementById('carrierInput').value.trim().toUpperCase();
+    
+    // 驗證格式：/ 開頭，後面 7 碼英數，總共 8 碼
+    const carrierReg = /^\/[A-Z0-9.+-]{7}$/;
+    if (!carrierReg.test(code)) {
+        alert("載具格式錯誤！請輸入 '/' 開頭的 8 碼字串 (例如 /ABC+123)");
+        return;
+    }
+    
+    localStorage.setItem('user_carrier', code);
+    renderBarcode(code);
+    showMsg("載具條碼已成功儲存！");
+}
+
+function renderBarcode(code) {
+    const img = document.getElementById('barcodeImg');
+    const container = document.getElementById('barcodeContainer');
+    const text = document.getElementById('barcodeText');
+
+    // 這裡是生成條碼的關鍵
+    // 使用 bwip-js API 生成標準 Code 39 條碼
+    const apiUrl = `https://bwipjs-api.metafloor.com/?bcid=code39&text=${encodeURIComponent(code)}&includetext=false&scale=3&height=10`;
+    
+    img.src = apiUrl;
+    text.innerText = code;
+    container.style.display = "block";
+}
+
+// --- [ 等級加成計算 ] ---
+function getLvlBonus() {
+    // 每升 1 級，基礎捕捉率增加 1.5%
+    return Math.floor((s.lvl - 1) * 1.5); 
+}
+// --- [ 經驗值與升級系統 ] ---
+function gainExp(amount) {
+    s.exp += amount;
+    // 假設 100 經驗升一級
+    if (s.exp >= 100) {
+        s.exp -= 100;
+        s.lvl = (s.lvl || 1) + 1;
+        showMsg(`🌟 訓練家等級提升至 Lv.${s.lvl}！`);
+        updateUI(); // 👈 這裡呼叫，畫面才會跳動
+    }
+}
+
+function showMsg(text) {
+    const msgEl = document.getElementById("msg");
+    if (msgEl) msgEl.innerText = text;
+}
+
+function updateUI() {
+    // 1. 本地存檔
+    localStorage.setItem('pokemaster_v60', JSON.stringify(s));
+
+    // 2. 基礎狀態渲染 (加上防錯判斷防止找不到元素)
+    const setInner = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = val;
+    };
+
+    setInner('st-level', `Lv. ${s.lvl || 1}`);
+    setInner('st-dex-count', s.owned.length);
+    setInner('shop-bal', s.bal);
+    setInner('enc-prog', s.pool);
+    
+    // 進度條與文字
+    setInner('p-evo-txt', s.prog.evo);
+    const evoBar = document.getElementById('p-evo-bar');
+    if (evoBar) evoBar.style.width = (Math.min(s.prog.evo / 5 * 100, 100)) + "%";
+
+    setInner('p-mega-txt', s.prog.mega);
+    const megaBar = document.getElementById('p-mega-bar');
+    if (megaBar) megaBar.style.width = (Math.min(s.prog.mega / 5 * 100, 100)) + "%";
+
+    // 3. 稱號與機率計算
+    const titleObj = getTitle(s.owned.length);
+    setInner('st-title', titleObj.name);
+    
+    const isMegaActive = Date.now() < s.megaUntil; // 統一判斷變數
+    const finalCatch = (30 + titleObj.bonus + (isMegaActive ? 20 : 0));
+    const finalShiny = (5 + (isMegaActive ? 10 : 0));
+    
+    setInner('st-catch-rate', finalCatch + "%");
+    setInner('st-shiny-rate', finalShiny + "%");
+
+    // 4. 夥伴圖片渲染邏輯 (對接 GitHub 伺服器)
+    const bEl = document.getElementById('buddyImg');
+    if (bEl) {
+        let bImg;
+        const statusFolder = s.isShinyBuddy ? 'shiny' : 'normal';
+
+        // 🚩 修正 1：直接檢查存檔中的 buddyMega 變數是否有值
+        const isMegaActive = (s.buddyMega && s.buddyMega !== "");
+
+        if (isMegaActive) {
+            // --- Mega 狀態 ---
+            bEl.style.width = "150px";
+            bEl.style.height = "150px";
+            bEl.classList.add('mega-fx');
+
+            // 🚩 修正 2：統一使用 s.buddyMega 作為後綴判定
+            let suffix = "";
+            if (s.buddyMega === 'x' || s.buddyMega === 'y') {
+                suffix = s.buddyMega;
+            }
+
+            // 🚩 修正 3：組合檔名 (例如: 6x.png 或 3.png)
+            const fileName = `${s.buddyId}${suffix}`;
+            bImg = `https://paulie0102-bear.github.io/Bear/img/mega/${statusFolder}/${fileName}.png`;
+
+        } else {
+            // --- 一般狀態 ---
+            bEl.style.width = "100px";
+            bEl.style.height = "100px";
+            bEl.classList.remove('mega-fx');
+
+            const shinyPath = s.isShinyBuddy ? 'shiny/' : '';
+            bImg = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${shinyPath}${s.buddyId}.png`;
+        }
+
+        bEl.src = bImg;
+
+        bEl.onerror = () => {
+            const apiPath = s.isShinyBuddy ? 'shiny/' : '';
+            bEl.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${apiPath}${s.buddyId}.png`;
+            console.warn(`[圖片加載警告]: 找不到資源 ${bImg}，已切換備援。`);
+            bEl.onerror = null;
+        };
+    }
+
+    // 5. 渲染背包
+    if (typeof renderBag === 'function') renderBag();
+    // 🚩 [新增] 在所有 UI 更新完後，執行每日野怪的判斷與渲染
+    renderDailyWild();
+    const badgeImg = document.getElementById('current-badge-img');
+    const noBadgeTxt = document.getElementById('no-badge-txt');
+    
+    // 確保這兩個 HTML 元素存在
+    if (badgeImg && noBadgeTxt) {
+        if (s.selectedBadge) {
+            const newSrc = `https://paulie0102-bear.github.io/Bear/img/mega/${s.selectedBadge}.png`;
+            
+            // 只有在路徑不同時才更新，避免閃爍
+            if (badgeImg.src !== newSrc) {
+                badgeImg.src = newSrc;
+            }
+            
+            badgeImg.style.display = "block";
+            noBadgeTxt.style.display = "none";
+            
+            console.log("✅ 勳章已渲染:", newSrc);
+        } else {
+            badgeImg.style.display = "none";
+            noBadgeTxt.style.display = "block";
+        }
+    } else {
+        console.error("❌ 找不到勳章顯示元素！請檢查 HTML ID 是否正確。");
+    }
+
+}
+
+function renderDailyWild() {
+    // 🚩 [新增判斷]：如果現在正在戰鬥中，就不要執行生怪邏輯
+    // 請根據你切換畫面的邏輯修改，例如：
+    const battleDiv = document.getElementById('battle-screen'); // 或是你的戰鬥容器 ID
+    if (battleDiv && battleDiv.style.display !== 'none') {
+        return; // 如果戰鬥畫面開著，直接結束，不要生怪
+    }    
+    // 🚩 [防護機制]：如果 s.dailyWild 不存在，立即初始化它
+    if (!s.dailyWild) {
+        s.dailyWild = {
+            claimed: false,
+            lastDate: ""
+        };
+    }
+    const today = new Date().toDateString();
+    
+    // 1. 跨日重置判定：如果紀錄的日期跟今天不同，就重置捕捉狀態為 false
+    if (s.dailyWild.lastDate !== today) {
+        s.dailyWild.claimed = false;
+        s.dailyWild.lastDate = today;
+    }
+
+    // 2. 取得目前的圖標元件
+    const oldIcon = document.getElementById('dailyWildIcon');
+    
+    // 3. 判斷顯示邏輯
+    if (s.dailyWild.claimed) {
+        // 如果今天已經抓到了，確保畫面上的圖標被移除
+        if (oldIcon) oldIcon.remove();
+        return;
+    }
+
+    // 4. 如果今天還沒抓到，且畫面上沒怪，就刷出一隻新的
+    if (!oldIcon) {
+        spawnDailyWildIcon();
+    }
+}
+
+function spawnDailyWildIcon() {
+    // 隨機選一個 ID (1-493)
+    const randomId = Math.floor(Math.random() * 493) + 1;
+    // 隨機決定閃光 (5% 機率)
+    const isShiny = Math.random() < 0.05;
+    // 隨機決定水平位置 (15% - 85% 避開邊緣)
+    const posX = Math.floor(Math.random() * 70) + 15;
+
+    const wildDiv = document.createElement('div');
+    wildDiv.id = 'dailyWildIcon';
+    wildDiv.className = 'wild-encounter-unit';
+    
+    // 定位在選單上方
+    wildDiv.style.left = posX + "%";
+    wildDiv.style.bottom = "150px"; 
+    wildDiv.style.position = "fixed"; // 確保是固定定位
+    wildDiv.style.zIndex = "999";     // 數字越大層級越高，建議設 100~999 之間
+
+    const imgPath = isShiny ? 'shiny/' : '';
+    wildDiv.innerHTML = `
+        <div class="exclamation">!</div>
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${imgPath}${randomId}.png" style="width: 80px; height: 80px;">
+    `;
+
+    // --- 🎮 [修改重點]：加入點擊互動遊程 ---
+    wildDiv.onclick = function() {
+        // 1. 鎖定點擊：防止在動畫期間重複點擊導致開啟多個戰鬥
+        wildDiv.onclick = null;
+        
+        // 2. 觸發第一步提到的 CSS 動畫 (放大 + 驚嘆號)
+        wildDiv.classList.add('active-encounter');
+
+        // 3. 演出時間：延遲 600 毫秒（等待驚嘆號彈出動畫）後切換戰鬥
+        setTimeout(() => {
+            // 🟢 對接閃光邏輯：如果是閃光，開啟你的 s.forceShiny 開關
+            if (isShiny) {
+                s.forceShiny = true;
+            }
+
+            // 🟢 對接戰鬥流程：直接呼叫你原本寫好的函式
+            spawnEnemy(randomId);
+
+            // 4. 戰鬥開始後，從主畫面移除這個元素
+            // 注意：因為還沒設定 s.dailyWild.claimed = true，所以逃跑後重新整理會再刷出新的怪
+            wildDiv.remove();
+        }, 600);
+    };
+
+    document.body.appendChild(wildDiv);
+}
+    
+function getTitle(count) {
+    if(count >= 493) return {name: "寶可夢大師", bonus: 50};
+    if(count >= 400) return {name: "聯盟冠軍", bonus: 40};
+    if(count >= 300) return {name: "四天王", bonus: 30};
+    if(count >= 200) return {name: "道館館主", bonus: 20};
+    if(count >= 100) return {name: "獨當一面", bonus: 10};
+    if(count >= 50)  return {name: "初出茅廬", bonus: 5};
+    return {name: "新手訓練家", bonus: 0};
+}
+
+function tickMega() {
+    const remain = s.megaUntil - Date.now();
+    const el = document.getElementById('mega-timer');
+    if(remain > 0) {
+        el.style.display = "block";
+        const m = Math.floor(remain/60000);
+        const sec = Math.floor((remain%60000)/1000);
+        document.getElementById('mega-time-left').innerText = `${m}:${sec<10?'0':''}${sec}`;
+    } else {
+        el.style.display = "none";
+        if(s.currentMegaType) s.currentMegaType = ""; // 重設型態
+    }
+}
+
+// --- [ 進化邏輯優化: 分支進化 ] ---
+function performEvolve() {
+    if (s.items.stone <= 0) { alert("進化石不足！"); return; }
+    const curId = s.buddyId;
+    let targets = EVO_BRANCHES[curId] || [curId + 1];
+
+    if (targets[0] > 493) { alert("已達目前圖鑑上限"); return; }
+
+    // --- 內部小工具：安全獲取名字 ---
+    const getPName = (id) => POKEMON_NAMES[id] || `No.${id}`;
+
+    if (targets.length > 1) {
+        // 1. 動態修改標題為：「請選擇 [目前名字] 的進化分支」
+        const titleEl = document.getElementById('evoTitle');
+        if (titleEl) {
+            titleEl.innerText = `🧬 請選擇 ${getPName(curId)} 的進化分支`;
+        }
+
+        const container = document.getElementById('evoOptions');
+        container.innerHTML = "";
+        
+        targets.forEach(id => {
+            const card = document.createElement('div');
+            card.className = 'evo-card';
+            const targetName = getPName(id); // 獲取目標名字
+
+            card.innerHTML = `
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png" style="width:70px; height:70px;">
+                <p style="margin:5px 0 0; font-size:13px; color:white; font-weight:bold;">${targetName}</p>
+            `;
+            
+            card.onclick = () => { 
+                if(confirm(`確定要將夥伴進化為 ${targetName} 嗎？`)) {
+                    executeEvolve(id);
+                    document.getElementById('evoDialog').close();
+                }
+            };
+            container.appendChild(card);
+        });
+        document.getElementById('evoDialog').showModal();
+    } else {
+        // 單一路線進化
+        const targetId = targets[0];
+        const targetName = getPName(targetId);
+        if (confirm(`消耗 1 顆進化石使夥伴進化為 ${targetName}？`)) {
+            executeEvolve(targetId);
+        }
+    }
+}
+
+function executeEvolve(targetId) {
+    s.items.stone--;
+    s.buddyId = targetId;
+    if (!s.owned.includes(targetId)) s.owned.push(targetId);
+    updateUI();
+    alert("進化成功！");
+}
+
+// --- [ Mega 邏輯優化: X/Y 分支 ] ---
+function tryMega() {
+    if (s.items.mstone <= 0) { alert("需要 1 顆 Mega 石！"); return; }
+    if (Date.now() < s.megaUntil) { alert("已經在 Mega 狀態了！"); return; }
+
+    const curId = s.buddyId;
+    const dual = [6, 150]; // 噴火龍與超夢
+    
+    // 💡 獲取當前夥伴中文名字
+    const curName = POKEMON_NAMES[curId] || `No.${curId}`;
+
+    if (dual.includes(curId)) {
+        // 1. 修改標題為：[夥伴名字] 的 Mega 進化型態
+        const titleEl = document.getElementById('evoTitle');
+        if (titleEl) {
+            titleEl.innerText = `✨ ${curName} 的 Mega 進化`;
+        }
+        
+        const container = document.getElementById('evoOptions');
+        container.innerHTML = "";
+
+        ['x', 'y'].forEach(type => {
+            const card = document.createElement('div');
+            card.className = 'evo-card';
+            
+            const statusFolder = s.isShinyBuddy ? 'shiny' : 'normal';
+            const fileName = `${curId}${type}`;
+            const bImg = `https://paulie0102-bear.github.io/Bear/img/mega/${statusFolder}/${fileName}.png`;
+
+            // 💡 顯示為 "Mega 噴火龍 X" 這種格式
+            const displayName = `Mega ${curName} ${type.toUpperCase()}`;
+
+            card.innerHTML = `
+                <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 10px;">
+                    <img src="${bImg}" style="width:80px; height:80px; filter: drop-shadow(0 0 8px var(--p));">
+                </div>
+                <p style="margin:8px 0 0; font-size:13px; color:var(--p); font-weight:bold;">${displayName}</p>
+            `;
+
+            const imgEl = card.querySelector('img');
+            imgEl.onerror = () => {
+                imgEl.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${curId}.png`;
+                imgEl.onerror = null;
+            };
+
+            card.onclick = () => {
+                if (confirm(`確定進行 ${displayName} 嗎？`)) {
+                    executeMega(type);
+                    document.getElementById('evoDialog').close();
+                }
+            };
+            container.appendChild(card);
+        });
+        document.getElementById('evoDialog').showModal();
+    } else {
+        // 單一路線 Mega
+        if (confirm(`消耗 1 顆 Mega 石讓 ${curName} 超進化？`)) {
+            executeMega("");
+        }
+    }
+}
+
+function executeMega(type) {
+    // 1. 消耗道具與設定狀態
+    s.items.mstone--;
+    s.megaUntil = Date.now() + 7200000; // 2 小時有效期
+    s.currentMegaType = type;
+
+    // 2. 核心邏輯：觸發能量吸引效果 (吸怪機制)
+    const bonusBattles = 5;
+    // 假設你的全域變數叫做 battleQueue，這裡幫它累加
+    if (typeof battleQueue !== 'undefined') {
+        battleQueue += bonusBattles; 
+    }
+
+    // 3. UI 渲染 (更新圖片、特效、機率顯示)
+    updateUI(); 
+
+    // 4. 立即檢查並啟動戰鬥 (如果當前沒在戰鬥中)
+    // 這裡判斷 isInBattle 是否為 false，若是則啟動第一場
+    if (typeof isInBattle !== 'undefined' && !isInBattle) {
+        if (battleQueue > 0) {
+            battleQueue--;    // 從隊列取出一場
+            isInBattle = true; 
+            if (typeof spawnEnemy === 'function') spawnEnemy(); // 啟動戰鬥
+        }
+    }
+
+    // 5. 噴出華麗的提示訊息
+    const typeName = type ? type.toUpperCase() : "";
+    alert(`🧬 Mega 進化 ${typeName} 成功！\n✨ 2 小時內捕捉率與閃光率大幅提升！\n⚔️ 強大的能量吸引了 ${bonusBattles} 隻寶可夢出沒！`);
+}
+// --- [ 介面控制與導航 ] ---
+function openPage(id) {
+    const target = document.getElementById(id);
+    
+    if (!target) {
+        console.error(`❌ 找不到頁面 ID: "${id}"`);
+        return; 
+    }
+
+    // 全部移除 "active" 類別
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+
+    // 目標加上 "active" 類別
+    target.classList.add('active');
+
+    // 渲染邏輯
+    if (id === 'dexPage') renderDex();
+    if (id === 'taskPage') renderTasks();
+    if (id === 'chartPage') renderCharts();
+    
+    if (id === 'guidePage') {
+        const lvlEl = document.getElementById('guideLvl');
+        if (lvlEl) lvlEl.innerText = s.lvl || 1;
+    }
+}
+
+function back() { 
+    // 移除所有頁面的 "active" 類別，即會回到主畫面
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
+}
+
+// --- [ 記帳核心 ] ---
+function record() {
+    const amt = parseInt(document.getElementById('recAmt').value);
+    const date = document.getElementById('recDate').value;
+    const cat = document.getElementById('recCat').value;
+    if(!amt || !date) { alert("請輸入金額與日期"); return; }
+
+    const reward = Math.floor(amt * 0.5);
+    s.bal += reward;
+    s.pool += amt;
+    
+    const month = date.substring(0, 7);
+    s.yearSums[month] = (s.yearSums[month] || 0) + amt;
+    s.catSums[cat] = (s.catSums[cat] || 0) + amt;
+    s.hist.push({id: Date.now(), date, cat, amt, note: document.getElementById('recNote').value, reward});
+
+    s.tasks.dRec++; s.tasks.wRec++; s.tasks.mRec++;
+
+    // --- 【關鍵修正：定義變數】 ---
+    const encounterCount = Math.floor(s.pool / 200); // 👈 補上這一行定義
+    
+    if (encounterCount > 0) {
+        s.pool %= 200; 
+        battleQueue += encounterCount; // 把次數存進排隊清單
+        
+        // 如果目前沒有在戰鬥，就啟動隊列中的第一場
+        if (!isInBattle) {
+            battleQueue--;   // 消耗掉即將開始的這 1 場
+            isInBattle = true; 
+            spawnEnemy();    // 啟動你的戰鬥函式
+        }
+        
+        document.getElementById('msg').innerText = `獲得 P$ ${reward}！觸發了 ${encounterCount} 場遭遇！`;
+    } else {
+        document.getElementById('msg').innerText = `獲得 P$ ${reward}！遭遇進度: ${s.pool}/200`;
+    }
+
+    document.getElementById('recAmt').value = "";
+    updateUI(); // 語法正確後，這一行才能跑完，按鈕才會恢復功能
+}
+
+
+// --- [ 戰鬥核心 ] ---
+// --- [ 戰鬥核心：修正版 ] ---
+// --- [ 戰鬥核心：修正版 ] ---
+function spawnEnemy(targetId) { // 🔴 增加參數
+    const id = targetId || Math.floor(Math.random() * 493) + 1; 
+    const isMega = (typeof s !== 'undefined') ? (Date.now() < s.megaUntil) : false;
+    
+    // --- 🟢 核心修改：判斷是否必閃 ---
+    let isShiny = false;
+    if (typeof s !== 'undefined' && s.forceShiny === true) {
+        isShiny = true;
+        s.forceShiny = false; // 觸發後立即關閉開關，確保只有這一隻是閃光
+        console.log("✨ 冠軍祝福生效：這是一場必閃戰鬥！");
+    } else {
+        isShiny = Math.random() < (isMega ? 0.15 : 0.05);
+    }
+    
+    curE = { id, hp: 100, isShiny, name: (typeof getPkmnName === 'function') ? getPkmnName(id) : "No." + id };
+    turn = 0;
+    
+    const stage = document.getElementById('encounterStage');
+    const img = document.getElementById('enemyImg');
+    const hpFill = document.getElementById('hpFill');
+
+    // 1. 先顯示區域 (關鍵：區域不顯示，寬度計算就可能失敗)
+    document.getElementById('enemyArea').style.display = "block";
+    document.getElementById('battleActions').style.display = "block";
+    document.getElementById('inputArea').style.display = "none";
+
+    // 2. 顯示後再處理血條
+    if (hpFill) {
+        hpFill.style.transition = "none"; 
+        hpFill.style.width = "100%";
+        hpFill.classList.remove('hp-yellow', 'hp-red');
+        hpFill.classList.add('hp-green');
+        void hpFill.offsetWidth; // 觸發重繪
+    }
+
+    if (stage) stage.classList.remove('encounter-active');
+    
+    // 3. 處理圖片路徑
+    if (img) {
+        const apiPath = (typeof API !== 'undefined') ? API : "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites";
+        // 🚩 修正點：確保使用原始 id (不補零) 拼接圖片路徑，避免 404
+        const spriteId = Number(id);
+        img.src = `${apiPath}/pokemon/${isShiny ? 'shiny/' : ''}${spriteId}.png`;
+    }
+
+    // --- 🏆 新增：圖鑑收錄標記判定 ---
+    // 判斷 s.owned 是否包含目前的 id
+    const isCaught = (typeof s !== 'undefined' && s.owned && s.owned.includes(id));
+    // 如果收錄過，顯示一顆小寶貝球 (使用網路圖片確保不報錯)
+    const caughtIcon = isCaught ? `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" style="width:16px; height:16px; vertical-align:middle; margin-right:4px;">` : "";
+
+    // 4. 更新 UI 文字 (改用 innerHTML 以支援圖片標籤)
+    const displayName = `No.${String(id).padStart(3, '0')} ${curE.name}`;
+    const shinyTag = isShiny ? ' (✨閃光)' : '';
+    
+    const nameEl = document.getElementById('enemyName');
+    if (nameEl) {
+        // 🚩 寶貝球出現在編號前面
+        nameEl.innerHTML = `${caughtIcon}${displayName}${shinyTag}`;
+    }
+
+    document.getElementById('turnInfo').innerText = "7回合內，寶可夢不會逃跑";
+    document.getElementById('msg').innerText = `✨ 野生的 ${curE.name} 出現了！`;
+
+    // 5. 延遲撥開草叢，之後恢復動畫
+    setTimeout(() => {
+        if (stage) stage.classList.add('encounter-active');
+        if (hpFill) hpFill.style.transition = "width 0.5s ease";
+    }, 60);
+}
+
+async function throwBall() {
+    const type = document.getElementById('ballSelect').value;
+    
+    // ● 功能 1: 消耗檢查
+    if(s.items[type] <= 0) { alert("沒球了！"); return; }
+    
+    // ● 功能 2: 資源扣除與回合增加
+    s.items[type]--;
+    turn++;
+
+    // ● 功能 3: 播放動畫 (維持原本 800ms + 1500ms 節奏)
+    const ball = document.getElementById('ballOverlay');
+    ball.src = `${API}/items/${type}-ball.png`;
+    ball.className = 'ball-throw';
+    
+    await new Promise(r => setTimeout(r, 800));
+    ball.className = 'ball-shake';
+    await new Promise(r => setTimeout(r, 1500));
+
+    // ● 功能 4: 計算機率加成 (稱號、等級、Mega、血量)
+    const titleBonus = getTitle(s.owned.length).bonus;
+    const lvlBonus = getLvlBonus(); 
+    const megaBonus = (Date.now() < s.megaUntil ? 20 : 0);
+    const baseRate = {poke:30, great:40, ultra:50, master:100}[type];
+    const catchChance = (baseRate + titleBonus + megaBonus + lvlBonus) * (1.5 - curE.hp/100) / 100;
+
+    // ★ 功能 5 & 6: 判定結果與狀態重置
+    let isSuccess = false;
+
+    if (s.isGiftBattle) {
+        // ★ 優先判定：贈禮戰鬥必中 (包含博士與冠軍)
+        isSuccess = true; 
+        s.isGiftBattle = false; // ⚠️ 狀態重置，防止神力洩漏
+        s.forceShiny = false; // ⚠️ 新增：同時重置閃光標記，確保下一場野外戰鬥恢復正常機率
+        console.log(s.forceShiny ? "🏆 冠軍祝福：捕捉成功！" : "🎓 博士贈禮：捕捉成功！");
+    } else if (Math.random() < catchChance || type === 'master') {
+        // ● 一般捕捉成功 (或使用大師球)
+        isSuccess = true;
+    }
+
+    // ● 功能 7-12: 執行結果與獎勵累積
+    if (isSuccess) {
+        document.getElementById('gotcha').style.display = "block";
+        
+        // ● 功能 7: 更新基礎圖鑑
+        if(!s.owned.includes(curE.id)) s.owned.push(curE.id);
+        // 2. 檢查勳章解鎖
+        checkBadgeUnlockAnnounce();
+        // ★ 功能 8: 強化閃光紀錄 (包含冠軍必閃)
+        if(curE.isShiny && !s.shinyOwned.includes(curE.id)) {
+            s.shinyOwned.push(curE.id);
+            console.log("✨ 閃光圖鑑已紀錄");
+        }
+        
+        // ● 功能 9 & 10: 累積進化與 Mega 能量
+        s.prog.evo++;
+        if (typeof MEGA_ABLE !== 'undefined' && MEGA_ABLE.includes(Number(curE.id))) {
+            s.prog.mega++; 
+            // 檢查獎勵
+            if(s.prog.mega >= 5) { s.prog.mega = 0; s.items.mstone++; }
+        }
+        if(s.prog.evo >= 5) { s.prog.evo = 0; s.items.stone++; }
+
+        // ● 功能 11: 任務進度累積
+        s.tasks.dCatch += 1;
+        s.tasks.wCatch += 1;
+        s.tasks.mCatch += 1;
+        if (s.dailyWild) s.dailyWild.claimed = true;
+        
+        saveGameData(); // 統一存檔一次
+
+
+        // 🏆 [關鍵新增]：每日奇遇任務達成！
+        // 只要這行被執行，今天主畫面的驚喜寶可夢就不會再出現了
+        if (s.dailyWild) {
+            s.dailyWild.claimed = true;
+        }
+        
+        // ● 功能 12: 給予經驗值與動態提示
+        if (typeof gainExp === 'function') gainExp(10);
+
+        setTimeout(() => {
+            document.getElementById('gotcha').style.display = "none";
+            // ★ 新增：閃光專屬文字提示
+            const prefix = curE.isShiny ? "✨ 閃光" : "";
+            endBattle(`成功捕捉了 ${prefix}${curE.name}！獲得 10 EXP`);
+        }, 1500);
+
+    } else {
+        // ● 捕捉失敗與逃跑判定
+        ball.style.display = "none";
+        ball.className = "";
+        document.getElementById('msg').innerText = "哎呀！寶可夢掙脫了！";
+
+        if(turn >= 7 && Math.random() < 0.3) {
+            endBattle("寶可夢逃跑了！");
+        }
+    }
+
+    // ★ 功能 13: UI 同步 (包含新商店按鈕狀態)
+    updateUI();
+    if (typeof updateGiftButtons === 'function') updateGiftButtons();
+}
+
+// 檢查並提示解鎖
+function checkBadgeUnlockAnnounce() {
+    Object.keys(BADGE_DATA).forEach(key => {
+        const data = BADGE_DATA[key];
+        // 檢查是否集齊
+        const isAllCaught = data.req.every(id => s.owned.includes(id));
+        
+        // 如果集齊了，且之前還沒紀錄過「已通知解鎖」
+        if (isAllCaught && !s[`badge_${key}_unlocked`]) {
+            s[`badge_${key}_unlocked`] = true; // 標記為已解鎖
+            
+            // 彈出華麗的驚喜提示
+            alert(`🏆 恭喜！你已集齊 ${data.name} 所需的神獸，冠軍徽章已解鎖！`);
+            
+            // 如果勳章館開著，就順便刷新它
+            if (document.getElementById('badgeModal').style.display === "block") {
+                openBadgeModal(); 
+            }
+            updateUI();
+        }
+    });
+}
+
+
+// --- 戰鬥結束 ---
+function endBattle(text) {
+
+    document.getElementById('msg').innerText = text;
+
+    document.getElementById('enemyArea').style.display = "none";
+    document.getElementById('battleActions').style.display = "none";
+    document.getElementById('inputArea').style.display = "block";
+
+    const stage = document.getElementById('encounterStage');
+    if(stage) stage.classList.remove('encounter-active');
+
+    isInBattle = false;
+
+    // 若還有排隊戰鬥就繼續
+    if(battleQueue > 0){
+        setTimeout(()=>{
+            battleQueue--;
+            isInBattle = true;
+            spawnEnemy();
+        },1200);
+    }
+
+    updateUI();
+}
+
+function attack() {
+    if(!curE) return;
+    
+    // 每次攻擊減少 25 HP，最低降到 0
+    curE.hp = Math.max(0, curE.hp - 25); 
+    document.getElementById('hpFill').style.width = curE.hp + "%";
+    
+hpFill.classList.remove('hp-green', 'hp-yellow', 'hp-red');
+    if (curE.hp > 50) {
+        hpFill.classList.add('hp-green');
+    } else if (curE.hp > 25) {
+        hpFill.classList.add('hp-yellow');
+    } else {
+        hpFill.classList.add('hp-red');
+    }
+
+    // --- [ 個人式修正：判定打倒邏輯 ] ---
+    if(curE.hp <= 0) {
+        // HP 歸零，判定為打倒！
+        const killExp = 20; // 捕捉是 10，打倒是 20 (兩倍)
+        
+        // 給予經驗值
+        gainExp(killExp); 
+        
+        // 戰鬥結束訊息
+        document.getElementById('msg').innerText = `💥 發動強烈攻擊！${curE.name} 被打倒了！`;
+        
+        // 延遲一下下再結束戰鬥，讓玩家看清楚 HP 歸零
+        setTimeout(() => {
+            endBattle(`打倒了野生寶可夢！獲得 ${killExp} EXP`);
+        }, 800);
+        
+    } else {
+        // 還沒打死，繼續戰鬥
+        document.getElementById('msg').innerText = `發動攻擊！${curE.name} 體力下降了，捕獲率上升！`;
+        turn++;
+    }
+    
+    updateUI();
+}
+
+function endBattle(m) {
+    curE = null;
+    document.getElementById('enemyArea').style.display = "none";
+    document.getElementById('battleActions').style.display = "none";
+    document.getElementById('inputArea').style.display = "block";
+    document.getElementById('ballOverlay').style.display = "none";
+    document.getElementById('msg').innerText = m;
+    
+    // --- 新增：連戰邏輯 ---
+    isInBattle = false; // 戰鬥已結束，解鎖狀態
+    
+    // 如果隊列裡還有剩餘的戰鬥場次
+    if (typeof battleQueue !== 'undefined' && battleQueue > 0) {
+        // 延遲 1 秒後自動觸發下一場，讓玩家有時間看清楚上一場的訊息
+        setTimeout(() => {
+            if (!isInBattle) {
+                // 這裡呼叫您原本啟動戰鬥的函式 (通常是 spawnEnemy 或 startBattle)
+                battleQueue--; // 消耗一次場次
+                isInBattle = true; // 重新上鎖
+                spawnEnemy(); 
+            }
+        }, 1200);
+    }
+    // ----------------------
+
+    updateUI();
+}
+
+// --- [ 其他功能保留原樣 ] ---
+function renderBag() {
+    const inv = document.getElementById('bag-items');
+    const items = [{k:'poke', n:'精靈球'}, {k:'great', n:'超級球'}, {k:'ultra', n:'高級球'}, {k:'master', n:'大師球'}, {k:'stone', n:'進化石'}, {k:'mstone', n:'Mega石'}];
+    let h = "";
+    items.forEach(i => { h += `<div><img class="res-icon" src="${API}/items/${i.k==='stone'?'sun-stone':i.k==='mstone'?'key-stone':i.k+'-ball'}.png"><br><small>${i.n}</small><br><b>${s.items[i.k]||0}</b></div>`; });
+    inv.innerHTML = h;
+
+    const bs = document.getElementById('ballSelect');
+    bs.innerHTML = `<option value="poke">精靈球 (${s.items.poke})</option><option value="great">超級球 (${s.items.great})</option><option value="ultra">高級球 (${s.items.ultra})</option><option value="master">大師球 (${s.items.master})</option>`;
+}
+
+
+// --- 🚩 全域狀態控制 ---
+let dexId = 1;        // 當前選中 ID
+let dexShiny = false; // 是否閃光
+let dexMega = "";     // Mega 型態: "", "x", "y"
+
+// 根據官方 493 前的資料預設的 Mega 名單 (可依你的需求增減)
+const MEGA_LIST = [3, 6, 9, 15, 18, 65, 80, 94, 115, 127, 130, 142, 150, 181, 208, 212, 214, 229, 248, 254, 257, 260, 282, 302, 303, 306, 308, 310, 319, 323, 334, 354, 359, 362, 373, 376, 380, 381, 382, 383, 384, 428, 445, 448, 460, 475];
+
+// --- 🎨 核心渲染函式 ---
+function renderDex() {
+    // 🚩 確保 ID 對應到新 HTML 結構中的左側欄
+    const nav = document.getElementById('dexNav') || document.querySelector('.dex-sidebar');
+    if (!nav) return;
+
+    let listHtml = "";
+    for (let i = 1; i <= 493; i++) {
+        const caught = s.owned.includes(i);
+        const nameText = caught ? (POKEMON_NAMES[i] || "???") : "???";
+        const activeClass = (i === dexId) ? "active" : "";
+        
+        // 渲染列表項目
+        listHtml += `<div class="dex-item ${activeClass}" onclick="selectDex(${i})">
+            No.${String(i).padStart(3, '0')} ${nameText}
+        </div>`;
+    }
+    nav.innerHTML = listHtml;
+
+    // 🚩 修正：自動捲動到選中項（這在手機上非常重要，不然點了下面的精靈，列表會跳回最上面）
+    const activeItem = nav.querySelector('.dex-item.active');
+    if(activeItem) {
+        activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    updateDexDetail();
+}
+
+// --- 🔍 選取寶可夢 ---
+function selectDex(id) {
+    dexId = id;
+    dexMega = ""; // 切換寶可夢時重置 Mega
+    renderDex();
+}
+
+// --- 🖼️ 更新右側詳細資訊 ---
+function updateDexDetail() {
+    const caught = s.owned.includes(dexId);
+    const detailName = caught ? (POKEMON_NAMES[dexId] || "???") : "???";
+    const shinyOwned = s.shinyOwned.includes(dexId);
+
+    // 1. 更新標題 (若 Mega 則顯示名字前綴)
+    let prefix = dexMega ? `Mega ${dexMega.toUpperCase()} ` : "";
+    document.getElementById('dexTitle').innerText = `No.${String(dexId).padStart(3, '0')} ${prefix}${detailName}`;
+
+    // 2. 圖片路徑邏輯 (修正後版本)
+    const imgEl = document.getElementById('dexImg');
+    if (!caught) {
+        // 未捕捉顯示 0 號圖 (或替換為問號圖)
+        imgEl.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png`;
+    } else if (dexMega !== "") {
+        // --- 🧬 抓取你的 GitHub Mega 庫 ---
+        const folder = dexShiny ? 'shiny' : 'normal';
+        
+        // 🚩 修正點：如果是 'mega' 則後綴為空字串，如果是 'x'/'y' 則保留後綴
+        let suffix = (dexMega === 'x' || dexMega === 'y') ? dexMega : "";
+        
+        // 🚩 修正點：這裡原本是 ${dexMega}，現在改為 ${suffix}
+        const url = `https://paulie0102-bear.github.io/Bear/img/mega/${folder}/${dexId}${suffix}.png`;
+        
+        console.log("正在嘗試讀取 Mega 圖片網址:", url); // 方便你按 F12 檢查網址是否正確
+        imgEl.src = url;
+
+        // 防破圖：如果 GitHub 沒這張圖，自動跳回 PokeAPI 普通版
+        imgEl.onerror = () => { 
+            console.error("Mega 圖片讀取失敗，跳回普通版。網址為:", url);
+            imgEl.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${dexShiny ? 'shiny/' : ''}${dexId}.png`; 
+            imgEl.onerror = null; 
+        };
+    } else {
+        // --- 🏠 抓標準 PokeAPI 普通/閃光圖 ---
+        imgEl.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${dexShiny ? 'shiny/' : ''}${dexId}.png`;
+        imgEl.onerror = null;
+    }
+
+    // 3. 按鈕權限控制
+    const shinyBtn = document.getElementById('shinyBtn');
+    shinyBtn.disabled = !shinyOwned;
+    shinyBtn.style.opacity = shinyOwned ? "1" : "0.3";
+
+    // 4. Mega 按鈕顯示判定
+    const hasMega = MEGA_LIST.includes(dexId) && caught;
+    const isDual = [6, 150].includes(dexId); // 噴火龍, 超夢
+    
+    document.getElementById('megaGroup').style.display = hasMega ? "grid" : "none";
+    document.getElementById('mBtnSingle').style.display = (hasMega && !isDual) ? "block" : "none";
+    document.getElementById('mBtnX').style.display = isDual ? "block" : "none";
+    document.getElementById('mBtnY').style.display = isDual ? "block" : "none";
+    document.getElementById('megaTag').style.display = hasMega ? "block" : "none";
+}
+
+// --- 🧬 切換 Mega 型態 ---
+function toggleMega(type) {
+    // 這裡可以加上檢查 s.items.mstone 是否足夠的邏輯
+    dexMega = (dexMega === type) ? "" : type; // 再次點擊則取消
+    updateDexDetail();
+}
+
+// --- ✨ 切換閃光 ---
+function setDexShiny(v) {
+    if (v && !s.shinyOwned.includes(dexId)) return;
+    dexShiny = v;
+    updateDexDetail();
+}
+
+// --- 🤝 就決定是你了！ ---
+function assignBuddy() {
+    if (!s.owned.includes(dexId)) { 
+        alert("尚未捕捉此寶可夢！"); 
+        return; 
+    }
+    
+    // 儲存到存檔物件 s
+    s.buddyId = dexId; 
+    s.isShinyBuddy = dexShiny;
+    s.buddyMega = dexMega; // 🚩 新增儲存欄位，記得在 updateUI 使用它
+    
+    if (typeof saveGame === 'function') saveGameData();
+    if (typeof updateUI === 'function') updateUI(); 
+    
+    alert(`更換夥伴：${POKEMON_NAMES[dexId]} ${dexMega ? '(' + dexMega.toUpperCase() + ')' : ''}`);
+}
+
+function buy(type, price) {
+    if(s.bal < price) { alert("P$ 不足！"); return; }
+    s.bal -= price; s.items[type]++;
+    updateUI();
+}
+
+function renderTasks() {
+    const list = document.getElementById('taskList');
+    const buildTask = (title, cur1, goal1, cur2, goal2, reward, id) => {
+        // 判斷是否達成：如果目標是 0 視為自動達成該項，否則需 cur >= goal
+        const cond1 = goal1 === 0 ? true : cur1 >= goal1;
+        const cond2 = goal2 === 0 ? true : cur2 >= goal2;
+        const done = cond1 && cond2;
+        const claimed = s.tasks.claimed.includes(id);
+
+        return `
+            <div class="card" style="border-left:5px solid ${done ? (claimed ? '#95a5a6' : '#2ecc71') : '#ccc'}">
+                <b style="${claimed ? 'color:gray;' : ''}">${title}</b><br>
+                <small>進度 - 記帳: ${cur1}/${goal1} | 捕捉: ${cur2}/${goal2}</small><br>
+                <button onclick="claimTask('${id}')" 
+                        style="margin-top:5px; width:100%; height:35px; border-radius:5px; border:none; 
+                        background:${done && !claimed ? 'var(--p)' : '#eee'}; 
+                        color:${done && !claimed ? 'white' : '#666'};" 
+                        ${done && !claimed ? '' : 'disabled'}>
+                    ${claimed ? '已領取獎勳' : (done ? '領取 ' + reward : '尚未達成')}
+                </button>
+            </div>`;
+    };
+
+    list.innerHTML = 
+        buildTask('每日任務', s.tasks.dRec, 1, s.tasks.dCatch, 1, '超級球 x2', 'daily_1') + 
+        buildTask('每週挑戰', s.tasks.wRec, 5, s.tasks.wCatch, 5, '進化石 x1 + 高級球 x3', 'weekly_1') + 
+        buildTask('記帳達人 (成就)', s.tasks.mRec, 50, 0, 0, '大師球 x1', 'ach_1') + 
+        buildTask('捕捉大師 (成就)', 0, 0, s.tasks.mCatch, 30, 'Mega石 x1', 'ach_2');
+}
+
+function claimTask(id) {
+    // 1. 統一檢查鎖：如果已經領取過（且不是成就型任務），直接跳出
+    if (s.tasks.claimed.includes(id)) return;
+
+    if (id === 'daily_1') {
+        s.items.great += 2;
+        // 🔴 關鍵：必須推入陣列，renderTasks 才會知道已領取
+        s.tasks.claimed.push(id); 
+    }
+    else if (id === 'weekly_1') {
+        s.items.stone++;
+        s.items.ultra += 3;
+        // 🔴 關鍵：必須推入陣列
+        s.tasks.claimed.push(id);
+    }
+    else if (id === 'ach_1') { 
+        // 根據 mRec 每達到 50 就領取一次大師球
+        const claimCount = Math.floor(s.tasks.mRec / 50);  // 每達 50 次就領一次
+        if (claimCount > 0) {
+            s.items.master += claimCount;  // 領取大師球
+            s.tasks.mRec -= claimCount * 50;  // 扣除已領取的記帳數量
+        }
+    }
+    else if (id === 'ach_2') { 
+        // --- 捕捉大師 (每 30 隻換 1 Mega石) ---
+        // 比照 ach_1 的邏輯：計算可領取次數
+        const claimCount = Math.floor(s.tasks.mCatch / 30); 
+        
+        if (claimCount > 0) {
+            s.items.mstone += claimCount;  // 增加 Mega 石數量
+            s.tasks.mCatch -= claimCount * 30; // 🔴 關鍵：扣除已使用的捕捉數量
+            alert(`🎉 恭喜！消耗 ${claimCount * 30} 隻捕捉進度，獲得 Mega石 x ${claimCount}！`);
+        }
+    }
+
+    // 🔴 存檔與 UI 更新 (確保數據不會丟失)
+    if (typeof saveData === 'function') saveData(); 
+    updateUI(); 
+    renderTasks();
+}
+
+let chartInstance = null;
+function switchChart(type) { 
+    currentChartType = type; 
+    document.getElementById('chartControls').style.display = (type==='month') ? 'flex' : 'none'; 
+    renderCharts(); 
+}
+
+function renderCharts() {
+    const canvas = document.getElementById('chartCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    // 🚩 銷毀舊實例，防止記憶體洩漏與圖表重疊
+    if (chartInstance) chartInstance.destroy();
+    
+    let labels = [], data = [], chartType = 'line';
+    const targetMonth = document.getElementById('chartMonthPicker').value;
+    const history = s.hist || []; // 防呆：確保 hist 存在
+
+    if (currentChartType === 'year') { 
+        labels = Object.keys(s.yearSums || {}).sort(); 
+        data = labels.map(l => s.yearSums[l]); 
+        chartType = 'bar'; // 年統計通常用長條圖較清楚
+    } 
+    else if (currentChartType === 'month') { 
+        // 過濾該月份每日支出 (折線圖)
+        const filtered = history.filter(h => h.date && h.date.startsWith(targetMonth)); 
+        const days = {}; 
+        filtered.forEach(h => days[h.date] = (days[h.date] || 0) + h.amt); 
+        labels = Object.keys(days).sort(); 
+        data = labels.map(l => days[l]); 
+        chartType = 'line';
+    } 
+    else { 
+        // --- 🟢 類別統計：按月分開做圓餅圖 ---
+        chartType = 'pie';
+        
+        // 1. 取得選擇器月份 (例如 "2026-03")
+        const targetMonth = document.getElementById('chartMonthPicker').value;
+        
+        // 2. 過濾數據
+        const filtered = history.filter(h => h.date && h.date.startsWith(targetMonth));
+        
+        // 3. 建立分類加總物件
+        const monthlyCat = {};
+        filtered.forEach(h => {
+            // 🚩 關鍵修正：將 h.category 改為 h.cat (與你的數據結構一致)
+            const catName = h.cat || "未分類"; 
+            
+            // 🚩 確保金額是數字相加，而非字串拼接
+            const amount = Number(h.amt) || 0;
+            
+            monthlyCat[catName] = (monthlyCat[catName] || 0) + amount;
+        });
+
+        // 4. 將結果轉換為 Chart.js 需要的格式
+        labels = Object.keys(monthlyCat);
+        data = labels.map(l => monthlyCat[l]);
+
+        if (labels.length === 0) {
+            console.warn(targetMonth + " 查無支出紀錄");
+        }
+    }
+
+    chartInstance = new Chart(ctx, { 
+        type: chartType, 
+        data: { 
+            labels, 
+            datasets: [{ 
+                label: '金額', 
+                data, 
+                backgroundColor: chartType === 'pie' ? 
+        ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#26C6DA', '#9CCC65', '#BDBDBD'] : 
+        'rgba(46, 204, 113, 0.4)',
+                borderColor: '#2d5a27', 
+                borderWidth: 2,
+                fill: false, // 折線圖開啟填充
+                tension: 0.3 
+            }] 
+        }, 
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: chartType === 'pie' } // 只有圓餅圖顯示側邊標註
+            }
+        } 
+    });
+}
+
+let tempData = []; // 暫存區
+let lastImportCount = 0; // 儲存上次匯入成功筆數
+
+// 注意：這裡不准放任何 <div> 標籤！
+function handleCSV(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        const lines = ev.target.result.split(/\r?\n/).filter(line => line.trim() !== "");
+        if (lines.length <= 1) return;
+
+        tempData = [];
+        const previewList = document.getElementById('previewList');
+        
+        // 安全檢查
+        if (!previewList) {
+            console.error("錯誤：找不到 id='previewList' 的元素，請將 <div id='previewList'></div> 放到 HTML 中。");
+            return; 
+        }
+
+        previewList.innerHTML = "";
+        lastImportCount = 0;
+
+        for (let i = 1; i < lines.length; i++) {
+            const cols = lines[i].split(',').map(c => c.replace(/^["']|["']$/g, '').trim());
+            const rawDate = cols[1] || "";
+            const rawAmt = parseInt(cols[3]);
+
+            if (rawDate && !isNaN(rawAmt)) {
+                let finalDate = "";
+                if (rawDate.length === 8 && !isNaN(rawDate)) {
+                    finalDate = `${rawDate.substring(0,4)}-${rawDate.substring(4,6)}-${rawDate.substring(6,8)}`;
+                } else {
+                    let parts = rawDate.replace(/\//g,'-').split('-');
+                    if (parts.length===3){
+                        let y = parts[0].padStart(4,'0');
+                        let m = parts[1].padStart(2,'0');
+                        let d = parts[2].padStart(2,'0');
+                        if (parseInt(y)<1000) y = (parseInt(y)+1911).toString();
+                        finalDate = `${y}-${m}-${d}`;
+                    } else {
+                        finalDate = new Date().toISOString().split('T')[0];
+                    }
+                }
+
+                let category = "其他";
+                const note = (cols[7] || "").toLowerCase().trim();
+                if (note.includes("超商")||note.includes("企業社")||note.includes("便利商店")||note.includes("餐飲")||note.includes("商行")||note.includes("茶")) category="餐飲";
+                else if (note.includes("捷運")||note.includes("高鐵")||note.includes("台鐵")||note.includes("油品")) category="交通";
+                else if (note.includes("藥局")||note.includes("醫療")||note.includes("健保")) category="醫療";
+                else if (note.includes("購物")||note.includes("百貨")||note.includes("電子")) category="購物";
+                else if (note.includes("娛樂")||note.includes("影城")) category="娛樂";
+
+                const item = { date: finalDate, cat: category, note: (cols[7] || "載具消費").trim(), amt: rawAmt };
+                tempData.push(item);
+                lastImportCount++;
+
+                previewList.innerHTML += `
+                    <div class="csv-item-mobile">
+                        <div class="csv-row">
+                            <input type="date" value="${item.date}" onchange="tempData[${tempData.length-1}].date=this.value" class="csv-date">
+                            <select onchange="tempData[${tempData.length-1}].cat=this.value" class="csv-cat">
+                                <option value="其他" ${item.cat==="其他"?"selected":""}>其他</option>
+                                <option value="餐飲" ${item.cat==="餐飲"?"selected":""}>餐飲</option>
+                                <option value="交通" ${item.cat==="交通"?"selected":""}>交通</option>
+                                <option value="購物" ${item.cat==="購物"?"selected":""}>購物</option>
+                                <option value="娛樂" ${item.cat==="娛樂"?"selected":""}>娛樂</option>
+                                <option value="醫療" ${item.cat==="醫療"?"selected":""}>醫療</option>
+                            </select>
+                        </div>
+                        <div class="csv-row">
+                            <input type="text" value="${item.note}" onchange="tempData[${tempData.length-1}].note=this.value" class="csv-note" placeholder="備註">
+                            <span class="csv-amt">$${item.amt}</span>
+                        </div>
+                    </div>`;
+            }
+        }
+
+        if(tempData.length > 0){
+            document.getElementById('csvPreviewArea').style.display = "block";
+            document.getElementById('importCount').innerText = `預覽資料數量: ${lastImportCount}`;
+        } else {
+            document.getElementById('importCount').innerText = `預覽資料數量: 0`;
+        }
+    }; // reader.onload 結束
+
+    reader.readAsText(file);
+} // handleCSV 函式結束 (🚩 這邊之前少了這個括號)
+
+function confirmImport() {
+    if(!tempData || tempData.length===0){ cancelImport(); return; }
+
+    tempData.forEach((item,index)=>{
+        const reward = Math.floor(item.amt*0.5);
+        const monthKey = item.date.substring(0,7);
+
+        s.yearSums[monthKey] = (s.yearSums[monthKey]||0)+item.amt;
+        s.catSums[item.cat] = (s.catSums[item.cat]||0)+item.amt;
+        s.bal += reward;
+        s.pool += item.amt;
+
+        s.hist.push({
+            id: Date.now()+index+Math.random(),
+            date:item.date, cat:item.cat, amt:item.amt, note:item.note, reward:reward
+        });
+
+        if(s.tasks){ s.tasks.dRec++; s.tasks.wRec++; s.tasks.mRec++; }
+    });
+
+    // 戰鬥判定
+    const encounterCount = Math.floor(s.pool/200);
+    if(encounterCount>0){ 
+        s.pool %= 200; 
+        if(typeof battleQueue!=='undefined'){ 
+            battleQueue+=encounterCount; 
+            if(!isInBattle){ battleQueue--; isInBattle=true; if(window.spawnEnemy) spawnEnemy(); } 
+        } 
+    }
+
+    cancelImport();
+    updateUI();
+    if(window.renderCharts) renderCharts();
+}
+
+function cancelImport(){
+    tempData=[];
+    lastImportCount=0;
+    document.getElementById('csvPreviewArea').style.display="none";
+    document.getElementById('csvFile').value="";
+    document.getElementById('importCount').innerText=`預覽資料數量: 0`;
+}
+function confirmImport() {
+    if (tempData.length === 0) return;
+
+    tempData.forEach((item, index) => {
+        const reward = Math.floor(item.amt * 0.5);
+        const monthKey = item.date.substring(0, 7);
+
+        // 1. 同步全域數值 (s 為你的狀態物件)
+        s.bal += reward;
+        s.pool += item.amt;
+        s.yearSums[monthKey] = (s.yearSums[monthKey] || 0) + item.amt;
+        s.catSums[item.cat] = (s.catSums[item.cat] || 0) + item.amt;
+
+        // 2. 存入歷史紀錄
+        s.hist.push({
+            id: Date.now() + index + Math.random(),
+            date: item.date,
+            cat: item.cat,
+            amt: item.amt,
+            note: item.note,
+            reward: reward
+        });
+
+        // 3. 任務計數
+        s.tasks.dRec++; s.tasks.wRec++; s.tasks.mRec++;
+    });
+
+    // 4. 戰鬥觸發邏輯 (直接沿用你的 record 核心)
+    const encounterCount = Math.floor(s.pool / 200);
+    if (encounterCount > 0) {
+        s.pool %= 200;
+        battleQueue += encounterCount;
+        if (!isInBattle) {
+            battleQueue--; isInBattle = true; spawnEnemy();
+        }
+    }
+
+    const importedCount = tempData.length; // 先存好匯入筆數
+cancelImport();
+updateUI();
+if (window.renderCharts) renderCharts();
+alert(`正式導入成功！共 ${importedCount} 筆資料。`);
+}
+
+function cancelImport() {
+    tempData = [];
+    document.getElementById('csvPreviewArea').style.display = "none";
+}
+
+function searchHistory() {
+    const start = document.getElementById('hStart').value; // 格式: YYYY-MM-DD
+    const end = document.getElementById('hEnd').value;     // 格式: YYYY-MM-DD
+    if(!start || !end) return;
+
+    const list = document.getElementById('historyList');
+    list.innerHTML = "";
+
+    // 進行字串比較篩選
+    const filtered = s.hist.filter(h => h.date >= start && h.date <= end);
+
+    if (filtered.length === 0) {
+        list.innerHTML = "<div style='text-align:center; padding:20px; color:gray;'>區間內無資料</div>";
+        return;
+    }
+
+    filtered.forEach(h => { 
+        list.innerHTML += `
+            <div style="font-size:12px; padding:8px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; flex-direction:column;">
+                    <span style="font-weight:bold;">${h.date} | ${h.cat} | $${h.amt}</span>
+                    <span style="color:#666;">📝 ${h.note || '無備註'}</span>
+                </div>
+                <button onclick="delHist(${h.id})" style="color:red; border:none; background:none; cursor:pointer;">刪除</button>
+            </div>`; 
+    });
+}
+function delHist(id) {
+    if(!confirm("確定刪除？這會影響統計結果。")) return;
+    const idx = s.hist.findIndex(h => h.id === id);
+    if(idx > -1) { const h = s.hist[idx]; s.yearSums[h.date.substring(0,7)] -= h.amt; s.catSums[h.cat] -= h.amt; s.hist.splice(idx, 1); updateUI(); searchHistory(); }
+}
+
+function exportData() {
+    // 1. 取得現在時間 (例如: 20260311_1530)
+    const now = new Date();
+    const timeStr = now.getFullYear() + 
+                    (now.getMonth()+1).toString().padStart(2, '0') + 
+                    now.getDate().toString().padStart(2, '0') + "_" +
+                    now.getHours().toString().padStart(2, '0') + 
+                    now.getMinutes().toString().padStart(2, '0');
+
+    // 2. 轉換為 JSON 字串
+    const blob = new Blob([JSON.stringify(s)], {type: "application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    
+    // 3. 設定自訂副檔名 .pkms (方便手機查找)
+    a.download = `PM_Save_${timeStr}.pkms`; 
+    
+    // 4. 執行下載
+    document.body.appendChild(a); // 部分手機瀏覽器需要將元素加入 DOM 才能點擊
+    a.click();
+    
+    // 5. 清理與釋放記憶體
+    setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href); 
+    }, 100);
+}
+
+function importData(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // 🚩 檢查副檔名 (非強制，但可提醒玩家)
+    if (!file.name.endsWith('.pkms') && !file.name.endsWith('.json')) {
+        if (!confirm("這看起來不是標準的存檔格式，是否仍要嘗試讀取？")) return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        try {
+            const loaded = JSON.parse(ev.target.result);
+            
+            // 🚩 [關鍵修改] 使用與 window.onload 一致的合併邏輯
+            // 這樣能保證「舊存檔」匯入「新遊戲」時，新功能變數（如 dailyWild）不會消失
+            s = { 
+                ...s,              // 先放目前新版本的預設結構
+                ...loaded,         // 用讀取的資料覆蓋
+                claimedGifts: (loaded.claimedGifts || s.claimedGifts || []) // 確保陣列欄位存在
+            };
+
+            // 🚩 匯入後立即存檔到 LocalStorage，確保手機關閉 APP 後資料還在
+            localStorage.setItem('pokemaster_v60', JSON.stringify(s));
+
+            // 更新 UI 顯示新資料
+            updateUI(); 
+            
+            alert("✅ 存檔匯入成功！");
+            
+            // 重設上傳按鈕，方便下次重複選取相同檔案
+            e.target.value = ""; 
+
+        } catch (err) {
+            console.error("Import Error:", err);
+            alert("❌ 讀取失敗：存檔內容損壞或格式不符");
+        }
+    };
+    reader.readAsText(file);
+}
+function lighten() { /* 簡化清理邏輯保留 */ const start = document.getElementById('lightStart').value; const end = document.getElementById('lightEnd').value; if(!start || !end) return; exportData(); s.hist = s.hist.filter(h => h.date < start || h.date > end); updateUI(); alert("清理完成並已匯出備份。"); }
+function resetAll() { if(confirm("🔥 確定重置？這會永久刪除所有紀錄與圖鑑！")) { localStorage.removeItem('pokemaster_v60'); location.reload(); } }
+</script>
+<script>
+    // ==========================================
+// 1. 資料庫定義：博士與冠軍的贈禮名單
+// ==========================================
+
+// ==========================================
+// 2. 核心邏輯：天數計算與存檔檢查
+// ==========================================
+function getAccountAge() {
+    if (!s.firstDate) {
+        s.firstDate = new Date().toISOString().split('T')[0];
+        saveGameData(); // 確保初始日期被存下
+        return 0;
+    }
+    const diffTime = Math.abs(new Date() - new Date(s.firstDate));
+    return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+}
+
+function saveGameData() {
+    if (typeof saveData === 'function') {
+        saveData();
+    } else {
+        localStorage.setItem('pokemaster_v60', JSON.stringify(s));
+    }
+}
+
+// ==========================================
+// 3. UI 渲染：更新商店按鈕狀態
+// ==========================================
+function updateGiftButtons() {
+    if (!s.claimedGifts) s.claimedGifts = [];
+    const days = getAccountAge();
+    const championKeys = Object.keys(CHAMPION_DATA);
+    const doctorKeys = Object.keys(DOCTOR_DATA);
+
+    const aceMap = { 'red': 6, 'lance': 149, 'steven': 376, 'cynthia': 445 };
+    const championNames = {
+        'red': '關都地區｜赤紅的傳記祝福',
+        'lance': '城都地區｜阿渡的龍之覺醒',
+        'steven': '豐緣地區｜大吾的鋼鐵意志',
+        'cynthia': '神奧地區｜竹蘭的遺跡之魂'
+    };
+
+    const lockMessages = {
+    'red': '赤紅正在白銀山巔修練...',
+    'lance': '龍之使者的試煉尚未開啟',
+    'steven': '大吾正忙於挖掘罕見原石',
+    'cynthia': '竹蘭正在調查神奧的神話'
+};
+
+    [...doctorKeys, ...championKeys].forEach(key => {
+        const btn = document.getElementById(`btn-gift-${key}`);
+        if (!btn) return;
+
+        const isChamp = championKeys.includes(key);
+        const hasClaimed = s.claimedGifts.includes(key);
+
+        // --- A. 博士按鈕邏輯 (適配白色卡片) ---
+        if (!isChamp) {
+            const docInfo = DOCTOR_DATA[key];
+            if (!docInfo) return;
+            
+            // 抓取梗圖，若無則抓取該區火系御三家作為備援
+            const iconId = docInfo.sceneIconId || docInfo.ids[1];
+            const sceneImg = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${iconId}.png`;
+            
+            btn.disabled = hasClaimed;
+            
+            // 調整：文字改為深藍灰色 #2c3e50，圖標底座改為淡灰色
+            btn.innerHTML = `
+                <div style="display:flex; align-items:center; gap:12px; padding: 4px; opacity: ${hasClaimed ? '0.6' : '1'};">
+                    <div style="width:40px; height:40px; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:rgba(0,0,0,0.05); border-radius:50%;">
+                        <img src="${sceneImg}" style="width:110%; height:auto; filter: ${hasClaimed ? 'grayscale(1) brightness(0.7)' : 'drop-shadow(0 0 3px rgba(0,0,0,0.2))'};">
+                    </div>
+                    <span style="font-weight:bold; font-size:14px; color:#2c3e50; text-align:left;">
+                        ${hasClaimed ? '✅ ' : ''}${docInfo.name}
+                    </span>
+                </div>
+            `;
+            
+            // 調整：未領取時使用主題藍色虛線，已領取變灰實線
+            btn.style.display = "block";
+            btn.style.width = "100%";
+            btn.style.marginBottom = "8px";
+            btn.style.borderRadius = "12px";
+            btn.style.transition = "all 0.3s";
+            btn.style.border = hasClaimed ? "1.5px solid #bdc3c7" : "1.5px dashed #3498db";
+            btn.style.background = hasClaimed ? "#f2f2f2" : "#ffffff";
+            btn.style.cursor = hasClaimed ? "default" : "pointer";
+
+        // --- B. 冠軍按鈕邏輯 (同步視覺風格) ---
+        } else {
+            const aceId = aceMap[key];
+            const imgUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${aceId}.png`;
+            
+            if (hasClaimed) {
+                btn.disabled = true;
+                btn.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:12px; padding: 4px; opacity: 0.6;">
+                        <div style="width:40px; filter:grayscale(1) brightness(0.7);"><img src="${imgUrl}" style="width:100%"></div>
+                        <div style="font-weight:bold; font-size:14px; color:#95a5a6; text-align:left;">✅ 已獲得祝福</div>
+                    </div>
+                `;
+                btn.style.border = "1.5px solid #bdc3c7";
+                btn.style.background = "#f2f2f2";
+           } else if (days < 100) {
+    btn.disabled = false;
+    
+    // 取得該格子的專屬文字，如果沒設定就顯示預設值
+    const customMsg = lockMessages[key] || `解鎖冠軍祝福`;
+
+    btn.innerHTML = `
+        <div style="display:flex; align-items:center; gap:12px; padding: 4px; opacity: 0.8;">
+            <div style="width:40px; filter:grayscale(1); opacity: 0.5;">
+                <img src="${imgUrl}" style="width:100%">
+            </div>
+            <div style="font-weight:bold; font-size:13px; color:#7f8c8d; text-align:left;">
+                <div style="color:#e74c3c; font-size:11px;">🔒 距離認可還差 ${100 - days} 天</div>
+                <div>${customMsg}</div>
+            </div>
+        </div>
+    `;
+                btn.style.border = "1.5px dashed #bdc3c7"; // 使用虛線代表未解鎖
+                btn.style.background = "#fafafa";
+                btn.style.display = "block";
+                btn.style.width = "100%";
+                btn.style.marginBottom = "8px";
+                btn.style.borderRadius = "12px";
+                btn.style.cursor = "pointer"; // 顯示手指，暗示可以點擊看說明
+            }
+        }
+    });
+}
+
+
+
+// ==========================================
+// 5. 🧪 測試工具：時光倒流
+// ==========================================
+function testFastForward() {
+    const pastDate = new Date();
+    pastDate.setDate(pastDate.getDate() - 101);
+    s.firstDate = pastDate.toISOString().split('T')[0];
+    saveGameData();
+    updateGiftButtons();
+    alert("✨ 已手動解鎖：你現在擁有 100 天記帳資歷了！");
+}
+</script>
+
+</body>
+</html>

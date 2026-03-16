@@ -1680,11 +1680,18 @@ function renderGarden() {
 
     </div>
 
-            <div style="margin-top: 30px; display: flex; justify-content: center; gap: 15px;">
-                <button onclick="toggleGardenModal('farm-inv')" style="background: #795548; color: white; padding: 12px 20px; border: none; border-radius: 8px; flex: 1; cursor:pointer;">📦 儲存箱</button>
-                <button onclick="toggleGardenModal('recipe-book')" style="background: #e67e22; color: white; padding: 12px 20px; border: none; border-radius: 8px; flex: 1; cursor:pointer;">📜 食譜圖鑑</button>
+            <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+    
+    <div onclick="toggleGardenModal('farm-inv')" style="padding: 12px; background: linear-gradient(135deg, #a8e063, #56ab2f); color: white; border-radius: 12px; cursor: pointer; text-align: center; box-shadow: 0 4px 15px rgba(86,171,47,0.3);">
+        <div style="font-size: 20px;">🧺</div>
+        <div style="font-size: 11px; font-weight: bold;">素材儲存</div>
+    </div>
 
- <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+    <div onclick="toggleGardenModal('recipe-book')" style="padding: 12px; background: linear-gradient(135deg, #feb47b, #ff7e5f); color: white; border-radius: 12px; cursor: pointer; text-align: center; box-shadow: 0 4px 15px rgba(255,126,95,0.3);">
+        <div style="font-size: 20px;">📜</div>
+        <div style="font-size: 11px; font-weight: bold;">料理圖鑑</div>
+    </div>
+
     <div onclick="openExpeditionPage()" style="padding: 12px; background: linear-gradient(135deg, #6dd5ed, #2193b0); color: white; border-radius: 12px; cursor: pointer; text-align: center; box-shadow: 0 4px 15px rgba(33,147,176,0.3);">
         <div style="font-size: 20px;">🚀</div>
         <div style="font-size: 11px; font-weight: bold;">冒險小隊</div>
@@ -1694,7 +1701,9 @@ function renderGarden() {
         <div style="font-size: 20px;">📢</div>
         <div style="font-size: 11px; font-weight: bold;">活動公告</div>
     </div>
+
 </div>
+
 
             </div>
         </div>

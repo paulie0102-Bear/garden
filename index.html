@@ -2255,52 +2255,6 @@ function submitQuest() {
     }
 }
 
-const LEGENDARY_POOL = [
-    // --- 關都地區 (5) ---
-    { id: 144, name: '急凍鳥', area: '關都地區', food: '滑蛋鮮魚粥', power: 1.5 },
-    { id: 145, name: '閃電鳥', area: '關都地區', food: '鮮蝦燒肉飯', power: 1.5 },
-    { id: 146, name: '火焰鳥', area: '關都地區', food: '鮮蝦時蔬快炒', power: 1.5 },
-    { id: 150, name: '超夢', area: '關都地區', food: '陸海空豪華便當', power: 2.0 },
-    { id: 151, name: '夢幻', area: '關都地區', food: '嫩蝦蔬菜蒸蛋', power: 2.0 },
-
-    // --- 城都地區 (6) ---
-    { id: 243, name: '雷公', area: '城都地區', food: '鮮蝦燒肉飯', power: 1.5 },
-    { id: 244, name: '炎帝', area: '城都地區', food: '陸海空豪華便當', power: 1.5 },
-    { id: 245, name: '水君', area: '城都地區', food: '滑蛋鮮魚粥', power: 1.5 },
-    { id: 249, name: '洛奇亞', area: '城都地區', food: '時蔬魚排歐姆蛋', power: 2.0 },
-    { id: 250, name: '鳳王', area: '城都地區', food: '黃金蝦仁炒飯', power: 2.0 },
-    { id: 251, name: '時拉比', area: '城都地區', food: '嫩蝦蔬菜蒸蛋', power: 1.5 },
-
-    // --- 芳緣地區 (10) ---
-    { id: 377, name: '雷吉洛克', area: '芳緣地區', food: '海陸健身沙拉', power: 1.5 },
-    { id: 378, name: '雷吉艾斯', area: '芳緣地區', food: '滑蛋鮮魚粥', power: 1.5 },
-    { id: 379, name: '雷吉斯奇魯', area: '芳緣地區', food: '鮮蝦時蔬快炒', power: 1.5 },
-    { id: 380, name: '拉帝亞斯', area: '芳緣地區', food: '嫩蝦蔬菜蒸蛋', power: 1.5 },
-    { id: 381, name: '拉帝歐斯', area: '芳緣地區', food: '黃金蝦仁炒飯', power: 1.5 },
-    { id: 382, name: '蓋歐卡', area: '芳緣地區', food: '時蔬魚排歐姆蛋', power: 2.0 },
-    { id: 383, name: '固拉多', area: '芳緣地區', food: '鮮蝦燒肉飯', power: 2.0 },
-    { id: 384, name: '烈空坐', area: '芳緣地區', food: '陸海空豪華便當', power: 2.0 },
-    { id: 385, name: '基拉祈', area: '芳緣地區', food: '嫩蝦蔬菜蒸蛋', power: 1.5 },
-    { id: 386, name: '代歐奇希斯', area: '芳緣地區', food: '黃金蝦仁炒飯', power: 1.5 },
-
-    // --- 神奧地區 (13) ---
-    { id: 480, name: '由克希', area: '神奧地區', food: '嫩蝦蔬菜蒸蛋', power: 1.5 },
-    { id: 481, name: '艾姆利多', area: '神奧地區', food: '海陸健身沙拉', power: 1.5 },
-    { id: 482, name: '亞克諾姆', area: '神奧地區', food: '鮮蝦時蔬快炒', power: 1.5 },
-    { id: 483, name: '帝牙盧卡', area: '神奧地區', food: '鮮蝦燒肉飯', power: 2.0 },
-    { id: 484, name: '帕路奇亞', area: '神奧地區', food: '滑蛋鮮魚粥', power: 2.0 },
-    { id: 486, name: '雷吉奇卡斯', area: '神奧地區', food: '陸海空豪華便當', power: 2.0 },
-    { id: 487, name: '騎拉帝納', area: '神奧地區', food: '海陸健身沙拉', power: 2.0 },
-    { id: 488, name: '克雷色利亞', area: '神奧地區', food: '嫩蝦蔬菜蒸蛋', power: 1.5 },
-    { id: 489, name: '菲歐納', area: '神奧地區', food: '滑蛋鮮魚粥', power: 1.5 },
-    { id: 490, name: '瑪納霏', area: '神奧地區', food: '時蔬魚排歐姆蛋', power: 1.5 },
-    { id: 491, name: '達克萊伊', area: '神奧地區', food: '海陸健身沙拉', power: 1.5 },
-    { id: 492, name: '謝米', area: '神奧地區', food: '嫩蝦蔬菜蒸蛋', power: 1.5 },
-    { id: 493, name: '阿爾宙斯', area: '神奧地區', food: '黃金蝦仁炒飯', power: 2.0 }
-];
-
-
-
     
 function wishStar() {
     const f = s.farm;
@@ -4385,479 +4339,240 @@ function testFastForward() {
 }
 
 
-/* ===============================
-   探險系統 UI
-================================*/
+/* --- 1. 神獸名單與分類 --- */
+const LEGENDARY_POOL = [
+    // 關都
+    { id: 144, name: '急凍鳥', area: '關都地區', food: '滑蛋鮮魚粥', power: 1.5 },
+    { id: 145, name: '閃電鳥', area: '關都地區', food: '鮮蝦燒肉飯', power: 1.5 },
+    { id: 146, name: '火焰鳥', area: '關都地區', food: '鮮蝦時蔬快炒', power: 1.5 },
+    { id: 150, name: '超夢', area: '關都地區', food: '陸海空豪華便當', power: 2.0 },
+    { id: 151, name: '夢幻', area: '關都地區', food: '嫩蝦蔬菜蒸蛋', power: 2.0 },
+    // 城都
+    { id: 243, name: '雷公', area: '城都地區', food: '鮮蝦燒肉飯', power: 1.5 },
+    { id: 244, name: '炎帝', area: '城都地區', food: '陸海空豪華便當', power: 1.5 },
+    { id: 245, name: '水君', area: '城都地區', food: '滑蛋鮮魚粥', power: 1.5 },
+    { id: 249, name: '洛奇亞', area: '城都地區', food: '時蔬魚排歐姆蛋', power: 2.0 },
+    { id: 250, name: '鳳王', area: '城都地區', food: '黃金蝦仁炒飯', power: 2.0 },
+    { id: 251, name: '時拉比', area: '城都地區', food: '嫩蝦蔬菜蒸蛋', power: 1.5 },
+    // 芳緣
+    { id: 377, name: '雷吉洛克', area: '芳緣地區', food: '海陸健身沙拉', power: 1.5 },
+    { id: 378, name: '雷吉艾斯', area: '芳緣地區', food: '滑蛋鮮魚粥', power: 1.5 },
+    { id: 379, name: '雷吉斯奇魯', area: '芳緣地區', food: '鮮蝦時蔬快炒', power: 1.5 },
+    { id: 380, name: '拉帝亞斯', area: '芳緣地區', food: '嫩蝦蔬菜蒸蛋', power: 1.5 },
+    { id: 381, name: '拉帝歐斯', area: '芳緣地區', food: '黃金蝦仁炒飯', power: 1.5 },
+    { id: 382, name: '蓋歐卡', area: '芳緣地區', food: '時蔬魚排歐姆蛋', power: 2.0 },
+    { id: 383, name: '固拉多', area: '芳緣地區', food: '鮮蝦燒肉飯', power: 2.0 },
+    { id: 384, name: '烈空坐', area: '芳緣地區', food: '陸海空豪華便當', power: 2.0 },
+    { id: 385, name: '基拉祈', area: '芳緣地區', food: '嫩蝦蔬菜蒸蛋', power: 1.5 },
+    { id: 386, name: '代歐奇希斯', area: '芳緣地區', food: '黃金蝦仁炒飯', power: 1.5 },
+    // 神奧
+    { id: 480, name: '由克希', area: '神奧地區', food: '嫩蝦蔬菜蒸蛋', power: 1.5 },
+    { id: 481, name: '艾姆利多', area: '神奧地區', food: '海陸健身沙拉', power: 1.5 },
+    { id: 482, name: '亞克諾姆', area: '神奧地區', food: '鮮蝦時蔬快炒', power: 1.5 },
+    { id: 483, name: '帝牙盧卡', area: '神奧地區', food: '鮮蝦燒肉飯', power: 2.0 },
+    { id: 484, name: '帕路奇亞', area: '神奧地區', food: '滑蛋鮮魚粥', power: 2.0 },
+    { id: 486, name: '雷吉奇卡斯', area: '神奧地區', food: '陸海空豪華便當', power: 2.0 },
+    { id: 487, name: '騎拉帝納', area: '神奧地區', food: '海陸健身沙拉', power: 2.0 },
+    { id: 488, name: '克雷色利亞', area: '神奧地區', food: '嫩蝦蔬菜蒸蛋', power: 1.5 },
+    { id: 489, name: '菲歐納', area: '神奧地區', food: '滑蛋鮮魚粥', power: 1.5 },
+    { id: 490, name: '瑪納霏', area: '神奧地區', food: '時蔬魚排歐姆蛋', power: 1.5 },
+    { id: 491, name: '達克萊伊', area: '神奧地區', food: '海陸健身沙拉', power: 1.5 },
+    { id: 492, name: '謝米', area: '神奧地區', food: '嫩蝦蔬菜蒸蛋', power: 1.5 },
+    { id: 493, name: '阿爾宙斯', area: '神奧地區', food: '黃金蝦仁炒飯', power: 2.0 }
+];
 
-function openExpeditionPage(){
-
+/* --- 2. 派遣結算邏輯 --- */
+function finishExpedition() {
     const ex = s.farm.expedition;
-    const regions = ['關都地區','城都地區','芳緣地區','神奧地區'];
-    const dishes = s.farm.dishes || {};
+    const ev = s.farm.event?.current;
 
-    const modalHTML = `
-    <div id="expedition-modal" style="
-        position:fixed;
-        top:50%;
-        left:50%;
-        transform:translate(-50%,-50%);
-        width:95%;
-        max-width:400px;
-        max-height:90vh;
-        background:#f0f4f8;
-        border-radius:20px;
-        box-shadow:0 20px 50px rgba(0,0,0,0.4);
-        z-index:10005;
-        display:flex;
-        flex-direction:column;
-        overflow:hidden;
-        border:4px solid #2193b0">
+    const resourceIcons = { '紅': ['🥩','🥚'], '藍': ['🐟','🦐'], '綠': ['🌾','🥗'] };
+    let baseResources = { '🥩':0,'🥚':0,'🐟':0,'🦐':0,'🌾':0,'🥗':0 };
 
-        <div style="
-            background:linear-gradient(135deg,#2193b0,#6dd5ed);
-            padding:15px;
-            color:white;
-            text-align:center;
-            font-weight:bold;
-            position:relative">
-
-            🚀 冒險探險隊編組
-            <span onclick="closeExpeditionPage()"
-            style="position:absolute;right:15px;cursor:pointer">✕</span>
-
-        </div>
-
-
-        <div style="flex:1;overflow-y:auto;padding:15px">
-
-            <div style="margin-bottom:20px">
-                <div style="font-weight:bold;margin-bottom:6px">📍 選擇目的地</div>
-
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-
-                ${regions.map(r=>`
-                    <div onclick="setExpeditionRegion('${r}')"
-                    style="
-                    padding:10px;
-                    border-radius:10px;
-                    text-align:center;
-                    cursor:pointer;
-                    border:2px solid ${ex.region===r?'#2193b0':'#ddd'};
-                    background:${ex.region===r?'#e3f2fd':'white'};
-                    font-weight:bold">
-
-                    ${r}
-                    </div>
-                `).join("")}
-
-                </div>
-            </div>
-
-
-            <div style="margin-bottom:20px">
-                <div style="font-weight:bold;margin-bottom:6px">
-                👥 小隊成員 (${ex.team.filter(x=>x).length}/6)
-                </div>
-
-                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-
-                ${ex.team.map((poke,i)=>`
-                <div onclick="${poke?`removeMemberFromSlot(${i})`:`selectTeamMember(${i})`}"
-                style="
-                aspect-ratio:1/1;
-                background:white;
-                border:2px ${poke?'solid #2193b0':'dashed #ccc'};
-                border-radius:12px;
-                display:flex;
-                align-items:center;
-                justify-content:center;
-                position:relative;
-                cursor:pointer">
-
-                ${
-                    poke
-                    ?
-                    `
-                    <img src="${GARDEN.getGif(poke.id)}"
-                    style="width:50px;height:50px;image-rendering:pixelated">
-                    <div style="
-                    position:absolute;
-                    top:-5px;
-                    right:-5px;
-                    background:#ff5e62;
-                    color:white;
-                    width:20px;
-                    height:20px;
-                    border-radius:50%;
-                    font-size:12px;
-                    text-align:center;
-                    line-height:20px">×</div>
-                    `
-                    :
-                    `<span style="font-size:30px;color:#ccc">+</span>`
-                }
-
-                </div>
-                `).join("")}
-
-                </div>
-            </div>
-
-
-            <div>
-
-                <div style="font-weight:bold;margin-bottom:6px">
-                🍱 攜帶料理
-                </div>
-
-                <div style="display:grid;gap:6px">
-
-                ${Object.values(GARDEN.recipes).map(data=>{
-
-                    const count = dishes[data.icon]||0;
-                    const selected = ex.selectedDish===data.name;
-
-                    return `
-                    <div onclick="${count>0?`selectExpeditionDish('${data.name}')`:''}"
-                    style="
-                    display:flex;
-                    justify-content:space-between;
-                    padding:10px;
-                    border-radius:10px;
-                    border:2px solid ${selected?'#ffb74d':'#eee'};
-                    background:${selected?'#fff3e0':'white'};
-                    opacity:${count>0?1:0.5};
-                    cursor:${count>0?'pointer':'not-allowed'}">
-
-                        <div>
-                        ${data.icon} ${data.name}
-                        </div>
-
-                        <div>持有:${count}</div>
-
-                    </div>
-                    `
-
-                }).join("")}
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div style="padding:15px;background:white;border-top:1px solid #eee">
-
-        ${
-            ex.isExploring
-            ?
-            `<div id="exp-timer"
-            style="
-            text-align:center;
-            padding:12px;
-            background:#eceff1;
-            border-radius:12px">
-            ⏳ 剩餘 <span id="exp-countdown">--</span>
-            </div>`
-            :
-            `<button onclick="startExpedition()"
-            style="
-            width:100%;
-            padding:12px;
-            background:#2193b0;
-            color:white;
-            border:none;
-            border-radius:12px;
-            font-weight:bold">
-
-            確認派遣 (8小時)
-
-            </button>`
+    // 計算小隊資源與黑標減時
+    let hoursReduction = 0;
+    ex.team.forEach(p=>{
+        if(!p) return;
+        const data = s.pkm.find(pk=>pk.uniqueId===p.uniqueId);
+        if(!data) return;
+        switch(data.color){
+            case '紅': baseResources['🥩']+=2; baseResources['🥚']+=2; break;
+            case '藍': baseResources['🐟']+=2; baseResources['🦐']+=2; break;
+            case '綠': baseResources['🌾']+=2; baseResources['🥗']+=2; break;
+            case '黑': hoursReduction+=1;
         }
-
-        </div>
-
-    </div>
-    `;
-
-    let container=document.getElementById("expedition-container");
-
-    if(!container){
-        container=document.createElement("div");
-        container.id="expedition-container";
-        document.body.appendChild(container);
-    }
-
-    container.innerHTML=modalHTML;
-
-    if(ex.isExploring){
-        startExpeditionTimer(ex.endTime);
-    }
-
-}
-
-
-/* ===============================
-   倒數計時
-================================*/
-
-function startExpeditionTimer(endTime){
-
-    function update(){
-
-        const diff=endTime-Date.now();
-        const el=document.getElementById("exp-countdown");
-
-        if(!el)return;
-
-        if(diff<=0){
-
-            el.innerText="完成！點擊領取";
-
-            document.getElementById("exp-timer").onclick=finishExpedition;
-
-            return;
-        }
-
-        const h=Math.floor(diff/3600000);
-        const m=Math.floor((diff%3600000)/60000);
-        const s=Math.floor((diff%60000)/1000);
-
-        el.innerText=`${h}h ${m}m ${s}s`;
-
-        setTimeout(update,1000);
-
-    }
-
-    update();
-
-}
-
-
-/* ===============================
-   控制
-================================*/
-
-function setExpeditionRegion(r){
-
-    s.farm.expedition.region=r;
-
-    openExpeditionPage();
-
-}
-
-function selectExpeditionDish(d){
-
-    s.farm.expedition.selectedDish=d;
-
-    openExpeditionPage();
-
-}
-
-function removeMemberFromSlot(i){
-
-    s.farm.expedition.team[i]=null;
-
-    openExpeditionPage();
-
-}
-
-
-/* ===============================
-   開始探險
-================================*/
-
-function startExpedition(){
-
-    const ex=s.farm.expedition;
-
-    if(ex.team.filter(x=>x).length===0){
-        alert("隊伍不能為空");
-        return;
-    }
-
-    if(!ex.selectedDish){
-        alert("請選擇料理");
-        return;
-    }
-
-    const recipe=Object.values(GARDEN.recipes)
-    .find(r=>r.name===ex.selectedDish);
-
-    if(recipe){
-        s.farm.dishes[recipe.icon]--;
-    }
-
-    ex.isExploring=true;
-    ex.endTime=Date.now()+8*3600000;
-
-    saveGameData();
-
-    openExpeditionPage();
-
-}
-
-
-/* ===============================
-   完成探險
-================================*/
-
-function finishExpedition(){
-
-    const ex=s.farm.expedition;
-
-    const resourceIcons=["🌾","🐟","🥩","🦐","🥗","🥚"];
-
-    const result={};
-
-    const count=Math.floor(Math.random()*3)+2;
-
-    for(let i=0;i<count;i++){
-
-        const icon=resourceIcons[Math.floor(Math.random()*resourceIcons.length)];
-
-        result[icon]=(result[icon]||0)+Math.floor(Math.random()*5)+5;
-
-    }
-
-    Object.entries(result).forEach(([icon,num])=>{
-        s.farm.inv[icon]=(s.farm.inv[icon]||0)+num;
     });
 
+    const finalHours = Math.max(2, 8 - hoursReduction);
+
+    // 計算白標加成
+    let whiteMultiplier = 1.0;
+    ex.team.forEach(p=>{
+        if(!p) return;
+        const legendary = LEGENDARY_POOL.find(l=>l.uniqueId===p.uniqueId||l.id===p.id);
+        if(legendary && legendary.power>whiteMultiplier) whiteMultiplier = legendary.power;
+    });
+
+    // 套用加成
+    Object.keys(baseResources).forEach(k=>{
+        baseResources[k] = Math.floor(baseResources[k]*whiteMultiplier);
+    });
+
+    // 神獸遇見判定
+    let encounter = { id: 10, name: "綠毛蟲" }, hearts="🤍🤍🤍";
+    let isLegendaryCaught = false;
+    if(ev && ex.region===ev.area && ex.selectedDish===ev.food){
+        if(Math.random()<0.3){ // 改為30%遇見率
+            encounter = ev;
+            hearts="❤️❤️❤️";
+            isLegendaryCaught=true;
+        }
+    }
+
+    // 發放資源
+    Object.entries(baseResources).forEach(([icon,count])=>{
+        s.farm.inv[icon] = (s.farm.inv[icon]||0)+count;
+    });
+
+    // 發放神獸
+    if(isLegendaryCaught){
+        s.pkm.push({...encounter, uniqueId:Date.now()+"_L"});
+    }
+
+    // 重置探險狀態
     ex.isExploring=false;
     ex.endTime=0;
+    if(typeof saveGameData==='function') saveGameData();
 
-    saveGameData();
-
-    alert("探險完成！獲得資源");
-
-    closeExpeditionPage();
-
+    // 生成日誌 HTML (可用 generateLogHTML 或自定義)
+    const logData = {
+        location: ex.region,
+        hours: finalHours,
+        resources: baseResources,
+        multiplier:whiteMultiplier,
+        whiteName: LEGENDARY_POOL.find(l=>l.power===whiteMultiplier)?.name || "",
+        encounter,
+        hearts
+    };
+    const container=document.getElementById('expedition-container');
+    if(container) container.innerHTML=generateLogHTML(logData);
 }
 
+/* --- 3. collectExpedition (白標/黑標/基礎產量) --- */
+function collectExpedition(team,resultResource){
+    const whiteMember=team.find(m=>m.tag==='white');
+    const multiplier = whiteMember ? whiteMember.power : 1.0;
 
-/* ===============================
-   UI
-================================*/
-
-function closeExpeditionPage(){
-
-    const c=document.getElementById("expedition-container");
-
-    if(c) c.innerHTML="";
-
-}
-
-function selectTeamMember(slotIndex){
-
-    const myPokemons = s.pkm || [];
-
-    let html = `
-    <div id="member-picker-modal"
-    style="
-    position:fixed;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
-    width:90%;
-    max-width:350px;
-    max-height:70vh;
-    background:white;
-    border-radius:20px;
-    box-shadow:0 10px 30px rgba(0,0,0,0.5);
-    z-index:10010;
-    padding:20px;
-    display:flex;
-    flex-direction:column">
-
-    <h3 style="text-align:center;margin-top:0">選擇小隊成員</h3>
-
-    <div style="
-    flex:1;
-    overflow-y:auto;
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:10px">
-    `;
-
-    myPokemons.forEach((p,index)=>{
-
-        const img = GARDEN.getGif(p.id);
-
-        html += `
-        <div onclick="addMemberToSlot(${slotIndex},${index})"
-        style="
-        background:#f5f5f5;
-        border-radius:10px;
-        padding:5px;
-        text-align:center;
-        cursor:pointer">
-
-        <img src="${img}"
-        style="width:40px;height:40px;image-rendering:pixelated">
-
-        <div style="font-size:10px">
-        Lv.${p.lv || 1}
-        </div>
-
-        </div>
-        `;
-
+    Object.keys(resultResource).forEach(type=>{
+        const amount=Math.floor(resultResource[type]*multiplier);
+        s.farm.inv[type]=(s.farm.inv[type]||0)+amount;
+        console.log(`[探險回歸] 獲得 ${type} x ${amount} (含倍率加成)`);
     });
 
-    html += `
-    </div>
-
-    <button onclick="closeMemberPicker()"
-    style="
-    margin-top:15px;
-    width:100%;
-    padding:10px;
-    border:none;
-    background:#eee;
-    border-radius:10px">
-
-    取消
-
-    </button>
-
-    </div>
-    `;
-
-    let div=document.getElementById("member-picker-container");
-
-    if(!div){
-        div=document.createElement("div");
-        div.id="member-picker-container";
-        document.body.appendChild(div);
-    }
-
-    div.innerHTML=html;
-
+    if(typeof saveGameData==='function') saveGameData();
+    if(typeof renderGarden==='function') renderGarden();
 }
-    function addMemberToSlot(slotIndex,pkmIndex){
 
-    const p=s.pkm[pkmIndex];
-
-    s.farm.expedition.team[slotIndex]={
-        id:p.id,
-        uniqueId:p.uniqueId,
-        lv:p.lv||1
+/* --- 1. 打開派遣頁面 --- */
+function openExpeditionPage(region){
+    s.farm.expedition = {
+        region,
+        team: [null,null,null,null,null,null],
+        selectedDish: null,
+        isExploring: false,
+        endTime: 0
     };
-
-    closeMemberPicker();
-
-    openExpeditionPage();
-
+    renderTeamSlots();
+    renderAvailableMembers();
+    renderDishSelection();
 }
-    function closeMemberPicker(){
 
-    const div=document.getElementById("member-picker-container");
-
-    if(div) div.remove();
-
+/* --- 2. 渲染隊伍槽位 --- */
+function renderTeamSlots(){
+    const container=document.getElementById('team-slots');
+    if(!container) return;
+    container.innerHTML='';
+    s.farm.expedition.team.forEach((member,idx)=>{
+        const slot=document.createElement('div');
+        slot.className='team-slot';
+        slot.dataset.slot=idx;
+        slot.innerText = member ? `${member.color} ${member.name}` : '空位';
+        slot.onclick=()=>removeMemberFromSlot(idx);
+        container.appendChild(slot);
+    });
 }
+
+/* --- 3. 渲染可選成員 --- */
+function renderAvailableMembers(){
+    const container=document.getElementById('available-members');
+    if(!container) return;
+    container.innerHTML='';
+    s.pkm.forEach(member=>{
+        const card=document.createElement('div');
+        card.className='member-card';
+        card.innerText=`${member.color} ${member.name}`;
+        card.onclick=()=>addMemberToSlot(member);
+        container.appendChild(card);
+    });
+}
+
+/* --- 4. 加入成員到空槽位 --- */
+function addMemberToSlot(member){
+    const exp=s.farm.expedition;
+    const emptyIdx = exp.team.findIndex(m=>!m);
+    if(emptyIdx===-1) return alert("隊伍已滿 6 隻！");
+    exp.team[emptyIdx] = member;
+    renderTeamSlots();
+}
+
+/* --- 5. 移除成員 --- */
+function removeMemberFromSlot(idx){
+    const exp=s.farm.expedition;
+    if(!exp.team[idx]) return;
+    exp.team[idx] = null;
+    renderTeamSlots();
+}
+
+/* --- 6. 選擇料理 --- */
+function selectDish(dish){
+    s.farm.expedition.selectedDish = dish;
+    const container=document.getElementById('selected-dish');
+    if(container) container.innerText=`選擇料理：${dish}`;
+}
+
+/* --- 7. 開始派遣 --- */
+function startExpedition(){
+    const exp=s.farm.expedition;
+    if(!exp.team.some(m=>m)) return alert("請至少選擇一隻寶可夢！");
+    if(!exp.selectedDish) return alert("請選擇料理！");
+    exp.isExploring = true;
+    exp.endTime = Date.now() + 1000*60*60*8; // 8 小時基準
+    alert(`派遣至 ${exp.region} 開始！`);
+}
+
+/* --- 8. 回收派遣 --- */
+function completeExpedition(){
+    finishExpedition();  // 使用之前整合好的核心結算函數
+    renderTeamSlots();
+    renderAvailableMembers();
+    renderDishSelection();
+    alert("探險完成！日誌已生成。");
+}
+
+/* --- 9. 渲染料理選擇 --- */
+function renderDishSelection(){
+    const container=document.getElementById('dish-selection');
+    if(!container) return;
+    const dishes=['滑蛋鮮魚粥','鮮蝦燒肉飯','鮮蝦時蔬快炒','陸海空豪華便當','嫩蝦蔬菜蒸蛋','黃金蝦仁炒飯','時蔬魚排歐姆蛋','海陸健身沙拉'];
+    container.innerHTML='';
+    dishes.forEach(dish=>{
+        const btn=document.createElement('button');
+        btn.innerText=dish;
+        btn.onclick=()=>selectDish(dish);
+        container.appendChild(btn);
+    });
+}
+    
     
 </script>
 </body>

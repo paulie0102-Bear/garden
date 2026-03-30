@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>小星靈的暖心花園 - 溫柔療癒存檔版</title>
-    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f338.png">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/512/emoji_u1f338.png">
     
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-title" content="小星靈花園">
@@ -12,20 +12,56 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <style>
         :root {
-            --bg-day: #e8f5e9; --bg-night: #1a2a1a;
-            --primary-green: #81c784; --primary-flower: #f48fb1;
-        }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body {
-            margin: 0; padding: 0; font-family: "PingFang TC", sans-serif;
-            transition: background 1s; overflow: hidden;
-            display: flex; flex-direction: column; align-items: center; height: 100vh;
-        }
-        /* 背景裝飾 */
-        .day { background: var(--bg-day); color: #2e7d32; }
-        .night { background: var(--bg-night); color: #a5d6a7; }
-        
-        /* 新的動態裝飾樣式 */
+    --bg-day: #e8f5e9; --bg-night: #1a2a1a;
+    --primary-green: #81c784; --primary-flower: #f48fb1;
+}
+
+/* 🌟 全域優化：禁用 iOS 長按選單，提升遊戲感 */
+* { 
+    box-sizing: border-box; 
+    -webkit-tap-highlight-color: transparent; 
+    
+    /* 🚫 禁用長按與選取內容 (遊戲體驗優化) */
+    -webkit-touch-callout: none;    /* iOS Safari 專用：禁用長按選單 */
+    -webkit-user-select: none;      /* Safari, Chrome, Opera 舊版 */
+    -moz-user-select: none;         /* Firefox 專用 */
+    -ms-user-select: none;          /* Internet Explorer/Edge 舊版 */
+    user-select: none;              /* 標準屬性：支援所有現代瀏覽器 */
+}
+
+/* 🔓 確保輸入框、文字區域與可編輯內容仍可選取文字 */
+input, textarea, [contenteditable="true"] { 
+    -webkit-user-select: text; 
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text; 
+}
+
+body {
+    margin: 0; padding: 0; font-family: "PingFang TC", sans-serif;
+    transition: background 1s; 
+    overflow: hidden;
+    display: flex; flex-direction: column; align-items: center; 
+    height: 100vh;
+    /* 🌟 適應 iOS 安全區域 (防止內容被瀏海或底條遮住) */
+    padding-top: env(safe-area-inset-top);
+}
+
+/* 背景裝飾 */
+.day { background: var(--bg-day); color: #2e7d32; }
+.night { background: var(--bg-night); color: #a5d6a7; }
+
+/* 🌟 底部按鈕區優化：自動避開 iPhone 底部的小白條 */
+.controls { 
+    padding: 10px 20px;
+    padding-bottom: calc(30px + env(safe-area-inset-bottom)); 
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 10px; 
+    width: 100%; 
+    max-width: 400px; 
+}
+
 .decoration-emoji {
     position: fixed; /* 改用 fixed 確保滾動時位置不變 */
     pointer-events: none;

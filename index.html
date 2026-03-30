@@ -507,11 +507,25 @@
     function toggleLetters() { 
         const container = document.getElementById('list-container'); 
         document.getElementById('list-title').innerText = "往日信箱"; 
-        container.className = "scroll-list"; container.innerHTML = gameState.futureLetters.length === 0 ? "<p>信箱空空的...</p>" : ""; 
+        container.className = "scroll-list"; 
+        container.innerHTML = gameState.futureLetters.length === 0 ? "<p>信箱空空的...</p>" : ""; 
+        
         gameState.futureLetters.forEach(l => { 
             const isReady = l.date <= new Date().toISOString().split('T')[0]; 
-            const card = document.createElement('div'); card.className = 'item-card'; 
-            card.innerHTML = `<p style='font-size:10px; color:#999'>${l.timestamp} 寄出</p><p>${isReady ? l.content : '⏳ 傳送中...'}</p><button onclick='deleteLetter(${l.id})' style='font-size:10px; background:#ff8a80; color:white; border:none; padding:3px 8px; border-radius:5px;'>刪除</button>`; 
+            const card = document.createElement('div'); 
+            card.className = 'item-card'; 
+            
+            // 🌟 重點：如果時間到了，顯示「開啟回憶」按鈕，否則顯示倒數
+            const contentHtml = isReady ? 
+                `<p style="cursor:pointer; color:#2e7d32; font-weight:bold; margin:10px 0; text-decoration:underline;" 
+                    onclick="showTimeCapsule('${l.content.replace(/'/g, "\\'")}')">📖 開啟時光膠囊</p>` : 
+                `<p style="color:#999; margin:10px 0;">⏳ 傳送中 (預計 ${l.date} 抵達)</p>`;
+
+            card.innerHTML = `
+                <p style='font-size:10px; color:#999'>${l.timestamp} 寄出</p>
+                ${contentHtml}
+                <button onclick='deleteLetter(${l.id})' style='font-size:10px; background:#ff8a80; color:white; border:none; padding:3px 8px; border-radius:5px;'>刪除</button>
+            `; 
             container.appendChild(card); 
         }); 
         document.getElementById('list-modal').style.display = 'flex'; 
@@ -520,6 +534,50 @@
     function deleteLetter(id) { if(confirm("確定刪除？")) { gameState.futureLetters = gameState.futureLetters.filter(l => l.id !== id); autoSave(); toggleLetters(); } }
 
     init();
+
+function showTimeCapsule(contentText) {
+    // 建立膠囊遮罩
+    const overlay = document.createElement('div');
+    overlay.id = 'capsule-overlay';
+    overlay.style = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.8); display: flex; align-items: center;
+        justify-content: center; z-index: 1000; backdrop-filter: blur(8px);
+        opacity: 0; transition: opacity 0.5s;
+    `;
+
+    // 膠囊本體
+    const content = document.createElement('div');
+    content.style = `
+        background: #fff9e6; padding: 40px 30px; border-radius: 30px;
+        width: 85%; max-width: 400px; text-align: center;
+        box-shadow: 0 0 30px rgba(255,215,0,0.3); transform: scale(0.8);
+        transition: transform 0.5s; border: 3px solid #d4af37; position: relative;
+    `;
+
+    content.innerHTML = `
+        <div style="font-size: 50px; margin-bottom: 20px;">✉️</div>
+        <h3 style="color: #8b4513; margin: 0 0 15px 0; font-size: 22px;">時光膠囊啟封</h3>
+        <div style="color: #5d4037; line-height: 1.8; font-size: 16px; min-height: 100px; display: flex; align-items: center; justify-content: center; border-top: 1px solid #eee; border-bottom: 1px solid #eee; margin: 15px 0; padding: 15px 0;">
+            "${contentText}"
+        </div>
+        <button onclick="document.getElementById('capsule-overlay').remove()" 
+                style="margin-top: 20px; padding: 12px 40px; background: #81c784; 
+                color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                收好這份回憶
+        </button>
+    `;
+
+    overlay.appendChild(content);
+    document.body.appendChild(overlay);
+
+    // 啟動進場動畫
+    setTimeout(() => {
+        overlay.style.opacity = '1';
+        content.style.transform = 'scale(1)';
+    }, 10);
+}
+
 </script>
 </body>
 </html>

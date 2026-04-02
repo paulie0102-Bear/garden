@@ -133,6 +133,51 @@ body {
         /* 儲存容量進度條專用樣式 */
         .storage-progress-area { background: #f9f9f9; padding: 15px; border-radius: 15px; margin-bottom: 15px; text-align: left; border: 1px solid #eee; }
     </style>
+    <style>
+       /* 🫧 泡泡與樹葉的基礎樣式 */
+.pop-item {
+    position: fixed;
+    font-size: 45px; /* 增大尺寸，讓手機好點擊 */
+    cursor: pointer;
+    z-index: 9999;  /* 確保在最上層 */
+    user-select: none;
+    -webkit-user-select: none;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s;
+    
+    /* 讓元素有飄浮動效 */
+    animation: bubbleFloat 4s ease-in-out infinite;
+    
+    /* 讓點擊反應更靈敏 */
+    touch-action: manipulation; 
+}
+
+/* 💥 點擊破裂特效 (當 JS 加入 .popped 類別時觸發) */
+.pop-item.popped {
+    transform: scale(2.5); /* 瞬間放大 */
+    opacity: 0;           /* 變透明 */
+    pointer-events: none; /* 防止重複點擊 */
+}
+
+/* ☁️ 飄浮動畫：模擬在空氣中輕微晃動的感覺 */
+@keyframes bubbleFloat {
+    0%, 100% { 
+        transform: translate(0, 0) rotate(0deg); 
+    }
+    33% { 
+        transform: translate(15px, -25px) rotate(8deg); 
+    }
+    66% { 
+        transform: translate(-15px, 15px) rotate(-8deg); 
+    }
+}
+
+/* 📱 針對小螢幕的微調：如果覺得太大可以縮小一點 */
+@media (max-width: 380px) {
+    .pop-item {
+        font-size: 38px;
+    }
+}
+    </style>
 </head>
 <body class="day">
 
@@ -254,7 +299,10 @@ body {
             { id: 'fd6', name: '金黃薯條', img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f35f.png' }
         ]
     };
-
+// 在常數區定義遊戲時間
+const NURTURE_TIME_LIMIT = 10; // 小遊戲持續 10 秒
+let miniGameScore = 0;         // 紀錄本次戳破的數量
+let spawnInterval = null;      // 用來清除產生器的計時器
     // 2. 狀態初始化 (移至上方)
     let gameState = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
         points: 0, gardenLv: 1, plantStatus: 'idle', 
@@ -283,19 +331,70 @@ body {
     }
 
     function confirmPlanting() {
-        let pool = (gameState.gardenLv < 5) ? ASSETS.flowers : ASSETS.flowers.concat(ASSETS.foods);
-        const item = pool[Math.floor(Math.random() * pool.length)];
+    // 1. 決定這次會種出什麼（邏輯不變）
+    let pool = (gameState.gardenLv < 5) ? ASSETS.flowers : ASSETS.flowers.concat(ASSETS.foods);
+    const item = pool[Math.floor(Math.random() * pool.length)];
 
-        gameState.currentFlowerId = item.id; 
-        gameState.currentFlowerName = item.name; 
-        gameState.currentFlowerImg = item.img;
-        gameState.plantStatus = 'growing'; 
-        gameState.growStartTime = Date.now();
+    gameState.currentFlowerId = item.id; 
+    gameState.currentFlowerName = item.name; 
+    gameState.currentFlowerImg = item.img;
+
+    // 2. 這裡原本是直接改為 'growing'，現在改為啟動小遊戲
+    closeModal(); 
+    startNurturingGame(); // 呼叫下方新增的小遊戲函數
+}
+    function startNurturingGame() {
+    gameState.plantStatus = 'nurturing'; // 切換至新狀態
+    miniGameScore = 0;
+    updateUI();
+    showBubble("🫧 快速點擊泡泡與樹葉，幫植物澆水施肥！");
+
+    // 每 450 毫秒產生一個元素
+    spawnTimer = setInterval(createPopElement, 450);
+
+    // 10 秒後結束遊戲
+    setTimeout(() => {
+        clearInterval(spawnTimer);
+        finishNurturing();
+    }, 10000); 
+}
+
+function createPopElement() {
+    const el = document.createElement('div');
+    el.className = 'pop-item'; // 對應妳 CSS 寫的樣式
+    el.innerText = Math.random() > 0.5 ? '🫧' : '🍃';
+    
+    // 隨機出現在畫面中（避開邊緣）
+    el.style.left = (15 + Math.random() * 70) + '%';
+    el.style.top = (25 + Math.random() * 45) + '%';
+    
+    el.onclick = () => {
+        miniGameScore++;
+        el.classList.add('popped'); // 觸發破裂動畫
+        setTimeout(() => el.remove(), 250);
+    };
+
+    document.body.appendChild(el);
+    // 沒點到 3 秒後自動消失
+    setTimeout(() => { if(el.parentNode) el.remove(); }, 3000);
+}
+
+function finishNurturing() {
+    // 清理殘留泡泡
+    document.querySelectorAll('.pop-item').forEach(el => el.remove());
+    
+    // 獎勵計算：GROWTH_TIME_LIMIT 減去點擊次數，最低剩 3 秒
+    const actualWait = Math.max(3, GROWTH_TIME_LIMIT - miniGameScore);
+    
+    gameState.plantStatus = 'growing'; // 正式進入倒數
+    // 透過調整開始時間來實現「剩餘時間變少」的效果
+    gameState.growStartTime = Date.now() - (GROWTH_TIME_LIMIT - actualWait) * 1000;
+    
+    showBubble(`✨ 照顧完成！獲得 ${miniGameScore} 養分，倒數縮短了！`);
+    updateUI();
+    autoSave();
+}
         
-        closeModal(); 
-        updateUI(); 
-        autoSave();
-    }
 
     function harvest() {
         const isNew = !gameState.flowerAlbum.find(f => f.id === gameState.currentFlowerId);
@@ -351,18 +450,26 @@ body {
         const flowerNameDisp = document.getElementById('flower-name-display');
 
         if (gameState.plantStatus === 'idle') { 
-            img.src = ASSETS.soil; 
-            hint.innerText = "點擊土壤播下此刻的心情"; 
-            flowerNameDisp.innerText = ""; 
-        } else if (gameState.plantStatus === 'growing') { 
-            img.src = ASSETS.sprout; 
-            hint.innerText = "情緒正在萌芽中..."; 
-            flowerNameDisp.innerText = "培育中..."; 
-        } else { 
-            img.src = gameState.currentFlowerImg; 
-            hint.innerText = "收成這份心情"; 
-            flowerNameDisp.innerText = "已盛開： " + gameState.currentFlowerName; 
-        }
+        img.src = ASSETS.soil; 
+        hint.innerText = "點擊土壤播下此刻的心情"; 
+        flowerNameDisp.innerText = ""; 
+    } 
+    // 🌟 新增：小遊戲護理階段
+    else if (gameState.plantStatus === 'nurturing') {
+        img.src = ASSETS.sprout; // 顯示嫩芽，代表剛播種正在照顧
+        hint.innerText = "✨ 正在細心呵護中... (點擊泡泡！)"; 
+        flowerNameDisp.innerText = "給予養分中..."; 
+    }
+    else if (gameState.plantStatus === 'growing') { 
+        img.src = ASSETS.sprout; 
+        hint.innerText = "情緒正在萌芽中..."; 
+        flowerNameDisp.innerText = "培育中..."; 
+    } 
+    else { 
+        img.src = gameState.currentFlowerImg; 
+        hint.innerText = "收成這份心情"; 
+        flowerNameDisp.innerText = "已盛開： " + gameState.currentFlowerName; 
+    }
     }
 
     function createLvlHighDecorations(mode) {

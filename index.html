@@ -682,6 +682,7 @@ function finishNurturing() {
         hint.innerText = "收成這份心情"; 
         flowerNameDisp.innerText = "已盛開： " + gameState.currentFlowerName; 
     }
+    if (typeof autoSave === 'function') autoSave();
 }
 
     function createLvlHighDecorations() {
@@ -750,8 +751,22 @@ if (bgKey === 'night-study' || bgKey === 'ocean' ||  bgKey === 'zen' || (!isDay 
     console.log(`✅ 背景【${bgKey}】裝飾已更新。`);
 }
 
+function loadGameOnStart() {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+        try {
+            const parsed = JSON.parse(savedData);
+            // 同樣使用 Spread Operator 確保新舊欄位並存
+            gameState = { ...gameState, ...parsed };
+            console.log("✅ 已自動載入本地進度");
+        } catch(e) {
+            console.error("載入存檔失敗", e);
+        }
+    }
+}
         // --- 同步修改：init 函數，確保重新調整視窗大小時裝飾位置正確 (選做，增加穩定性) ---
         function init() {
+        loadGameOnStart();
     // 1. 優先套用背景（如果有買背景，就不走預設日夜）
     updateUI(); 
     
@@ -887,21 +902,34 @@ function handleShopAction(id) {
     }
 
     function importSaveFile(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                const imported = JSON.parse(e.target.result);
-                if (imported.gardenLv) {
-                    gameState = imported;
-                    autoSave();
-                    location.reload();
-                }
-            } catch (err) { alert("讀取失敗，請檢查檔案格式。"); }
-        };
-        reader.readAsText(file);
-    }
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const imported = JSON.parse(e.target.result);
+            
+            // 檢查是否為有效存檔 (至少要有等級)
+            if (imported && imported.gardenLv !== undefined) {
+                
+                // 🌟 關鍵修改：合併新舊資料
+                // 先拿目前程式碼中定義的「完整預設值」當底
+                // 再把「匯入的舊資料」覆蓋進去
+                // 這樣就算舊存檔沒錢、沒背景，也會維持新版的預設值 (0元、default)
+                gameState = { ...gameState, ...imported };
+                
+                autoSave();
+                alert("進度匯入成功！即將重新載入...");
+                location.reload();
+            } else {
+                alert("存檔格式不正確。");
+            }
+        } catch (err) { 
+            alert("讀取失敗，請檢查檔案格式。"); 
+        }
+    };
+    reader.readAsText(file);
+}
 
     function clearData() { if(confirm("確定要重置嗎？")) { localStorage.removeItem(STORAGE_KEY); location.reload(); } }
     function handlePlantClick() { if (gameState.plantStatus === 'ready') harvest(); else if (gameState.plantStatus === 'idle') openPlantModal(); }

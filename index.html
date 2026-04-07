@@ -95,10 +95,31 @@ body {
         #growth-timer { position: absolute; top: -35px; width: 100%; text-align: center; font-weight: bold; font-size: 20px; color: #ff8a80; }
 
         #message-bubble {
-            position: absolute; top: 10%; background: white; color: #333; padding: 18px;
-            border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-            max-width: 85%; opacity: 0; transition: opacity 0.5s; pointer-events: none; z-index: 20; line-height: 1.5;
-        }
+    position: absolute;
+    top: 12%;                /* 稍微往下一點點，視覺上比較平衡 */
+    left: 50%;               /* 搭配 transform 讓它水平居中 */
+    transform: translateX(-50%); 
+    
+    background: rgba(255, 255, 255, 0.95); /* 加一點微透明感，更有質感 */
+    color: #444;             /* 稍微深灰，讀起來比純黑更溫柔 */
+    padding: 22px 28px;      /* 增加內距，讓文字有呼吸空間 */
+    border-radius: 25px;     /* 圓角再圓一點，看起來更親切 */
+    box-shadow: 0 12px 35px rgba(0,0,0,0.12); /* 陰影再柔和一點 */
+    
+    max-width: 85%;
+    width: 280px;            /* 給一個建議寬度，讓換行更自然 */
+    opacity: 0;
+    transition: all 0.5s ease; /* 增加過場的平滑度 */
+    pointer-events: none;
+    z-index: 200;
+
+    /* 🌟 重點排版設定 */
+    white-space: pre-line;   /* 讓 JS 裡的 \n 換行符號生效 */
+    line-height: 1.8;        /* 拉高行距，避免長句子擠在一起 */
+    text-align: center;      /* 文字置中 */
+    font-size: 15px;         /* 設定一個舒適的字體大小 */
+    border: 1px solid rgba(255,255,255,0.5); /* 淡淡的白邊，模仿玻璃質感 */
+}
 
         /* 天燈 */
         .sky-lantern {
@@ -177,6 +198,118 @@ body {
         font-size: 38px;
     }
 }
+
+/* 🌟 背景流動動畫 */
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+body {
+    background-size: 400% 400% !important;
+    animation: gradientBG 15s ease infinite;
+    transition: all 1.5s ease;
+}
+
+/* 🎨 五大升級版背景樣式 */
+body.theme-morning { 
+    background: linear-gradient(45deg, #eacda3, #d6ae7b, #eacda3) !important; 
+    /* 這裡使用了更沉穩的米橘與古銅金，模擬日出前那一刻 */
+    color: #5d4037; 
+}
+body.theme-night-study { background: linear-gradient(45deg, #0f2027, #203a43, #2c5364); color: #a5d6a7; }
+/* 🌊 星靈海域：從淺藍到深藍，模擬海底光影 */
+body.theme-ocean { 
+    background: linear-gradient(45deg, #4facfe, #00f2fe, #4facfe) !important; /* 陽光淺海 */
+    /* 修正版：更深邃、舒壓的藍色漸層 */
+    background: linear-gradient(135deg, #1cb5e0 0%, #000851 100%) !important;
+    color: #e0f7fa; 
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+}
+
+/* 讓海洋模式下的泡泡與文字更明顯 */
+body.theme-ocean #garden-name,
+body.theme-ocean #points-display {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+body.theme-zen { 
+    background: linear-gradient(135deg, #d3cbb8 0%, #6d6027 100%) !important;
+    /* 備選方案（更深沉的純木質感）： */
+    background: linear-gradient(135deg, #8b5a2b 0%, #4a2c2a 100%) !important; 
+    color: #f5f5f5; /* 改為淺米色文字，對比更好看 */
+}
+/* 讓文字在這些背景上更好讀 */
+
+body.theme-cloud { background: linear-gradient(45deg, #89f7fe, #66a6ff, #89f7fe); color: #01579b; }
+body.theme-morning #garden-name, 
+body.theme-zen #garden-name,
+body.theme-zen #points-display {
+    background: rgba(255, 255, 255, 0.15); /* 輕微透明感 */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+/* 讓泡泡在深色背景更明顯 */
+body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255,0.5)); }
+
+
+/* 商店專用樣式 */
+.shop-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.bg-card {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 18px;
+    border: 2px solid #eee;
+    text-align: center;
+    position: relative;
+}
+
+.bg-card.owned { border-color: var(--primary-green); }
+.bg-card.active { background: #e8f5e9; border-color: #4caf50; }
+
+.bg-preview {
+    width: 100%;
+    height: 60px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.coin-badge {
+    background: rgba(0, 0, 0, 0.6); /* 半透明黑色底，確保數字清晰 */
+    color: #ffd700;                /* 黃金色的文字，更有代幣感 */
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border: 1.5px solid rgba(255, 215, 0, 0.5); /* 金色半透邊框 */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3),    /* 外陰影增加立體感 */
+                inset 0 0 5px rgba(255, 215, 0, 0.2); /* 內發光 */
+    
+    /* 讓它固定在畫面某個位置 (選配，若妳已經有排版則不需這段) */
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+#coin-count {
+    color: #ffffff; /* 數字用純白，對比度最高 */
+    text-shadow: 0 0 2px #000;
+}
+
     </style>
 </head>
 <body class="day">
@@ -201,13 +334,14 @@ body {
     </div>
 
     <div class="controls">
-        <button style="background: #aed581; color: #33691e;" onclick="openPlantModal()">播下情緒</button>
+        <button style="background: #aed581; color: #33691e;" onclick="openShop()">✨星靈商店</button>
         <button style="background: #81d4fa; color: #01579b;" onclick="openLantern('future')">寫給未來</button>
         <button style="background: #cfd8dc; color: #37474f;" onclick="openLantern('worry')">煩惱飛走</button>
         <button style="background: #f8bbd0; color: #880e4f;" onclick="toggleLetters()">往日信箱</button>
         <button style="background: #ffe0b2; color: #e65100;" onclick="toggleAlbum()">花卉圖鑑</button>
         <button style="background: #eeeeee;" onclick="openSaveMenu()">系統設定</button>
     </div>
+    
 
     <div id="plant-modal" class="modal">
         <div class="modal-content">
@@ -272,6 +406,20 @@ body {
         </div>
     </div>
 
+
+    <div class="coin-badge">✨ <span id="coin-count">0</span></div>
+
+<div id="shop-modal" class="modal">
+    <div class="modal-content">
+        <h2 style="margin-top:0">星靈商店</h2>
+        <p style="font-size: 13px; color: #666;">玩小遊戲獲得代幣，換取新風景</p>
+        <div id="shop-container" class="shop-grid">
+            </div>
+        <button onclick="closeModal()" style="margin-top:20px; width:100%; background:#eee;">返回花園</button>
+    </div>
+</div>
+
+
     <script>
     // 1. 常數與設定區
     const STORAGE_KEY = 'myGardenGame_v4'; // 升級版本號以避免舊資料衝突
@@ -302,15 +450,43 @@ body {
 // 在常數區定義遊戲時間
 const NURTURE_TIME_LIMIT = 10; // 小遊戲持續 10 秒
 let miniGameScore = 0;         // 紀錄本次戳破的數量
-let spawnInterval = null;      // 用來清除產生器的計時器
+let spawnTimer = null;      // 用來清除產生器的計時器
     // 2. 狀態初始化 (移至上方)
     let gameState = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
         points: 0, gardenLv: 1, plantStatus: 'idle', 
         growStartTime: 0, currentFlowerId: "", currentFlowerName: "", currentFlowerImg: "",
-        futureLetters: [], flowerAlbum: [] 
+        futureLetters: [], flowerAlbum: [] ,
+        coins: 0,                 // 🌟 新增代幣
+    currentBg: 'default',      // 🌟 當前背景 ID
+    unlockedBgs: ['default']   // 🌟 已擁有的背景
     };
 
-    
+    const BACKGROUNDS = {
+    'default': { name: '預設日夜', price: 0, class: '', preview: '#e8f5e9', emojis: [] },
+    'morning': { 
+        name: '夢幻晨曦', 
+        price: 350, 
+        class: 'theme-morning', 
+        preview: 'linear-gradient(#eacda3, #d6ae7b)', // 較暗的橘
+        emojis: ['☁️', '🕊️', '🌸'] 
+    },
+    'night-study': { name: '深夜書房', price: 350, class: 'theme-night-study', preview: 'linear-gradient(#0f2027, #203a43)', emojis: ['✨', '🕯️', '🌙'] },
+    'ocean': { 
+        name: '星靈海域', 
+        price: 350, 
+        class: 'theme-ocean', 
+        preview: 'linear-gradient(#1cb5e0, #000851)', 
+        emojis: ['🐠', '✨', '🫧', '💧'] // 魚群、微光與氣泡
+    },
+    'zen': { 
+    name: '和風庭院', 
+    price: 350, 
+    class: 'theme-zen', 
+    preview: 'linear-gradient(#8b5a2b, #4a2c2a)', // 商店顯示深木色
+    emojis: ['🍁', '🍵', '🎐', '🎋'] // 加入竹子，更有層次感
+},
+    'cloud': { name: '雲端之巔', price: 350, class: 'theme-cloud', preview: 'linear-gradient(#89f7fe, #66a6ff)', emojis: ['🌈', '🎈', '☁️'] }
+};
 
     function autoSave() { 
         localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
@@ -389,7 +565,8 @@ function finishNurturing() {
     gameState.plantStatus = 'growing'; // 正式進入倒數
     // 透過調整開始時間來實現「剩餘時間變少」的效果
     gameState.growStartTime = Date.now() - (GROWTH_TIME_LIMIT - actualWait) * 1000;
-    
+    gameState.coins += miniGameScore;
+
     showBubble(`✨ 照顧完成！獲得 ${miniGameScore} 養分，倒數縮短了！`);
     updateUI();
     autoSave();
@@ -397,18 +574,31 @@ function finishNurturing() {
         
 
     function harvest() {
-        const isNew = !gameState.flowerAlbum.find(f => f.id === gameState.currentFlowerId);
-        if (isNew) gameState.flowerAlbum.push({ id: gameState.currentFlowerId, name: gameState.currentFlowerName, img: gameState.currentFlowerImg });
-        
-        gameState.points += 2;
-        const words = (gameState.gardenLv >= 5) ? WORDS_HIGH : WORDS_LOW;
-        showBubble(`${isNew ? '🌟 新發現！' : ''}【${gameState.currentFlowerName}】盛開了。${words[Math.floor(Math.random() * words.length)]}`);
-        
-        gameState.plantStatus = 'idle';
-        checkLevelUp(); 
-        updateUI(); 
-        autoSave();
+    const isNew = !gameState.flowerAlbum.find(f => f.id === gameState.currentFlowerId);
+    if (isNew) {
+        gameState.flowerAlbum.push({ 
+            id: gameState.currentFlowerId, 
+            name: gameState.currentFlowerName, 
+            img: gameState.currentFlowerImg 
+        });
     }
+    
+    gameState.points += 2;
+    const words = (gameState.gardenLv >= 5) ? WORDS_HIGH : WORDS_LOW;
+    const randomQuote = words[Math.floor(Math.random() * words.length)];
+
+    // 🌟 這裡微調了「標點符號」與「空格」，讓層次更美
+    const message = isNew 
+        ? `🌟 新發現！\n【 ${gameState.currentFlowerName} 】盛開了\n\n「 ${randomQuote} 」`
+        : `【 ${gameState.currentFlowerName} 】盛開了\n\n「 ${randomQuote} 」`;
+
+    showBubble(message);
+    
+    gameState.plantStatus = 'idle';
+    checkLevelUp(); 
+    updateUI(); 
+    autoSave();
+}
 
     function checkLevelUp() {
     const threshold = 20; // 直接改成固定數字
@@ -419,44 +609,66 @@ function finishNurturing() {
     }
 }
     function updateUI() {
-        const threshold = 20; // 妳設定的固定門檻
-        const bar = document.getElementById('progress-bar');        
-        const pointsDisp = document.getElementById('points-display');
-        const nameDisp = document.getElementById('garden-name');
-        
-        if(bar) bar.style.width = (gameState.points / threshold * 100) + "%";
-        if(pointsDisp) pointsDisp.innerText = `${gameState.points} / ${threshold}`;
-        if(nameDisp) nameDisp.innerText = `Lv.${gameState.gardenLv} ${gameState.gardenLv >= 5 ? '繁盛花園' : '新手花園'}`;
-        
-        // --- 🌸 核心修改開始 ---
-        const isHighLevel = gameState.gardenLv >= 5;
-        const wasHighLevel = document.body.classList.contains('lvl-high');
-        document.body.classList.toggle('lvl-high', isHighLevel);
+    const threshold = 20; 
+    const bar = document.getElementById('progress-bar');        
+    const pointsDisp = document.getElementById('points-display');
+    const nameDisp = document.getElementById('garden-name');
+    
+    if(bar) bar.style.width = (gameState.points / threshold * 100) + "%";
+    if(pointsDisp) pointsDisp.innerText = `${gameState.points} / ${threshold}`;
+    if(nameDisp) nameDisp.innerText = `Lv.${gameState.gardenLv} ${gameState.gardenLv >= 5 ? '繁盛花園' : '新手花園'}`;
+    
+    // --- 🌸 背景商店與裝飾修改開始 ---
+    
+    // 1. 更新代幣顯示 (記得在 HTML 增加這個 ID)
+    const coinCountDisp = document.getElementById('coin-count');
+    if (coinCountDisp) coinCountDisp.innerText = gameState.coins || 0;
 
-        // 如果剛升到 5 等，或是日夜切換了，就重新畫裝飾
-        const currentMode = document.body.classList.contains('day') ? 'day' : 'night';
-        if (isHighLevel && (!wasHighLevel || window.currentRenderMode !== currentMode)) {
-            createLvlHighDecorations(currentMode);
-            window.currentRenderMode = currentMode;
-        } else if (!isHighLevel) {
-            // 如果未滿 5 等，清空裝飾（防止降級測試時殘留）
-            document.querySelectorAll('.decoration-emoji').forEach(d => d.remove());
-            window.currentRenderMode = null;
+    // 2. 處理背景樣式
+    Object.values(BACKGROUNDS).forEach(bg => { 
+        if(bg.class) document.body.classList.remove(bg.class); 
+    });
+    document.body.classList.remove('day', 'night');
+
+    const currentBgData = BACKGROUNDS[gameState.currentBg];
+
+    // 判斷背景：如果有購買背景就穿背景，沒有就走日夜模式
+    if (currentBgData && gameState.currentBg !== 'default') {
+        document.body.classList.add(currentBgData.class);
+        window.currentRenderMode = gameState.currentBg; 
+    } else {
+        updateTheme(); // 這會幫 body 加上 'day' 或 'night'
+        window.currentRenderMode = document.body.classList.contains('day') ? 'day' : 'night';
+    }
+
+    // 3. 處理等級 5 以上的粒子裝飾
+    const isHighLevel = gameState.gardenLv >= 5;
+    if (isHighLevel) {
+        // 當前背景模式變了，才重新產生粒子
+        if (window.lastRenderedMode !== window.currentRenderMode) {
+            createLvlHighDecorations(); 
+            window.lastRenderedMode = window.currentRenderMode;
         }
-        // --- 🌸 核心修改結束 ---
-        
-        const img = document.getElementById('flower-img');
-        const hint = document.getElementById('hint-text');
-        const flowerNameDisp = document.getElementById('flower-name-display');
+    } else {
+        // 未滿 5 等，清空所有裝飾
+        document.querySelectorAll('.decoration-emoji').forEach(d => d.remove());
+        window.lastRenderedMode = null;
+    }
+    
+    // --- 🌸 背景商店與裝飾修改結束 ---
+    
+    // ... 下方原本的植物圖片與提示文字邏輯保持不變 ...
+    const img = document.getElementById('flower-img');
+    const hint = document.getElementById('hint-text');
+    const flowerNameDisp = document.getElementById('flower-name-display');
 
-        if (gameState.plantStatus === 'idle') { 
+    if (gameState.plantStatus === 'idle') { 
         img.src = ASSETS.soil; 
         hint.innerText = "點擊土壤播下此刻的心情"; 
         flowerNameDisp.innerText = ""; 
     } 
-    // 🌟 新增：小遊戲護理階段
     else if (gameState.plantStatus === 'nurturing') {
-        img.src = ASSETS.sprout; // 顯示嫩芽，代表剛播種正在照顧
+        img.src = ASSETS.sprout; 
         hint.innerText = "✨ 正在細心呵護中... (點擊泡泡！)"; 
         flowerNameDisp.innerText = "給予養分中..."; 
     }
@@ -470,74 +682,100 @@ function finishNurturing() {
         hint.innerText = "收成這份心情"; 
         flowerNameDisp.innerText = "已盛開： " + gameState.currentFlowerName; 
     }
+}
+
+    function createLvlHighDecorations() {
+    // 1. 先移除舊的裝飾
+    const oldDecos = document.querySelectorAll('.decoration-emoji');
+    oldDecos.forEach(d => d.remove());
+
+    // 🌟 修正重點：在這裡先定義好基礎狀態，確保後續邏輯都能讀到
+    const isDay = document.body.classList.contains('day');
+    let bgKey = gameState.currentBg;
+    let emojiPool = [];
+    let animation = 'sakuraFloat';
+
+    // 2. 獲取當前背景的專屬設定
+    if (bgKey === 'default') {
+        emojiPool = isDay ? ['🌸'] : ['✨'];
+        animation = isDay ? 'sakuraFloat' : 'starBlink';
+    } else {
+        const bgData = BACKGROUNDS[bgKey];
+        emojiPool = bgData.emojis || ['✨'];
+        // 判斷該背景是要飄還是要閃
+        animation = (bgKey === 'night-study') ? 'starBlink' : 'sakuraFloat';
     }
 
-    function createLvlHighDecorations(mode) {
-            // 1. 先移除舊的裝飾
-            const oldDecos = document.querySelectorAll('.decoration-emoji');
-            oldDecos.forEach(d => d.remove());
+    const count = 6; 
+    const container = document.body;
 
-            // 2. 設定參數
-            const emoji = mode === 'day' ? '🌸' : '✨';
-            const animation = mode === 'day' ? 'sakuraFloat' : 'starBlink';
-            const count = 4; // 🌟 固定產生 4 個 (介於 3~5 之間)
+    for (let i = 0; i < count; i++) {
+        const span = document.createElement('span');
+        span.className = 'decoration-emoji';
+        
+        // 從該背景的 Emoji 池中隨機抽一個
+        span.innerText = emojiPool[Math.floor(Math.random() * emojiPool.length)];
 
-            const container = document.body;
+        // 3. 隨機設定位置
+        const side = Math.random() > 0.5 ? 'left' : 'right';
+        span.style[side] = (Math.random() * 30) + '%';
+        span.style.top = (5 + Math.random() * 85) + '%';
 
-            for (let i = 0; i < count; i++) {
-                const span = document.createElement('span');
-                span.className = 'decoration-emoji';
-                span.innerText = emoji;
+        // 4. 隨機設定大小
+        span.style.fontSize = (20 + Math.random() * 25) + 'px';
 
-                // 3. 🌟 隨機設定位置 (避開中間花盆區)
-                // 隨機在畫面的左側 30% 或右側 30%
-                const side = Math.random() > 0.5 ? 'left' : 'right';
-                const percentX = Math.random() * 30; // 0~30%
-                span.style[side] = percentX + '%';
-                
-                // 隨機高度 10%~80%
-                const percentY = 10 + Math.random() * 70;
-                span.style.top = percentY + '%';
+        // 5. 根據背景微調視覺效果 (現在這裡不會報錯了)
+        // 5. 根據背景微調視覺效果
+// 🌟 將 'ocean' 加入發光判斷中
+if (bgKey === 'night-study' || bgKey === 'ocean' ||  bgKey === 'zen' || (!isDay && bgKey === 'default')) {
+    // 【深色/發光模式】：深夜、海底
+    // 稍微調高基礎透明度 (0.6)，讓海洋生物更明顯
+    span.style.opacity = 0.6 + Math.random() * 0.4; 
+    // 增加發光範圍到 10px，營造水下折射感
+    span.style.filter = `drop-shadow(0 0 10px rgba(255,255,255,0.9))`;
+} else {
+    // 【明亮/柔和模式】：晨曦、和風、雲端、白天
+    span.style.opacity = 0.4 + Math.random() * 0.4;
+    const blur = Math.random() * 1.5;
+    span.style.filter = `blur(${blur}px)`;
+}
 
-                // 4. 🌟 隨機設定大小 (20px ~ 50px)
-                const size = 20 + Math.random() * 30;
-                span.style.fontSize = size + 'px';
+        // 6. 動態參數
+        const delay = Math.random() * 5;
+        const duration = 7 + Math.random() * 5;
+        span.style.animation = `${animation} ${duration}s infinite ${delay}s ease-in-out`;
 
-                // 5. 🌟 隨機設定透明度與模糊 (白天櫻花特別需要)
-                if (mode === 'day') {
-                    const opacity = 0.3 + Math.random() * 0.4; // 0.3~0.7
-                    const blur = Math.random() * 2; // 0~2px 模糊
-                    span.style.opacity = opacity;
-                    span.style.filter = `blur(${blur}px)`;
-                } else {
-                    span.style.opacity = 0.5 + Math.random() * 0.5; // 0.5~1.0
-                }
-
-                // 6. 🌟 隨機設定動畫延遲 (讓它們看起來不要同時閃爍或漂浮)
-                const delay = Math.random() * 5; // 0~5秒延遲
-                const duration = 6 + Math.random() * 4; // 6~10秒持續時間
-                span.style.animation = `${animation} ${duration}s infinite ${delay}s linear`;
-
-                container.appendChild(span);
-            }
-            console.log(`✅ 已為高等級${mode}產生 ${count} 個裝飾 Emoji。`);
-        }
+        container.appendChild(span);
+    }
+    console.log(`✅ 背景【${bgKey}】裝飾已更新。`);
+}
 
         // --- 同步修改：init 函數，確保重新調整視窗大小時裝飾位置正確 (選做，增加穩定性) ---
         function init() {
+    // 1. 優先套用背景（如果有買背景，就不走預設日夜）
+    updateUI(); 
+    
+    // 2. 設定定時器
+    setInterval(checkGrowth, 1000); // 每秒檢查植物成長
+    
+    // 🌟 修改：只有在「預設背景」模式下，才需要每分鐘檢查日夜切換
+    setInterval(() => {
+        if (gameState.currentBg === 'default') {
             updateTheme();
-            updateUI();
-            setInterval(checkGrowth, 1000);
-            setInterval(updateTheme, 60000);
-            
-            // 當螢幕旋轉或調整大小時，重新刷新裝飾位置
-            window.addEventListener('resize', () => {
-                if (gameState.gardenLv >= 5) {
-                    const currentMode = document.body.classList.contains('day') ? 'day' : 'night';
-                    createLvlHighDecorations(currentMode);
-                }
-            });
+            updateUI(); // 確保日夜切換後，裝飾物（櫻花/星星）也會跟著換
         }
+    }, 60000);
+    
+    // 3. 視窗縮放處理
+    window.addEventListener('resize', () => {
+        if (gameState.gardenLv >= 5) {
+            // 🌟 這裡改成直接呼叫，不傳參數
+            createLvlHighDecorations(); 
+        }
+    });
+
+    console.log("🌱 花園系統已啟動：", gameState.currentBg);
+}
 
     function checkGrowth() {
         if (gameState.plantStatus === 'growing') {
@@ -552,6 +790,69 @@ function finishNurturing() {
             }
         }
     }
+
+
+    function openShop() {
+    const container = document.getElementById('shop-container');
+    if (!container) return;
+    
+    container.innerHTML = ""; // 清空舊內容
+    
+    Object.keys(BACKGROUNDS).forEach(id => {
+        const bg = BACKGROUNDS[id];
+        const isUnlocked = gameState.unlockedBgs.includes(id);
+        const isActive = gameState.currentBg === id;
+        
+        const card = document.createElement('div');
+        card.className = `bg-card ${isUnlocked ? 'owned' : ''} ${isActive ? 'active' : ''}`;
+        
+        // 根據狀態決定按鈕文字與顏色
+        let btnText = isUnlocked ? (isActive ? '使用中' : '切換') : `💰 ${bg.price}`;
+        let btnColor = isUnlocked ? (isActive ? '#81c784' : '#64b5f6') : '#ffb74d';
+
+        card.innerHTML = `
+            <div class="bg-preview" style="background: ${bg.preview}"></div>
+            <div style="font-size:14px; font-weight:bold; margin-bottom:4px;">${bg.name}</div>
+            <button onclick="handleShopAction('${id}')" 
+                style="border:none; border-radius:10px; padding:8px; width:100%; background:${btnColor}; color:white; font-weight:bold; cursor:pointer;">
+                ${btnText}
+            </button>
+        `;
+        container.appendChild(card);
+    });
+    
+    document.getElementById('shop-modal').style.display = 'flex';
+}
+
+function handleShopAction(id) {
+    const bg = BACKGROUNDS[id];
+    
+    if (gameState.unlockedBgs.includes(id)) {
+        gameState.currentBg = id;
+        closeModal(); // 🌟 成功切換就先關閉商店，讓玩家看到背景
+        showBubble(`✨ 已切換至【${bg.name}】風景`);
+    } 
+    else {
+        if (gameState.coins >= bg.price) {
+            gameState.coins -= bg.price;
+            gameState.unlockedBgs.push(id);
+            gameState.currentBg = id;
+            closeModal(); // 🌟 成功購買也先關閉商店
+            showBubble(`🎊 成功解鎖！換上【${bg.name}】`);
+        } else {
+            const need = bg.price - gameState.coins;
+            showBubble(`代幣還差 ${need} 枚，\n再玩幾次小遊戲吧！🫧`);
+            // 代幣不足時不呼叫 closeModal，讓玩家留在商店介面
+            return; 
+        }
+    }
+    
+    updateUI();
+    autoSave();
+}
+
+
+
 
     // --- 系統功能 ---
     function updateStorageProgress() {
@@ -607,7 +908,19 @@ function finishNurturing() {
     function openPlantModal() { if (gameState.plantStatus === 'idle') { document.getElementById('plant-modal').style.display = 'flex'; validateEmotions(); } else showBubble("有一顆心靈正在萌芽..."); }
     function closeModal() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
     function openSaveMenu() { updateStorageProgress(); document.getElementById('save-modal').style.display = 'flex'; }
-    function updateTheme() { const hr = new Date().getHours(); document.body.className = (hr > 6 && hr < 18) ? 'day' : 'night'; }
+    function updateTheme() {
+    // 只有在玩家使用「預設日夜」模式時，才執行自動切換
+    if (gameState.currentBg !== 'default') return;
+
+    const hr = new Date().getHours();
+    const isDay = (hr >= 6 && hr < 18); // 建議用 >= 6 包含早上六點
+
+    // 🌟 使用 classList 確保不會蓋掉其他 class
+    document.body.classList.toggle('day', isDay);
+    document.body.classList.toggle('night', !isDay);
+    
+    console.log(`🌙 系統自動切換至：${isDay ? '日間' : '夜間'}模式`);
+}
     function showBubble(text) { const b = document.getElementById('message-bubble'); if(b) { b.innerText = text; b.style.opacity = 1; setTimeout(() => b.style.opacity = 0, 5000); } }
     function triggerImport() { document.getElementById('import-input').click(); }
 

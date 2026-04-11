@@ -310,6 +310,48 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
     text-shadow: 0 0 2px #000;
 }
 
+/* 隨機小卡背景遮罩 */
+#purify-modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 3000;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer; /* 讓玩家知道點哪裡都可以關閉 */
+}
+
+/* 小卡內容本體 */
+.purify-card {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    max-width: 80%;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    cursor: default; /* 點擊卡片本身不關閉 */
+    animation: cardPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.purify-card img {
+    max-width: 200px;
+    height: auto;
+    display: block;
+    margin: 0 auto 10px;
+}
+
+.purify-card p {
+    color: #555;
+    font-weight: bold;
+    margin: 0;
+}
+
+@keyframes cardPop {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
     </style>
 </head>
 <body class="day">
@@ -975,18 +1017,52 @@ function handleShopAction(id) {
         document.getElementById('lantern-modal').style.display = 'flex'; 
     }
 
-    function launchLantern() { 
-        const textInput = document.getElementById('lantern-text');
-        const text = textInput.value; if(!text) return; 
-        if (currentLanternMode === 'future') {
-            gameState.futureLetters.push({ id: Date.now(), content: text, date: document.getElementById('lantern-date').value, timestamp: new Date().toLocaleDateString() }); 
-        }
-        const lan = document.createElement('div'); lan.className = 'sky-lantern'; 
-        lan.innerText = text.substring(0,5)+'...'; 
-        if(currentLanternMode === 'worry') lan.style.background = '#90a4ae'; 
-        document.getElementById('game-container').appendChild(lan); 
-        closeModal(); textInput.value = ''; autoSave(); setTimeout(() => lan.remove(), 8000); 
+    // 🌟 在 launchLantern 內部的 else (非 future) 加入此函數
+function showRandomPurifyCard() {
+    const modal = document.getElementById('purify-modal');
+    const imgElement = document.getElementById('purify-img');
+    
+    // 1. 隨機產生 1~12 的數字
+    const randomNum = Math.floor(Math.random() * 12) + 1;
+    
+    // 2. 組合 GitHub 圖片網址
+    const imgUrl = `https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/${randomNum}.png`;
+    
+    // 3. 設定圖片來源並顯示
+    imgElement.src = imgUrl;
+    modal.style.display = 'flex';
+}
+
+// 🌟 修改妳原本的 launchLantern 函數
+function launchLantern() { 
+    const textInput = document.getElementById('lantern-text');
+    const text = textInput.value; 
+    if(!text) return; 
+
+    if (currentLanternMode === 'future') {
+        gameState.futureLetters.push({ 
+            id: Date.now(), 
+            content: text, 
+            date: document.getElementById('lantern-date').value, 
+            timestamp: new Date().toLocaleDateString() 
+        }); 
+    } else {
+        // --- 🌟 觸發隨機小卡 ---
+        showRandomPurifyCard();
     }
+
+    // 產生飛行天燈的邏輯... (保持不變)
+    const lan = document.createElement('div'); 
+    lan.className = 'sky-lantern'; 
+    lan.innerText = text.substring(0,5)+'...'; 
+    if(currentLanternMode === 'worry') lan.style.background = '#90a4ae'; 
+    document.getElementById('game-container').appendChild(lan); 
+    
+    closeModal(); 
+    textInput.value = ''; 
+    autoSave(); 
+    setTimeout(() => lan.remove(), 8000); 
+}
 
     function toggleLetters() { 
         const container = document.getElementById('list-container'); 
@@ -1063,5 +1139,14 @@ function showTimeCapsule(contentText) {
 }
 
 </script>
+
+<div id="purify-modal" onclick="this.style.display='none'">
+    <div class="purify-card" onclick="event.stopPropagation()">
+        <img id="purify-img" src="" alt="淨化成功">
+        <p>煩惱已經被淨化囉！</p>
+        <span style="font-size: 12px; color: #aaa;">(點擊空白處關閉)</span>
+    </div>
+</div>
+
 </body>
 </html>

@@ -322,16 +322,23 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
     cursor: pointer; /* 讓玩家知道點哪裡都可以關閉 */
 }
 
-/* 小卡內容本體 */
+/* 小卡內容本體 - 優化後的版本 */
 .purify-card {
     background: white;
-    padding: 20px;
+    padding: 15px;      /* 縮小內邊距，把空間讓給拼圖 */
     border-radius: 15px;
     text-align: center;
-    max-width: 80%;
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-    cursor: default; /* 點擊卡片本身不關閉 */
+    width: 90%;         /* 讓卡片在手機上自動伸展 */
+    max-width: 320px;    /* 限制電腦版的最大寬度 */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2); /* 改深色陰影在白底上比較明顯 */
+    cursor: default;
+    overflow: hidden;    /* 🌟 重要：防止內容溢出卡片 */
     animation: cardPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    
+    /* 讓內容垂直置中 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .purify-card img {
@@ -357,10 +364,11 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-gap: 2px;
-    width: 280px; /* 稍微加大一點，手機看比較清楚 */
+    width: 100%;       /* 🌟 改為 100%，它會填滿 purify-card 的可用寬度 */
+    max-width: 260px;  /* 🌟 設定一個手機安全上限 */
     margin: 10px auto;
     background: #eee;
-    /* 這裡不需要設 height */
+    touch-action: none; /* 🌟 防止手機滑動拼圖時觸發網頁捲動 */
 }
 
 /* 拼圖碎片 */
@@ -1081,19 +1089,23 @@ function startPuzzle() {
     const board = document.getElementById('puzzle-board');
     const btn = document.getElementById('puzzle-switch-btn');
     
-    // 獲取原圖的實際尺寸比例
-    const imgW = img.naturalWidth;
-    const imgH = img.naturalHeight;
-    const ratio = imgH / imgW; // 計算高度比例
-
+    // 1. 先顯示容器，我們才量得到它在手機畫面上的「實際寬度」
     img.style.display = 'none';
     board.style.display = 'grid';
     btn.style.display = 'none';
 
-    const imgSrc = img.src;
-    const boardWidth = 280; // 這是我們在 CSS 設的寬度
-    board.innerHTML = '';
+    // 2. 🌟 關鍵改動：自動測量寬度（取代原本的 280）
+    const boardWidth = board.clientWidth; 
     
+    // 3. 獲取原圖比例
+    const imgW = img.naturalWidth;
+    const imgH = img.naturalHeight;
+    const ratio = imgH / imgW; 
+
+    const imgSrc = img.src;
+    board.innerHTML = ''; // 清空舊拼圖
+    
+    // 4. 建立並打亂碎片
     let pieces = [...Array(9).keys()];
     pieces.sort(() => Math.random() - 0.5);
 
@@ -1102,18 +1114,17 @@ function startPuzzle() {
         piece.className = 'puzzle-piece';
         piece.dataset.correctPos = pos;
         
-        // 🌟 動態設定高度：確保碎片比例正確
-        // 寬度是 boardWidth/3，高度則是 (boardWidth/3) * ratio
+        // 5. 根據量出來的 boardWidth 動態計算
         const pieceWidth = boardWidth / 3;
         const pieceHeight = pieceWidth * ratio;
+        
         piece.style.height = `${pieceHeight}px`;
-
         piece.style.backgroundImage = `url(${imgSrc})`;
         
-        // 🌟 動態設定背景大小：必須等於整個 Board 的大小
+        // 背景大小要撐滿整個拼圖板
         piece.style.backgroundSize = `${boardWidth}px ${boardWidth * ratio}px`;
         
-        // 🌟 動態計算背景位移
+        // 計算該碎片對應的背景位置
         const row = Math.floor(pos / 3);
         const col = pos % 3;
         piece.style.backgroundPosition = `-${col * pieceWidth}px -${row * pieceHeight}px`;
@@ -1121,6 +1132,8 @@ function startPuzzle() {
         piece.onclick = () => handlePieceClick(piece);
         board.appendChild(piece);
     });
+    
+    document.getElementById('purify-msg').innerText = "動手修復這份心情吧！";
 }
 
 function handlePieceClick(piece) {

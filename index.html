@@ -352,6 +352,47 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
     to { transform: scale(1); opacity: 1; }
 }
 
+/* 拼圖容器：只設寬度，高度讓它自動跟著圖片比例走 */
+#puzzle-board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 2px;
+    width: 280px; /* 稍微加大一點，手機看比較清楚 */
+    margin: 10px auto;
+    background: #eee;
+    /* 這裡不需要設 height */
+}
+
+/* 拼圖碎片 */
+.puzzle-piece {
+    width: 100%;
+    /* 核心：確保碎片寬高比跟原圖一致 */
+    aspect-ratio: auto; 
+    background-size: cover; /* 關鍵：讓背景自動填滿但不變形 */
+    background-repeat: no-repeat;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+/* 被選中的碎片效果 */
+.puzzle-piece.selected {
+    outline: 3px solid #ffd700;
+    transform: scale(1.05);
+    z-index: 10;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+/* 切換按鈕樣式 */
+.puzzle-btn {
+    background: #8b5a2b;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
     </style>
 </head>
 <body class="day">
@@ -1033,6 +1074,121 @@ function showRandomPurifyCard() {
     modal.style.display = 'flex';
 }
 
+let firstPiece = null; // 紀錄第一次點擊的碎片
+
+function startPuzzle() {
+    const img = document.getElementById('purify-img');
+    const board = document.getElementById('puzzle-board');
+    const btn = document.getElementById('puzzle-switch-btn');
+    
+    // 獲取原圖的實際尺寸比例
+    const imgW = img.naturalWidth;
+    const imgH = img.naturalHeight;
+    const ratio = imgH / imgW; // 計算高度比例
+
+    img.style.display = 'none';
+    board.style.display = 'grid';
+    btn.style.display = 'none';
+
+    const imgSrc = img.src;
+    const boardWidth = 280; // 這是我們在 CSS 設的寬度
+    board.innerHTML = '';
+    
+    let pieces = [...Array(9).keys()];
+    pieces.sort(() => Math.random() - 0.5);
+
+    pieces.forEach((pos, index) => {
+        const piece = document.createElement('div');
+        piece.className = 'puzzle-piece';
+        piece.dataset.correctPos = pos;
+        
+        // 🌟 動態設定高度：確保碎片比例正確
+        // 寬度是 boardWidth/3，高度則是 (boardWidth/3) * ratio
+        const pieceWidth = boardWidth / 3;
+        const pieceHeight = pieceWidth * ratio;
+        piece.style.height = `${pieceHeight}px`;
+
+        piece.style.backgroundImage = `url(${imgSrc})`;
+        
+        // 🌟 動態設定背景大小：必須等於整個 Board 的大小
+        piece.style.backgroundSize = `${boardWidth}px ${boardWidth * ratio}px`;
+        
+        // 🌟 動態計算背景位移
+        const row = Math.floor(pos / 3);
+        const col = pos % 3;
+        piece.style.backgroundPosition = `-${col * pieceWidth}px -${row * pieceHeight}px`;
+        
+        piece.onclick = () => handlePieceClick(piece);
+        board.appendChild(piece);
+    });
+}
+
+function handlePieceClick(piece) {
+    if (!firstPiece) {
+        // 第一次點擊
+        firstPiece = piece;
+        piece.classList.add('selected');
+    } else {
+        // 第二次點擊，進行交換
+        const secondPiece = piece;
+        if (firstPiece === secondPiece) {
+            firstPiece.classList.remove('selected');
+            firstPiece = null;
+            return;
+        }
+
+        // 交換背景與正確位置標記
+        const tempBG = firstPiece.style.backgroundPosition;
+        const tempPos = firstPiece.dataset.correctPos;
+
+        firstPiece.style.backgroundPosition = secondPiece.style.backgroundPosition;
+        firstPiece.dataset.correctPos = secondPiece.dataset.correctPos;
+
+        secondPiece.style.backgroundPosition = tempBG;
+        secondPiece.dataset.correctPos = tempPos;
+
+        // 清除選取狀態
+        firstPiece.classList.remove('selected');
+        firstPiece = null;
+
+        checkWin();
+    }
+}
+
+function checkWin() {
+    const allPieces = document.querySelectorAll('.puzzle-piece');
+    const board = document.getElementById('puzzle-board');
+    
+    // 檢查每個碎片目前的 backgroundPosition 是否回到對的位置
+    let isWin = true;
+    allPieces.forEach((p, index) => {
+        const currentPos = parseInt(p.dataset.correctPos);
+        if (currentPos !== index) isWin = false;
+    });
+
+    if (isWin) {
+        document.getElementById('purify-msg').innerText = "✨ 完美修復！煩惱徹底消散了 ✨";
+        allPieces.forEach(p => p.style.outline = "none");
+        // 增加一點點獎勵
+        if(typeof gameState !== 'undefined') {
+            gameState.coins += 5;
+            autoSave();
+        }
+    }
+}
+
+// 關閉 Modal 時重置狀態
+function closePurifyModal() {
+    document.getElementById('purify-modal').style.display = 'none';
+    // 重置為初始狀態
+    document.getElementById('purify-img').style.display = 'block';
+    document.getElementById('puzzle-board').style.display = 'none';
+    document.getElementById('puzzle-switch-btn').style.display = 'inline-block';
+    document.getElementById('purify-msg').innerText = "煩惱已經被淨化囉！";
+    if(firstPiece) firstPiece.classList.remove('selected');
+    firstPiece = null;
+}
+
 // 🌟 修改妳原本的 launchLantern 函數
 function launchLantern() { 
     const textInput = document.getElementById('lantern-text');
@@ -1140,11 +1296,17 @@ function showTimeCapsule(contentText) {
 
 </script>
 
-<div id="purify-modal" onclick="this.style.display='none'">
+<div id="purify-modal" onclick="closePurifyModal()">
     <div class="purify-card" onclick="event.stopPropagation()">
-        <img id="purify-img" src="" alt="淨化成功">
-        <p>煩惱已經被淨化囉！</p>
-        <span style="font-size: 12px; color: #aaa;">(點擊空白處關閉)</span>
+        <img id="purify-img" src="" alt="淨化成功" style="max-width:240px;">
+        
+        <div id="puzzle-board" style="display:none;"></div>
+
+        <p id="purify-msg">煩惱已經被淨化囉！</p>
+        
+        <button id="puzzle-switch-btn" class="puzzle-btn" onclick="startPuzzle()">挑戰拼圖？</button>
+        
+        <span style="font-size: 12px; color: #aaa; display:block; margin-top:10px;">(點擊空白處關閉)</span>
     </div>
 </div>
 

@@ -401,6 +401,68 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
     cursor: pointer;
 }
 
+/* 龍貓祈願小卡容器 */
+#totoro-card {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    
+    /* 修正 1：設定最大寬度，避免在手機版溢出 */
+    width: 250px; 
+    max-width: 85vw; 
+    
+    background: white;
+    border-radius: 20px; /* 圓角稍微加大，更有吉卜力風的圓潤感 */
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    padding: 20px;
+    text-align: center;
+    z-index: 1000; /* 確保層級夠高 */
+    
+    /* 修正 2：改用較溫暖的邊框顏色 */
+    border: 3px solid #a8d5ba; 
+    
+    display: none; 
+    flex-direction: column; /* 確保內容垂直居中 */
+    align-items: center;
+}
+
+#totoro-card img {
+    /* 修正 3：解決不同尺寸 GIF 的核心代碼 */
+    width: 100%;
+    height: auto;      /* 高度自動，維持原始比例 */
+    max-height: 250px; /* 防止過長的 GIF 佔滿螢幕 */
+    
+    object-fit: contain; /* 確保整張圖完整顯示且不變形 */
+    border-radius: 12px;
+    background-color: #fcfcfc; /* 比例不合時的微弱底色 */
+}
+
+/* 修正 4：美化關閉按鈕（如果有的話）*/
+#close-card-btn {
+    margin-top: 15px;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 25px;
+    background-color: #78a5a3;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+#close-card-btn:hover {
+    background-color: #5a8280;
+}
+
+/* 當卡片顯示時，背景模糊效果 */
+.blur-content {
+    filter: blur(8px); /* 增加模糊度，驚喜感更強 */
+    pointer-events: none; 
+    transition: filter 0.5s ease; /* 增加平滑過渡 */
+}
+
     </style>
 </head>
 <body class="day">
@@ -416,13 +478,21 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
     <div id="message-bubble"></div>
 
     <div id="game-container">
-        <div id="flower-pot" onclick="handlePlantClick()">
-            <div id="growth-timer"></div>
-            <img id="flower-img" src="" alt="plant">
-        </div>
-        <p id="hint-text" style="font-size: 14px; margin-top: 15px;">點擊土壤播下此刻的心情</p>
-        <p id="flower-name-display" style="font-weight: bold; color: #e91e63; margin-top: 5px;"></p>
+    <div id="flower-pot" onclick="handlePlantClick()">
+        <div id="growth-timer"></div>
+        <img id="flower-img" src="" alt="plant">
     </div>
+    <p id="hint-text" style="font-size: 14px; margin-top: 15px;">點擊土壤播下此刻的心情</p>
+    <p id="flower-name-display" style="font-weight: bold; color: #e91e63; margin-top: 5px;"></p>
+
+    <div id="totoro-card" style="display: none;">
+    <div class="card-content">
+        <img id="totoro-gif" src="" alt="祈願中">
+        <p>✨ 正在祈願... ✨</p>
+        <button id="close-card-btn" style="display:none; margin-top: 15px;">查看收成結果</button>
+    </div>
+</div>
+</div>
 
     <div class="controls">
         <button style="background: #aed581; color: #33691e;" onclick="openShop()">✨星靈商店</button>
@@ -519,6 +589,10 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
     const WORDS_HIGH = ["心靈的花園因為妳的誠實而繁茂。", "擁抱每一種情緒，那是妳獨一無二的色彩。", "無論是風雨還是晴天，妳都在茁壯成長。", "不論過去如何，未來有妳有我。", "在這裡，每一份心情都值得被溫柔親吻。"];
 
     const ASSETS = {
+        totoroConfig: {
+        baseUrl: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/',
+        count: 14 // 假設目前你有 1.gif 到 5.gif，未來增加圖片只需改這個數字
+    },
         soil: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1fab4.png',
         sprout: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f331.png',
         flowers: [
@@ -756,28 +830,63 @@ function finishNurturing() {
     
     // ... 下方原本的植物圖片與提示文字邏輯保持不變 ...
     const img = document.getElementById('flower-img');
-    const hint = document.getElementById('hint-text');
-    const flowerNameDisp = document.getElementById('flower-name-display');
+const hint = document.getElementById('hint-text');
+const flowerNameDisp = document.getElementById('flower-name-display');
+const totoroCard = document.getElementById('totoro-card'); 
+const totoroGif = document.getElementById('totoro-gif');
+const closeBtn = document.getElementById('close-card-btn');
 
-    if (gameState.plantStatus === 'idle') { 
-        img.src = ASSETS.soil; 
-        hint.innerText = "點擊土壤播下此刻的心情"; 
-        flowerNameDisp.innerText = ""; 
-    } 
-    else if (gameState.plantStatus === 'nurturing') {
-        img.src = ASSETS.sprout; 
-        hint.innerText = "✨ 正在細心呵護中... (點擊泡泡！)"; 
-        flowerNameDisp.innerText = "給予養分中..."; 
+// 先統一重置模糊效果
+img.classList.remove('blur-content');
+img.style.filter = "none";
+
+if (gameState.plantStatus === 'idle') { 
+    img.src = ASSETS.soil; 
+    hint.innerText = "點擊土壤播下此刻的心情"; 
+    flowerNameDisp.innerText = ""; 
+    if(totoroCard) totoroCard.style.display = 'none'; 
+} 
+else if (gameState.plantStatus === 'nurturing') {
+    img.src = ASSETS.sprout; 
+    hint.innerText = "✨ 正在細心呵護中... (點擊泡泡！)"; 
+    flowerNameDisp.innerText = "給予養分中..."; 
+    if(totoroCard) totoroCard.style.display = 'none';
+}
+else if (gameState.plantStatus === 'growing') { 
+    // --- 🌸 整合後的龍貓隨機邏輯 ---
+    img.src = ASSETS.sprout; 
+    hint.innerText = "情緒正在萌芽中..."; 
+    flowerNameDisp.innerText = "培育中..."; 
+    img.classList.add('blur-content'); // 使用你 CSS 定義的模糊
+
+    if (totoroCard) {
+        // 只有卡片沒顯示時才抽新圖，避免倒數時圖片一直閃
+        if (totoroCard.style.display === 'none' || totoroCard.style.display === '') {
+            const config = ASSETS.totoroConfig;
+            const randomNum = Math.floor(Math.random() * config.count) + 1;
+            totoroGif.src = `${config.baseUrl}${randomNum}.gif`;
+        }
+        totoroCard.style.display = 'flex'; // 建議用 flex 配合居中 CSS
+        if(closeBtn) closeBtn.style.display = 'none'; // 成長中不能關閉
     }
-    else if (gameState.plantStatus === 'growing') { 
-        img.src = ASSETS.sprout; 
-        hint.innerText = "情緒正在萌芽中..."; 
-        flowerNameDisp.innerText = "培育中..."; 
-    } 
-    else { 
-        img.src = gameState.currentFlowerImg; 
-        hint.innerText = "收成這份心情"; 
-        flowerNameDisp.innerText = "已盛開： " + gameState.currentFlowerName; 
+} 
+else { 
+    // 已成熟狀態
+    img.src = gameState.currentFlowerImg; 
+    hint.innerText = "收成這份心情"; 
+    flowerNameDisp.innerText = "已盛開： " + gameState.currentFlowerName; 
+
+    if(totoroCard) {
+        // 顯示卡片但亮起關閉按鈕，增加驚喜感
+        totoroCard.style.display = 'flex';
+        if(closeBtn) {
+            closeBtn.style.display = 'block';
+            closeBtn.onclick = () => {
+                totoroCard.style.display = 'none';
+                img.classList.remove('blur-content');
+            };
+        }
+    }
     }
     if (typeof autoSave === 'function') autoSave();
 }

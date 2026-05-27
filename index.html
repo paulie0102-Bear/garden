@@ -700,7 +700,7 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
     <script>
     // 1. 常數與設定區
     const STORAGE_KEY = 'myGardenGame_v4'; // 升級版本號以避免舊資料衝突
-    const GROWTH_TIME_LIMIT = 300; 
+    const GROWTH_TIME_LIMIT = 100; 
     const WORDS_LOW = ["妳辛苦了，給自己一點掌聲吧。", "深呼吸，情緒只是路過的雲。", "今天的妳也值得被好好對待。", "浮名本是身外物，不著方寸也風流。", "妳種下的不只是花，是與自己和解的證明。"];
     const WORDS_HIGH = ["心靈的花園因為妳的誠實而繁茂。", "擁抱每一種情緒，那是妳獨一無二的色彩。", "無論是風雨還是晴天，妳都在茁壯成長。", "不論過去如何，未來有妳有我。", "在這裡，每一份心情都值得被溫柔親吻。"];
 
@@ -723,7 +723,15 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
             { id: 'f9', name: '葡萄', img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f347.png' },
             { id: 'f10', name: '哈密瓜', img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f348.png' },
             { id: 'f11', name: '牛頓的天敵', img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f34e.png' },
-            { id: 'f12', name: '旺來', img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f34d.png' }
+            { id: 'f12', name: '旺來', img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f34d.png' },
+            { id: 'f13', name: 'Quokka', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/1.png' },
+{ id: 'f14', name: 'Miffy', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/2.png' },
+{ id: 'f15', name: 'Miffy', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/3.png' },
+{ id: 'f16', name: 'Miffy', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/4.png' },
+{ id: 'f17', name: '漢頓', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/5.png' },
+{ id: 'f17', name: 'Quokka', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/6.png' },
+{ id: 'f17', name: 'Quokka', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/7.png' },
+{ id: 'f17', name: 'Quokka', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/8.png' }
         ],
         foods: [
             { id: 'fd1', name: '草莓冰淇淋', img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f366.png' },
@@ -731,7 +739,17 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
             { id: 'fd3', name: '三色抹茶丸子', img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f361.png' },
             { id: 'fd4', name: '提拉米蘇蛋糕', img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f370.png' },
             { id: 'fd5', name: '法式吐司', img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f35e.png' },
-            { id: 'fd6', name: '金黃薯條', img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f35f.png' }
+            { id: 'fd6', name: '金黃薯條', img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f35f.png' },
+            { id: 'fd7',  name: '杯子蛋糕',   img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f9c1.png' },
+{ id: 'fd8',  name: '生日蛋糕',   img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f382.png' },
+{ id: 'fd9',  name: '餅乾',       img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f36a.png' },
+{ id: 'fd10', name: '甜甜圈',     img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f369.png' },
+{ id: 'fd11', name: '糖果',       img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f36c.png' },
+{ id: 'fd12', name: '棒棒糖',     img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f36d.png' },
+{ id: 'fd13', name: '卡士達布丁', img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f36e.png' },
+{ id: 'fd14', name: '蜂蜜罐',     img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f36f.png' },
+{ id: 'fd15', name: '派',         img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f967.png' },
+{ id: 'fd16', name: '鬆餅',       img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f9c7.png' },
         ]
     };
 // 在常數區定義遊戲時間
@@ -1934,17 +1952,23 @@ function spawnDiyObject(imgSrc, name, savedProps = null) {
     obj.style.left = savedProps ? `${savedProps.x}px` : `${defaultX}px`;
     obj.style.top = savedProps ? `${savedProps.y}px` : `${defaultY}px`;
     
-    obj.style.transform = `scale(${savedProps ? savedProps.scale : 1})`;
+    // 🌟 修正 1：生成時，同時套用「縮放」與「左右翻轉」
+    const initialScale = savedProps ? savedProps.scale : 1;
+    const initialFlip = savedProps && savedProps.isFlipped ? -1 : 1;
+    obj.style.transform = `scale(${initialScale}) scaleX(${initialFlip})`;
+    
     obj.style.cursor = 'move';
     obj.style.zIndex = '100';
     obj.style.userSelect = 'none';
     obj.style.touchAction = 'none'; 
 
+    // 🌟 修正 2：在控制選單（diy-controls）裡面，多塞一個 🔄 翻轉按鈕
     obj.innerHTML = `
         <img src="${imgSrc}" alt="${name}" style="width:80px; pointer-events:none; display:block;">
         <div class="diy-controls" style="position:absolute; top:-25px; left:0; display:none; gap:5px; background:rgba(0,0,0,0.6); padding:2px 5px; border-radius:5px;">
             <span onclick="resizeDiyObject('${objId}', 0.1)" style="color:#fff; cursor:pointer; font-weight:bold; padding:0 3px;">➕</span>
             <span onclick="resizeDiyObject('${objId}', -0.1)" style="color:#fff; cursor:pointer; font-weight:bold; padding:0 3px;">➖</span>
+            <span onclick="flipDiyObject('${objId}')" style="color:#fff; cursor:pointer; font-weight:bold; padding:0 3px;">🔄</span>
             <span onclick="removeDiyObject('${objId}')" style="color:#ff8a80; cursor:pointer; font-weight:bold; padding:0 3px;">❌</span>
         </div>
     `;
@@ -1963,7 +1987,6 @@ function spawnDiyObject(imgSrc, name, savedProps = null) {
         startY = clientY - obj.offsetTop;
         e.stopPropagation();
 
-        // 🌟 核心修正：只有在「確定開始拖拽」時，才動態把監聽器掛到全域，避免平時堆疊
         document.addEventListener('mousemove', doDrag);
         document.addEventListener('mouseup', stopDrag);
         document.addEventListener('touchmove', doDrag, { passive: false });
@@ -1982,7 +2005,6 @@ function spawnDiyObject(imgSrc, name, savedProps = null) {
         obj.style.left = `${clientX - startX}px`;
         obj.style.top = `${clientY - startY}px`;
         
-        // 🌟 優化：拖曳時只更新物件自身的快取數據，不頻繁操作整個陣列
         if (savedProps) {
             savedProps.x = clientX - startX;
             savedProps.y = clientY - startY;
@@ -1993,39 +2015,58 @@ function spawnDiyObject(imgSrc, name, savedProps = null) {
         if (isDragging) {
             isDragging = false;
             
-            // 🌟 核心修正：手放開時，立刻把全域的監聽器「卸載」乾淨！不留任何背景垃圾
             document.removeEventListener('mousemove', doDrag);
             document.removeEventListener('mouseup', stopDrag);
             document.removeEventListener('touchmove', doDrag);
             document.removeEventListener('touchend', stopDrag);
             
-            // 手放開停止的一瞬間，同步一次數據並存檔
             saveCurrentStateToMemory();
             autoSave(); 
         }
     };
 
-    // 物件本身只監聽「開始點擊/觸碰」
     obj.addEventListener('mousedown', startDrag);
     obj.addEventListener('touchstart', startDrag);
 
     gardenArea.appendChild(obj);
 
+    // 🌟 修正 3：如果是全新的物件，在存檔陣列裡也預設加上 isFlipped: false
     if (!savedProps) {
         gameState.currentLayoutObjects.push({
-            id: objId, img: imgSrc, name: name, x: defaultX, y: defaultY, scale: 1
+            id: objId, img: imgSrc, name: name, x: defaultX, y: defaultY, scale: 1, isFlipped: false
         });
         autoSave();
     }
 }
 
 // 3. 調整大小與刪除
+// 🌟 修正 4：更新大小的時候，要連同當前的翻轉狀態一併保留，不然翻轉會被蓋掉
 function resizeDiyObject(id, amount) {
     const obj = document.getElementById(id);
     const itemData = gameState.currentLayoutObjects.find(o => o.id === id);
     if (obj && itemData) {
         itemData.scale = Math.max(0.3, Math.min(3, (itemData.scale || 1) + amount));
-        obj.style.transform = `scale(${itemData.scale})`;
+        
+        const flipX = itemData.isFlipped ? -1 : 1;
+        obj.style.transform = `scale(${itemData.scale}) scaleX(${flipX})`;
+        autoSave();
+    }
+}
+
+// 🌟 新增：點擊 🔄 觸辦的翻轉函式
+function flipDiyObject(id) {
+    const obj = document.getElementById(id);
+    const itemData = gameState.currentLayoutObjects.find(o => o.id === id);
+    if (obj && itemData) {
+        // 狀態反轉：如果是 true 變 false，如果是 false 變 true
+        itemData.isFlipped = !itemData.isFlipped;
+        
+        // 取得當前的縮放大小，並根據新狀態計算 flip
+        const currentScale = itemData.scale || 1;
+        const flipX = itemData.isFlipped ? -1 : 1;
+        
+        // 同時套用，完美鏡像翻轉！
+        obj.style.transform = `scale(${currentScale}) scaleX(${flipX})`;
         autoSave();
     }
 }

@@ -635,6 +635,7 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
     <input type="range" id="emo-hope" min="0" max="100" value="20" step="20" oninput="validateEmotions()">
 </div>
             <div id="total-check" style="font-weight: bold; margin: 10px 0;">總和: 100 / 100</div>
+            <div id="weekly-theme-text" style="font-size: 13px; color: #888; margin-top: 5px; font-weight: bold;"></div>
             <button id="plant-btn" style="background: #aed581; width: 100%; padding: 15px; border-radius: 15px;" onclick="confirmPlanting()">開始種植</button>
             <p style="font-size: 13px; margin-top: 15px; color: #999; cursor: pointer;" onclick="closeModal()">先不種了</p>
         </div>
@@ -724,14 +725,17 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
             { id: 'f10', name: '哈密瓜', img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f348.png' },
             { id: 'f11', name: '牛頓的天敵', img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f34e.png' },
             { id: 'f12', name: '旺來', img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f34d.png' },
-            { id: 'f13', name: 'Quokka', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/1.png' },
-{ id: 'f14', name: 'Miffy', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/2.png' },
-{ id: 'f15', name: 'Miffy', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/3.png' },
-{ id: 'f16', name: 'Miffy', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/4.png' },
-{ id: 'f17', name: '漢頓', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/5.png' },
-{ id: 'f17', name: 'Quokka', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/6.png' },
-{ id: 'f17', name: 'Quokka', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/7.png' },
-{ id: 'f17', name: 'Quokka', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/8.png' }
+            ],
+
+        roles: [
+            { id: 'r1', name: 'Quokka', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/1.png' },
+            { id: 'r2', name: 'Miffy', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/2.png' },
+            { id: 'r3', name: 'Miffy', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/3.png' },
+            { id: 'r4', name: 'Miffy', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/4.png' },
+            { id: 'r5', name: '漢頓', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/5.png' },
+            { id: 'r6', name: 'Quokka', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/6.png' },
+            { id: 'r7', name: 'Quokka', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/7.png' },
+            { id: 'r8', name: 'Quokka', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/8.png' }
         ],
         foods: [
             { id: 'fd1', name: '草莓冰淇淋', img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f366.png' },
@@ -741,15 +745,15 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
             { id: 'fd5', name: '法式吐司', img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f35e.png' },
             { id: 'fd6', name: '金黃薯條', img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f35f.png' },
             { id: 'fd7',  name: '杯子蛋糕',   img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f9c1.png' },
-{ id: 'fd8',  name: '生日蛋糕',   img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f382.png' },
-{ id: 'fd9',  name: '餅乾',       img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f36a.png' },
-{ id: 'fd10', name: '甜甜圈',     img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f369.png' },
-{ id: 'fd11', name: '糖果',       img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f36c.png' },
-{ id: 'fd12', name: '棒棒糖',     img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f36d.png' },
-{ id: 'fd13', name: '卡士達布丁', img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f36e.png' },
-{ id: 'fd14', name: '蜂蜜罐',     img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f36f.png' },
-{ id: 'fd15', name: '派',         img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f967.png' },
-{ id: 'fd16', name: '鬆餅',       img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f9c7.png' },
+            { id: 'fd8',  name: '生日蛋糕',   img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f382.png' },
+            { id: 'fd9',  name: '餅乾',       img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f36a.png' },
+            { id: 'fd10', name: '甜甜圈',     img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f369.png' },
+            { id: 'fd11', name: '糖果',       img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f36c.png' },
+            { id: 'fd12', name: '棒棒糖',     img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f36d.png' },
+            { id: 'fd13', name: '卡士達布丁', img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f36e.png' },
+            { id: 'fd14', name: '蜂蜜罐',     img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f36f.png' },
+            { id: 'fd15', name: '派',         img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f967.png' },
+            { id: 'fd16', name: '鬆餅',       img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f9c7.png' },
         ]
     };
 // 在常數區定義遊戲時間
@@ -879,30 +883,83 @@ function saveGameDataToDB(data) {
 }
 
     function validateEmotions() {
-        const h = parseInt(document.getElementById('emo-happy').value), 
-              a = parseInt(document.getElementById('emo-angry').value),
-              w = parseInt(document.getElementById('emo-worry').value), 
-              s = parseInt(document.getElementById('emo-sad').value),
-              hp = parseInt(document.getElementById('emo-hope').value);
-        const total = h + a + w + s + hp;
-        const display = document.getElementById('total-check');
-        display.innerText = `總和: ${total} / 100`;
-        display.style.color = (total === 100) ? 'green' : 'red';
-        document.getElementById('plant-btn').disabled = (total !== 100);
+    const h = parseInt(document.getElementById('emo-happy').value), 
+          a = parseInt(document.getElementById('emo-angry').value),
+          w = parseInt(document.getElementById('emo-worry').value), 
+          s = parseInt(document.getElementById('emo-sad').value),
+          hp = parseInt(document.getElementById('emo-hope').value);
+    const total = h + a + w + s + hp;
+    const display = document.getElementById('total-check');
+    display.innerText = `總和: ${total} / 100`;
+    display.style.color = (total === 100) ? 'green' : 'red';
+    document.getElementById('plant-btn').disabled = (total !== 100);
+
+    // 🌟 這裡加入：即時更新本週限定主題
+    try {
+        const currentPoolInfo = getCurrentWeeklyPool(); // 呼叫剛剛寫的輪動小工具
+        
+        // 假設妳在 HTML 的總和文字（#total-check）附近，或彈窗裡有留一個放主題的 div/span
+        // 妳可以自己在 HTML 加上 <div id="weekly-theme-text" style="font-size:14px; margin-top:5px; color:#666;"></div>
+        const themeElement = document.getElementById('weekly-theme-text');
+        if (themeElement) {
+            themeElement.innerText = `✨ 本週限定卡池：${currentPoolInfo.name}`;
+        }
+    } catch(e) {
+        console.error("無法載入本週主題:", e);
     }
+}
+
+
+    // 🗓️ 取得當前是第幾週，並決定本週開放哪個卡池
+function getCurrentWeeklyPool() {
+    const now = new Date();
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    
+    // 計算今天距離今年第一天過了多少毫秒
+    const pastDaysOfWeek = (now - startOfYear) / 86400000;
+    
+    // 算出今天是今年的第幾週 (1 ~ 53 週)
+    const currentWeekNumber = Math.ceil((pastDaysOfWeek + startOfYear.getDay() + 1) / 7);
+    
+    // 用週數對 3 取餘數，決定這週的卡池代號 (0, 1, 2)
+    const poolIndex = currentWeekNumber % 3;
+    
+    // 定義輪動順序
+    switch(poolIndex) {
+        case 0:
+            return { type: 'flowers', name: '浪漫花卉週 🌸', data: ASSETS.flowers };
+        case 1:
+            return { type: 'foods', name: '美味食物週 🍱', data: ASSETS.foods };
+        case 2:
+            return { type: 'roles', name: '神秘角色週 👥', data: ASSETS.roles };
+    }
+}
 
     function confirmPlanting() {
-    // 1. 決定這次會種出什麼（邏輯不變）
-    let pool = (gameState.gardenLv < 5) ? ASSETS.flowers : ASSETS.flowers.concat(ASSETS.foods);
+    // 🌟 核心修正：自動獲取本週限定的卡池資訊
+    const currentPoolInfo = getCurrentWeeklyPool();
+    const pool = currentPoolInfo.data; // 拿到該卡池的陣列
+
+    // 如果怕卡池沒資料，做個安全防護
+    if (!pool || pool.length === 0) {
+        console.error("目前輪動卡池無資料！");
+        return;
+    }
+
+    // 從本週限定卡池中隨機抽一個
     const item = pool[Math.floor(Math.random() * pool.length)];
 
+    // 儲存至當前培育狀態
     gameState.currentFlowerId = item.id; 
     gameState.currentFlowerName = item.name; 
     gameState.currentFlowerImg = item.img;
+    
+    // 妳可以視需求把卡池類型也存起來（選填，方便未來做圖鑑分類）
+    gameState.currentFlowerType = currentPoolInfo.type; 
 
-    // 2. 這裡原本是直接改為 'growing'，現在改為啟動小遊戲
+    // 2. 關閉彈窗並啟動小遊戲
     closeModal(); 
-    startNurturingGame(); // 呼叫下方新增的小遊戲函數
+    startNurturingGame(); 
 }
     function startNurturingGame() {
     gameState.plantStatus = 'nurturing'; // 切換至新狀態

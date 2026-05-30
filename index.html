@@ -656,13 +656,14 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
     to { transform: rotate(360deg); }
 }
 
+
 /* 🎴 歌單小卡片彈窗排版（完美適配 iOS/Android） */
 .music-grid {
     display: flex;
     flex-direction: column; /* 一條一條的小卡片列 */
     gap: 12px;
     margin-top: 15px;
-    max-height: 60vh; /* 防止歌單太長超出手機螢幕 */
+    max-height: 45vh; /* 稍微縮小歌單高度，留空間給音量面板，防止手機上溢出 */
     overflow-y: auto;
     padding-right: 5px;
 }
@@ -697,21 +698,24 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
     transition: background 0.2s;
 }
 
-/* 🎛️ 現正播放控制面板 */
+/* 🎛️ 現正播放控制面板（全新優化：解決手機滑桿超出右邊問題） */
 .now-playing-panel {
     background: #f5f3f9;
-    padding: 16px;
+    padding: 12px 14px; /* 稍微縮小內邊距，騰出手機空間 */
     border-radius: 20px;
-    margin-top: 15px;
-    margin-bottom: 15px;
+    margin-top: 12px;
+    margin-bottom: 12px;
     border: 1px solid #e1daee;
+    box-sizing: border-box; /* 確保 padding 不會撐大面板 */
 }
 
-.controls-row {
+/* 改為垂直上下雙列排版，讓滑桿擁有完整的左右寬度 */
+.controls-layout {
     display: flex;
+    flex-direction: column;
+    gap: 12px;
     align-items: center;
-    justify-content: space-between;
-    gap: 15px;
+    width: 100%;
 }
 
 /* 暫停/播放 圓形大按鈕 */
@@ -732,38 +736,41 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
 }
 .play-pause-btn:active { transform: scale(0.92); }
 
-/* 🔊 音量控制區塊 */
+/* 🔊 音量控制區塊（滿寬度設計） */
 .volume-ctrl {
     display: flex;
     align-items: center;
-    gap: 8px;
-    flex: 1;
+    gap: 10px;
+    width: 100%; /* 強制填滿控制面板 */
+    box-sizing: border-box;
 }
 
 .volume-slider {
-    flex: 1;
+    flex: 1; /* 讓滑桿自動伸縮，絕對不會超出邊界 */
+    width: 100%;
     -webkit-appearance: none;
     appearance: none;
     height: 6px;
     background: #ddd;
     border-radius: 5px;
     outline: none;
+    margin: 0;
 }
 
 /* 調整滑桿拉鈕外觀（完美適配行動端觸控） */
 .volume-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     background: #8561c5;
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 .volume-slider::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     background: #8561c5;
     cursor: pointer;
@@ -903,7 +910,7 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
 <audio id="global-garden-bgm" loop></audio>
 
 <div id="music-modal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000;">
-    <div class="modal-content" style="background: white; padding: 20px; border-radius: 24px; width: 85%; max-width: 360px; text-align: center; position: relative;">
+    <div class="modal-content" style="background: white; padding: 20px; border-radius: 24px; width: 85%; max-width: 360px; text-align: center; position: relative; box-sizing: border-box;">
         
         <span onclick="closeMusicModal()" style="position: absolute; top: 15px; right: 20px; cursor: pointer; font-size: 18px; font-weight: bold;">❌</span>
         
@@ -911,10 +918,11 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
         <div style="font-size: 13px; color: #666;">用遊戲代幣解鎖妳喜歡的療癒背景音樂</div>
         
         <div class="now-playing-panel">
-            <div id="now-playing-title" style="font-size: 13px; font-weight: bold; color: #555; margin-bottom: 10px; text-align: left;">
+            <div id="now-playing-title" style="font-size: 13px; font-weight: bold; color: #555; margin-bottom: 10px; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                 📻 讀取音樂中...
             </div>
-            <div class="controls-row">
+            
+            <div class="controls-layout">
                 <button id="modal-play-pause-btn" class="play-pause-btn" onclick="togglePlayPause()">⏸️</button>
                 
                 <div class="volume-ctrl">
@@ -1059,8 +1067,8 @@ let gameState = {
 // 🎵 1. 歌曲音樂庫設定 (價格與網址)
 const AUDIO_ASSETS = {
     // 🎵 初始免費歌曲 (價格 0)
-    bgm_1: { id: 'bgm_1', name: '如果可以', price: 0, url: 'https://paulie0102-bear.github.io/garden/music/1.mp3' },
-    bgm_2: { id: 'bgm_2', name: '離開的一路上', price: 0, url: 'https://paulie0102-bear.github.io/garden/music/2.mp3' },
+    bgm_1: { id: 'bgm_1', name: '離開的一路上', price: 0, url: 'https://paulie0102-bear.github.io/garden/music/1.mp3' },
+    bgm_2: { id: 'bgm_2', name: '如果可以', price: 0, url: 'https://paulie0102-bear.github.io/garden/music/2.mp3' },
     
     // 🪙 代幣解鎖歌曲 (價格統一為 50)
     bgm_3: { id: 'bgm_3', name: 'いつも何度でも', price: 50, url: 'https://paulie0102-bear.github.io/garden/music/3.mp3' },
@@ -1076,16 +1084,15 @@ const AUDIO_ASSETS = {
     bgm_13: { id: 'bgm_13', name: '想和你看五月的晚霞', price: 50, url: 'https://paulie0102-bear.github.io/garden/music/13.mp3' }
 };
 
-// 🔊 2. 跨平台播放核心控制 (相容 iOS/Android)
-let isAudioInitialized = false;
+let isAudioInitialized = false; // 確保全域有宣告這個旗標
 
-// 🔊 跨平台播放核心控制 (升級版：整合音量與暫停功能)
 function playMusicLogic() {
     const audio = document.getElementById('global-garden-bgm');
     const gramophone = document.getElementById('garden-gramophone');
     if (!audio) return;
 
-    const currentTrack = AUDIO_ASSETS[gameState.currentMusic || 'bgm_default'];
+    // 🌟 修正：將 'bgm_default' 改為 'bgm_1'，確保對齊妳的 13 首歌名單
+    const currentTrack = AUDIO_ASSETS[gameState.currentMusic || 'bgm_1'];
     if (!currentTrack) return;
 
     // 1. 如果切換了新歌，才需要更換 src
@@ -1094,7 +1101,7 @@ function playMusicLogic() {
         audio.src = currentTrack.url;
     }
 
-    // 2. 套用玩家設定的音量 (預設值在 init 時已處理好)
+    // 2. 套用玩家設定的音量
     audio.volume = gameState.musicVolume;
 
     // 3. 根據「暫停狀態」決定要播放還是暫停
@@ -1118,15 +1125,18 @@ function playMusicLogic() {
     }
 }
 
-// 📱 跨平台防靜音黑洞：當玩家點擊螢幕任何地方時，嘗試解鎖背景音樂播放
+// 📱 優化：跨平台防靜音黑洞
+// 🌟 修正：改成 once: true。只要玩家第一次點擊螢幕任何地方，解鎖成功後這個監聽器就會自動銷毀，絕不卡頓！
 document.addEventListener('click', () => {
     if (!isAudioInitialized && gameState.currentMusic) {
-        playMusicLogic();
-        isAudioInitialized = true; // 確保只觸發一次，不重複打擾
+        if (!gameState.isMusicPaused) {
+            playMusicLogic();
+        }
+        isAudioInitialized = true; 
     }
-}, { once: false });
+}, { once: true });
 
-// 📥 3. 開啟播放器彈窗 & 渲染小卡片歌單 (整合控制面板狀態同步)
+// 📥 開啟播放器彈窗 & 渲染小卡片歌單
 function openMusicPlayer() {
     const container = document.getElementById('music-container');
     if (!container) return;
@@ -1141,7 +1151,6 @@ function openMusicPlayer() {
         const card = document.createElement('div');
         card.className = `music-card ${isUnlocked ? 'owned' : ''} ${isActive ? 'active' : ''}`;
         
-        // 配合新面板，把原來的「播放中/播放」文字和外觀稍微精緻化
         let btnText = isUnlocked ? (isActive ? '播放中' : '播放') : `💰 ${track.price}`;
         let btnColor = isUnlocked ? (isActive ? '#9c27b0' : '#64b5f6') : '#ffb74d';
         let statusText = isUnlocked ? (isActive ? '✨ 現正熱播中' : '已收藏') : '尚未解鎖';
@@ -1158,8 +1167,8 @@ function openMusicPlayer() {
         container.appendChild(card);
     });
     
-    // 🌟 核心修正：打開彈窗時，同步更新最上方的「現正播放控制面板」狀態
-    const currentTrack = AUDIO_ASSETS[gameState.currentMusic || 'bgm_default'];
+    // 🌟 修正：同步將 'bgm_default' 改為 'bgm_1'
+    const currentTrack = AUDIO_ASSETS[gameState.currentMusic || 'bgm_1'];
     if (currentTrack && typeof updateControlPanelUI === 'function') {
         updateControlPanelUI(currentTrack.name);
     }
@@ -1167,7 +1176,7 @@ function openMusicPlayer() {
     document.getElementById('music-modal').style.display = 'flex';
 }
 
-// 🎛️ 更新控制面板介面上的按鈕狀態與滑桿
+// 🎛️ 更新控制面板介面上的按鈕狀態與滑桿 (完美相容新版自適應 HTML)
 function updateControlPanelUI(trackName) {
     const titleText = document.getElementById('now-playing-title');
     const playPauseBtn = document.getElementById('modal-play-pause-btn');
@@ -1189,9 +1198,8 @@ function updateControlPanelUI(trackName) {
 // ⏯️ 切換 暫停 / 開始 狀態
 function togglePlayPause() {
     gameState.isMusicPaused = !gameState.isMusicPaused;
-    
-    playMusicLogic(); // 重新整理播放狀態
-    autoSave();       // 記憶狀態
+    playMusicLogic(); 
+    if (typeof autoSave === 'function') autoSave(); 
 }
 
 // 🎚️ 調整音量
@@ -1204,7 +1212,6 @@ function changeVolume(value) {
         audio.volume = val;
     }
     
-    // 這裡只存檔，不呼叫全域 updateUI()，防止滑動滑桿時畫面狂刷造成卡頓
     if (typeof saveGameDataToDB === 'function') {
         saveGameDataToDB(gameState); 
     }

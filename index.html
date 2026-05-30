@@ -1086,12 +1086,12 @@ const AUDIO_ASSETS = {
 
 let isAudioInitialized = false; // 確保全域有宣告這個旗標
 
+// 🔊 1. 播放核心邏輯
 function playMusicLogic() {
     const audio = document.getElementById('global-garden-bgm');
     const gramophone = document.getElementById('garden-gramophone');
     if (!audio) return;
 
-    // 🌟 修正：將 'bgm_default' 改為 'bgm_1'，確保對齊妳的 13 首歌名單
     const currentTrack = AUDIO_ASSETS[gameState.currentMusic || 'bgm_1'];
     if (!currentTrack) return;
 
@@ -1125,18 +1125,7 @@ function playMusicLogic() {
     }
 }
 
-// 📱 優化：跨平台防靜音黑洞
-// 🌟 修正：改成 once: true。只要玩家第一次點擊螢幕任何地方，解鎖成功後這個監聽器就會自動銷毀，絕不卡頓！
-document.addEventListener('click', () => {
-    if (!isAudioInitialized && gameState.currentMusic) {
-        if (!gameState.isMusicPaused) {
-            playMusicLogic();
-        }
-        isAudioInitialized = true; 
-    }
-}, { once: true });
-
-// 📥 開啟播放器彈窗 & 渲染小卡片歌單
+// 📥 2. 開啟播放器彈窗 & 渲染小卡片歌單
 function openMusicPlayer() {
     const container = document.getElementById('music-container');
     if (!container) return;
@@ -1167,7 +1156,6 @@ function openMusicPlayer() {
         container.appendChild(card);
     });
     
-    // 🌟 修正：同步將 'bgm_default' 改為 'bgm_1'
     const currentTrack = AUDIO_ASSETS[gameState.currentMusic || 'bgm_1'];
     if (currentTrack && typeof updateControlPanelUI === 'function') {
         updateControlPanelUI(currentTrack.name);
@@ -1176,7 +1164,7 @@ function openMusicPlayer() {
     document.getElementById('music-modal').style.display = 'flex';
 }
 
-// 🎛️ 更新控制面板介面上的按鈕狀態與滑桿 (完美相容新版自適應 HTML)
+// 🎛️ 3. 更新控制面板介面上的按鈕狀態與滑桿
 function updateControlPanelUI(trackName) {
     const titleText = document.getElementById('now-playing-title');
     const playPauseBtn = document.getElementById('modal-play-pause-btn');
@@ -1195,14 +1183,14 @@ function updateControlPanelUI(trackName) {
     }
 }
 
-// ⏯️ 切換 暫停 / 開始 狀態
+// ⏯️ 4. 切換 暫停 / 開始 狀態
 function togglePlayPause() {
     gameState.isMusicPaused = !gameState.isMusicPaused;
     playMusicLogic(); 
     if (typeof autoSave === 'function') autoSave(); 
 }
 
-// 🎚️ 調整音量
+// 🎚️ 5. 調整音量
 function changeVolume(value) {
     const audio = document.getElementById('global-garden-bgm');
     const val = parseFloat(value);
@@ -1215,6 +1203,51 @@ function changeVolume(value) {
     if (typeof saveGameDataToDB === 'function') {
         saveGameDataToDB(gameState); 
     }
+}
+
+// 🧠 6. 遊戲初始化主函式
+async function init() {
+    // 🌟 關鍵修改：等待資料庫讀取完畢後，才繼續往下走 UI 渲染與定時器
+    await loadGameOnStart();
+    
+    // 🎵 補上音樂播放器的安全防護機制與記憶預設值（導正解鎖名單對齊免費歌）
+    gameState.unlockedMusics = gameState.unlockedMusics || ['bgm_1', 'bgm_2']; 
+    gameState.currentMusic = gameState.currentMusic || 'bgm_1';
+    gameState.musicVolume = gameState.musicVolume !== undefined ? gameState.musicVolume : 0.5; 
+    gameState.isMusicPaused = gameState.isMusicPaused !== undefined ? gameState.isMusicPaused : false; 
+    
+    // 1. 優先套用背景
+    updateUI(); 
+    
+    // 2. 設定定時器
+    setInterval(checkGrowth, 1000); // 每秒檢查植物成長
+    
+    // 🌟 只有在「預設背景」模式下，才需要每分鐘檢查日夜切換
+    setInterval(() => {
+        if (gameState.currentBg === 'default') {
+            updateTheme();
+            updateUI(); // 確保日夜切換後，裝飾物（櫻花/星星）也會跟著換
+        }
+    }, 60000);
+    
+    // 3. 視窗縮放處理
+    window.addEventListener('resize', () => {
+        if (gameState.gardenLv >= 5) {
+            createLvlHighDecorations(); 
+        }
+    });
+
+    // 📱 核心移入：優化跨平台防靜音黑洞
+    // 確保資料庫讀取完成、gameState 建立好之後，才掛上這個一次性點擊解鎖器，100% 避免非同步時間差臭蟲
+    document.addEventListener('click', () => {
+        if (!isAudioInitialized && gameState.currentMusic) {
+            // 拿下第一次點擊權限，直接觸發核心音訊刷新，同步控制面板文字
+            playMusicLogic();
+            isAudioInitialized = true; 
+        }
+    }, { once: true });
+
+    console.log("🌱 花園系統已透過 IndexedDB 成功啟動：", gameState.currentBg);
 }
 
 // 🛒 4. 音樂購買與切換決策 (完美覆刻妳的 handleShopAction 邏輯)
@@ -1715,41 +1748,7 @@ async function loadGameOnStart() {
         }
     }
 }
-        // --- 同步修改：init 函數，確保重新調整視窗大小時裝飾位置正確 (選做，增加穩定性) ---
-       async function init() {
-    // 🌟 關鍵修改：等待資料庫讀取完畢後，才繼續往下走 UI 渲染與定時器
-    await loadGameOnStart();
-    
-    // 🎵 補上音樂播放器的安全防護機制（加在這裡最完美！）
-    gameState.unlockedMusics = gameState.unlockedMusics || ['bgm_1'];
-gameState.currentMusic = gameState.currentMusic || 'bgm_1';
-gameState.musicVolume = gameState.musicVolume !== undefined ? gameState.musicVolume : 0.5; // 預設音量 0.5
-gameState.isMusicPaused = gameState.isMusicPaused !== undefined ? gameState.isMusicPaused : false; // 預設不暫停
-    
-    // 1. 優先套用背景
-    updateUI(); 
-    
-    // 2. 設定定時器
-    setInterval(checkGrowth, 1000); // 每秒檢查植物成長
-    
-    // 🌟 只有在「預設背景」模式下，才需要每分鐘檢查日夜切換
-    setInterval(() => {
-        if (gameState.currentBg === 'default') {
-            updateTheme();
-            updateUI(); // 確保日夜切換後，裝飾物（櫻花/星星）也會跟著換
-        }
-    }, 60000);
-    
-    // 3. 視窗縮放處理
-    window.addEventListener('resize', () => {
-        if (gameState.gardenLv >= 5) {
-            createLvlHighDecorations(); 
-        }
-    });
-
-    console.log("🌱 花園系統已透過 IndexedDB 成功啟動：", gameState.currentBg);
-}
-
+       
     function checkGrowth() {
         if (gameState.plantStatus === 'growing') {
             const elapsed = Math.floor((Date.now() - gameState.growStartTime) / 1000);

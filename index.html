@@ -2011,19 +2011,30 @@ async function openSaveMenu() {
     await updateStorageProgress(); // ⏳ 確保系統算好最新容量後，才往下走
     document.getElementById('save-modal').style.display = 'flex'; 
 }
-    function updateTheme() {
+
+// 在全域宣告一個變數，記錄上一次的狀態
+let lastThemeState = null; 
+
+function updateTheme() {
     // 只有在玩家使用「預設日夜」模式時，才執行自動切換
     if (gameState.currentBg !== 'default') return;
 
     const hr = new Date().getHours();
-    const isDay = (hr >= 6 && hr < 18); // 建議用 >= 6 包含早上六點
+    const isDay = (hr >= 6 && hr < 18);
 
-    // 🌟 使用 classList 確保不會蓋掉其他 class
+    // 🌟 核心優化：如果當前的日夜狀態跟上一次一模一樣，直接攔截不執行，也不印 log！
+    if (lastThemeState === isDay) return;
+
+    // 只有狀態真的改變了（例如 05:59 變成 06:00），才執行以下動作：
     document.body.classList.toggle('day', isDay);
     document.body.classList.toggle('night', !isDay);
     
-    console.log(`🌙 系統自動切換至：${isDay ? '日間' : '夜間'}模式`);
+    // 更新快取狀態
+    lastThemeState = isDay;
+
+    console.log(`🌙 【主題變更】系統自動切換至：${isDay ? '日間' : '夜間'}模式`);
 }
+    
     function showBubble(text) { const b = document.getElementById('message-bubble'); if(b) { b.innerText = text; b.style.opacity = 1; setTimeout(() => b.style.opacity = 0, 5000); } }
     function triggerImport() { document.getElementById('import-input').click(); }
 

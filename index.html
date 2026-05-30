@@ -840,15 +840,16 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
     <div id="message-bubble"></div>
 
     <div id="game-container">
+
     <!-- 🌟 修改這裡：直接在 onclick 裡面把 event 傳進去 -->
 <div id="flower-pot" onclick="handlePlantClick(event)">
-    <button id="close-pot-btn">返回花園 ↩</button>
+    <button id="close-pot-btn" onclick="forceExitNurturingGame(event)">返回花園 ↩</button>
+    
     <img id="flower-img" src="" alt="plant">
     
     <p id="hint-text" style="font-size: 14px; margin-top: 15px;">點擊土壤播下此刻的心情</p>
     <p id="flower-name-display" style="font-weight: bold; color: #e91e63; margin-top: 5px;"></p>
 
-    <!-- 🌟 龍貓祈願小卡搬家到這裡了！(被包在盆栽的結尾 </div> 之前) -->
     <div id="totoro-card">
         <div class="card-content">
             <img id="totoro-gif" src="" alt="祈願中">
@@ -858,6 +859,7 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
         </div>
     </div>
 </div> <!-- 👈 盆栽的真正大門（結尾）在這裡 -->
+
 </div>
 
     <div class="controls">
@@ -1333,6 +1335,13 @@ async function init() {
     // 🌟 新增：播放模式預設值 'list'（清單循環），另一種是 'single'（單曲循環）
     gameState.loopMode = gameState.loopMode || 'list';
 
+    // 確保玩家上次如果是因為閃退、重新整理網頁而離開小遊戲，
+// 重開遊戲時，系統會自動把它掰正為 'growing' 倒數狀態，絕對不會卡死！
+if (gameState.plantStatus === 'nurturing') {
+    gameState.plantStatus = 'growing';
+    gameState.growStartTime = Date.now(); // 視為 0 分，重新倒數
+}
+
     // 1. 優先套用背景
     updateUI(); 
     
@@ -1559,57 +1568,112 @@ function getCurrentWeeklyPool() {
     closeModal(); 
     startNurturingGame(); 
 }
-    function startNurturingGame() {
-    gameState.plantStatus = 'nurturing'; // 切換至新狀態
+
+
+// 🌟 核心修復：在全域宣告計時器變數，確保別的 function 也能清除它們
+let gameTimeoutTimer = null; 
+
+function startNurturingGame() {
+    // ⭕ 修正：在前端我們大方地宣告現在是培育中，讓 updateUI 知道該隱藏小卡、顯示泡泡！
+    gameState.plantStatus = 'nurturing'; 
     miniGameScore = 0;
+    
+    // 刷新 UI，此時 updateUI 讀到 'nurturing'，會乖乖把龍貓卡藏起來！
     updateUI();
     showBubble("🫧 快速點擊泡泡與樹葉，幫植物澆水施肥！");
 
-    // 每 450 毫秒產生一個元素
+    if (spawnTimer) clearInterval(spawnTimer);
+    if (gameTimeoutTimer) clearTimeout(gameTimeoutTimer);
+
     spawnTimer = setInterval(createPopElement, 450);
 
-    // 10 秒後結束遊戲
-    setTimeout(() => {
-        clearInterval(spawnTimer);
+    // 10 秒後正常結束遊戲
+    gameTimeoutTimer = setTimeout(() => {
+        spawnTimer = null;
+        gameTimeoutTimer = null;
         finishNurturing();
     }, 10000); 
 }
 
+// 🚨 修正：阻斷小遊戲時，盆栽不消失，而是優雅切換回龍貓祈願卡！
+function forceExitNurturingGame(event) {
+    // 1. 安全攔截冒泡，由這個函式完全接管返回花園的所有動作
+    if (event && typeof event.stopPropagation === 'function') {
+        event.stopPropagation();
+    }
+
+    // 2. 立即切斷所有在背景跑的計時器，防止它們偷偷復活
+    if (spawnTimer) {
+        clearInterval(spawnTimer);
+        spawnTimer = null;
+    }
+    if (gameTimeoutTimer) {
+        clearTimeout(gameTimeoutTimer);
+        gameTimeoutTimer = null;
+    }
+
+    // 3. 清理畫面上所有還沒被點破的殘留泡泡與樹葉
+    document.querySelectorAll('.pop-item').forEach(el => el.remove());
+
+    // 4. 中斷時視為 0 分，讓植物正式進入 'growing' 狀態
+    if (gameState && gameState.plantStatus === 'nurturing') {
+        gameState.plantStatus = 'growing'; 
+        gameState.growStartTime = Date.now(); // 0 分福利，從現在開始完整倒數
+    }
+
+    // 🌟 5. 關鍵修復：手動把盆栽縮回角落，並隱藏對話氣泡！（對齊原本返回按鈕的功能）
+    const pot = document.getElementById('flower-pot');
+    if (pot) {
+        pot.classList.remove('expanded'); // 👈 讓盆栽成功縮小回角落！
+    }
+    const bubble = document.getElementById('message-bubble');
+    if (bubble) {
+        bubble.style.opacity = '0'; // 隱藏氣泡
+    }
+
+    // 6. 刷新畫面與自動存檔
+    updateUI();
+    if (typeof autoSave === 'function') autoSave();
+
+    console.log("⚠️ 培育小遊戲中斷，視為 0 分，盆栽已成功縮回角落並維持常速生長。");
+}
+
 function createPopElement() {
     const el = document.createElement('div');
-    el.className = 'pop-item'; // 對應妳 CSS 寫的樣式
+    el.className = 'pop-item'; 
     el.innerText = Math.random() > 0.5 ? '🫧' : '🍃';
     
-    // 隨機出現在畫面中（避開邊緣）
     el.style.left = (15 + Math.random() * 70) + '%';
     el.style.top = (25 + Math.random() * 45) + '%';
     
-    el.onclick = () => {
+    el.onclick = (event) => {
+        if (event) event.stopPropagation(); 
         miniGameScore++;
-        el.classList.add('popped'); // 觸發破裂動畫
+        el.classList.add('popped'); 
         setTimeout(() => el.remove(), 250);
     };
 
     document.body.appendChild(el);
-    // 沒點到 3 秒後自動消失
     setTimeout(() => { if(el.parentNode) el.remove(); }, 3000);
 }
 
 function finishNurturing() {
-    // 清理殘留泡泡
+    if (spawnTimer) {
+        clearInterval(spawnTimer);
+        spawnTimer = null;
+    }
     document.querySelectorAll('.pop-item').forEach(el => el.remove());
     
-    // 獎勵計算：GROWTH_TIME_LIMIT 減去點擊次數，最低剩 3 秒
     const actualWait = Math.max(3, GROWTH_TIME_LIMIT - miniGameScore);
     
-    gameState.plantStatus = 'growing'; // 正式進入倒數
-    // 透過調整開始時間來實現「剩餘時間變少」的效果
+    // 正常完賽，切換至生長狀態並扣除分數獎勵時間
+    gameState.plantStatus = 'growing'; 
     gameState.growStartTime = Date.now() - (GROWTH_TIME_LIMIT - actualWait) * 1000;
     gameState.coins += miniGameScore;
 
     showBubble(`✨ 照顧完成！獲得 ${miniGameScore} 養分，倒數縮短了！`);
     updateUI();
-    autoSave();
+    if (typeof autoSave === 'function') autoSave();
 }
         
 

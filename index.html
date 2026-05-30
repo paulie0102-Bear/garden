@@ -701,8 +701,8 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
 /* 🎛️ 現正播放控制面板（全新優化：解決手機滑桿超出右邊問題） */
 .now-playing-panel {
     background: #f5f3f9;
-    padding: 12px 14px; /* 稍微縮小內邊距，騰出手機空間 */
-    border-radius: 20px;
+    padding: 14px 16px; /* 微調內邊距，加強視覺穩定感 */
+    border-radius: 24px;
     margin-top: 12px;
     margin-bottom: 12px;
     border: 1px solid #e1daee;
@@ -713,12 +713,21 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
 .controls-layout {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
     align-items: center;
     width: 100%;
 }
 
-/* 暫停/播放 圓形大按鈕 */
+/* 🌟 新增：按鈕置中對齊區塊，讓播放鈕與模式鈕優雅並排 */
+.controls-buttons-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+}
+
+/* 暫停/播放 圓形大按鈕（維持原本規格，微調陰影與觸感） */
 .play-pause-btn {
     width: 45px;
     height: 45px;
@@ -731,10 +740,40 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: 0 4px 8px rgba(133, 97, 197, 0.3);
+    box-shadow: 0 4px 10px rgba(133, 97, 197, 0.3);
     transition: transform 0.1s, background 0.2s;
+    outline: none;
 }
 .play-pause-btn:active { transform: scale(0.92); }
+
+/* 🌟 新增：循環模式按鈕專用美化（極具現代感的輕奢膠囊鈕） */
+#modal-loop-mode-btn {
+    height: 38px; /* 略低於播放鈕，形成精緻的主次視覺層次 */
+    padding: 0 16px;
+    border: 1px solid #e1daee;
+    border-radius: 19px; /* 完美圓角膠囊 */
+    background: #ffffff;
+    color: #555;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    outline: none;
+}
+#modal-loop-mode-btn:hover {
+    background: #fdfbff;
+    color: #8561c5;
+    border-color: #8561c5;
+}
+#modal-loop-mode-btn:active {
+    transform: scale(0.95);
+    background: #f3e5f5;
+}
 
 /* 🔊 音量控制區塊（滿寬度設計） */
 .volume-ctrl {
@@ -743,6 +782,9 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
     gap: 10px;
     width: 100%; /* 強制填滿控制面板 */
     box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.6); /* 給音量條一個微微透亮的小底座襯托質感 */
+    padding: 6px 12px;
+    border-radius: 14px;
 }
 
 .volume-slider {
@@ -767,6 +809,10 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
     background: #8561c5;
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: transform 0.1s ease;
+}
+.volume-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
 }
 .volume-slider::-moz-range-thumb {
     width: 18px;
@@ -907,7 +953,7 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
     </div>
 </div>
 
-<audio id="global-garden-bgm" loop></audio>
+<audio id="global-garden-bgm"></audio>
 
 <div id="music-modal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000;">
     <div class="modal-content" style="background: white; padding: 20px; border-radius: 24px; width: 85%; max-width: 360px; text-align: center; position: relative; box-sizing: border-box;">
@@ -923,7 +969,10 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
             </div>
             
             <div class="controls-layout">
-                <button id="modal-play-pause-btn" class="play-pause-btn" onclick="togglePlayPause()">⏸️</button>
+                <div class="controls-buttons-group">
+                    <button id="modal-play-pause-btn" class="play-pause-btn" onclick="togglePlayPause()">⏸️</button>
+                    <button id="modal-loop-mode-btn" onclick="toggleLoopMode()">🔁 清單循環</button>
+                </div>
                 
                 <div class="volume-ctrl">
                     <span style="font-size: 14px;">🔈</span>
@@ -1104,6 +1153,9 @@ function playMusicLogic() {
     // 2. 套用玩家設定的音量
     audio.volume = gameState.musicVolume;
 
+    // 🌟 關鍵修改一：關閉 HTML 原生的 loop 屬性，改由我們的 JS 控制
+    audio.loop = false; 
+
     // 3. 根據「暫停狀態」決定要播放還是暫停
     if (gameState.isMusicPaused) {
         audio.pause();
@@ -1119,9 +1171,50 @@ function playMusicLogic() {
             });
     }
 
+    // 🌟 關鍵修改二：補上歌曲結束後的自動切換邏輯
+    audio.onended = () => {
+        // 如果播放模式是單曲循環，直接呼叫自己重新播放
+        if (gameState.loopMode === 'single') {
+            playMusicLogic();
+        } else {
+            // 如果是清單循環，呼叫尋找下一首已解鎖歌曲的函式
+            playNextUnlockedTrack();
+        }
+    };
+
     // 4. 同步更新控制面板上的文字、按鈕與滑桿狀態
     if (typeof updateControlPanelUI === 'function') {
         updateControlPanelUI(currentTrack.name);
+    }
+}
+
+// 🔍 自動尋找下一首已收藏的歌曲
+function playNextUnlockedTrack() {
+    const trackIds = Object.keys(AUDIO_ASSETS); // 拿到 ['bgm_1', 'bgm_2', ..., 'bgm_13']
+    let currentIndex = trackIds.indexOf(gameState.currentMusic);
+    
+    // 如果找不到目前的歌，預設從第 1 首開始
+    if (currentIndex === -1) currentIndex = 0;
+
+    // 迴圈最多跑一圈（依歌單長度），尋找下一首玩家已解鎖的歌
+    for (let i = 1; i <= trackIds.length; i++) {
+        let nextIndex = (currentIndex + i) % trackIds.length; // 用餘數來達成環狀清單的無限循環
+        let nextTrackId = trackIds[nextIndex];
+        
+        // 檢查玩家解鎖名單裡有沒有這首歌
+        if (gameState.unlockedMusics.includes(nextTrackId)) {
+            gameState.currentMusic = nextTrackId; // 切換歌曲 ID
+            
+            // 如果玩家正開著點唱機彈窗，即時更新小卡片的點亮狀態 (.active)
+            const modal = document.getElementById('music-modal');
+            if (modal && modal.style.display === 'flex') {
+                openMusicPlayer(); 
+            }
+            
+            playMusicLogic(); // 執行播放新歌
+            if (typeof autoSave === 'function') autoSave(); // 自動存檔新歌選擇
+            return; // 找到下一首就立刻結束 function，不繼續往下找
+        }
     }
 }
 
@@ -1164,11 +1257,28 @@ function openMusicPlayer() {
     document.getElementById('music-modal').style.display = 'flex';
 }
 
-// 🎛️ 3. 更新控制面板介面上的按鈕狀態與滑桿
+// 🔁 切換「清單循環」與「單曲循環」
+function toggleLoopMode() {
+    if (gameState.loopMode === 'list') {
+        gameState.loopMode = 'single';
+        if (typeof showBubble === 'function') showBubble("🔂 已切換至：單曲循環");
+    } else {
+        gameState.loopMode = 'list';
+        if (typeof showBubble === 'function') showBubble("🔁 已切換至：清單循環（僅播放已收藏）");
+    }
+    
+    // 同步更新 UI 與存檔
+    const currentTrack = AUDIO_ASSETS[gameState.currentMusic || 'bgm_1'];
+    if (currentTrack) updateControlPanelUI(currentTrack.name);
+    if (typeof autoSave === 'function') autoSave();
+}
+
+// 🎛️ 修改妳原本的 updateControlPanelUI，讓它同步撈模式按鈕
 function updateControlPanelUI(trackName) {
     const titleText = document.getElementById('now-playing-title');
     const playPauseBtn = document.getElementById('modal-play-pause-btn');
     const volumeSlider = document.getElementById('volume-slider');
+    const loopModeBtn = document.getElementById('modal-loop-mode-btn'); // 🌟 抓取模式按鈕
 
     if (titleText) {
         titleText.innerText = gameState.isMusicPaused 
@@ -1180,6 +1290,11 @@ function updateControlPanelUI(trackName) {
     }
     if (volumeSlider) {
         volumeSlider.value = gameState.musicVolume;
+    }
+    
+    // 🌟 同步更新模式按鈕的顯示文字
+    if (loopModeBtn) {
+        loopModeBtn.innerText = gameState.loopMode === 'single' ? '🔂 單曲循環' : '🔁 清單循環';
     }
 }
 
@@ -1215,7 +1330,9 @@ async function init() {
     gameState.currentMusic = gameState.currentMusic || 'bgm_1';
     gameState.musicVolume = gameState.musicVolume !== undefined ? gameState.musicVolume : 0.5; 
     gameState.isMusicPaused = gameState.isMusicPaused !== undefined ? gameState.isMusicPaused : false; 
-    
+    // 🌟 新增：播放模式預設值 'list'（清單循環），另一種是 'single'（單曲循環）
+    gameState.loopMode = gameState.loopMode || 'list';
+
     // 1. 優先套用背景
     updateUI(); 
     
@@ -2012,8 +2129,9 @@ async function openSaveMenu() {
     document.getElementById('save-modal').style.display = 'flex'; 
 }
 
-// 在全域宣告一個變數，記錄上一次的狀態
-let lastThemeState = null; 
+
+// 🌟 在全域宣告一個變數，只用來管理「要不要印 log」
+let lastLoggedTheme = null; 
 
 function updateTheme() {
     // 只有在玩家使用「預設日夜」模式時，才執行自動切換
@@ -2022,19 +2140,18 @@ function updateTheme() {
     const hr = new Date().getHours();
     const isDay = (hr >= 6 && hr < 18);
 
-    // 🌟 核心優化：如果當前的日夜狀態跟上一次一模一樣，直接攔截不執行，也不印 log！
-    if (lastThemeState === isDay) return;
-
-    // 只有狀態真的改變了（例如 05:59 變成 06:00），才執行以下動作：
+    // ⭕ 1. 每次呼叫都「老老實實套用樣式」，確保點選其他東西時背景絕對不會變白！
     document.body.classList.toggle('day', isDay);
     document.body.classList.toggle('night', !isDay);
     
-    // 更新快取狀態
-    lastThemeState = isDay;
-
-    console.log(`🌙 【主題變更】系統自動切換至：${isDay ? '日間' : '夜間'}模式`);
+    // ⭕ 2. 只有在「日夜狀態真的改變」的那一分鐘，才在 F12 印出紀錄，防止狂刷
+    const currentThemeName = isDay ? '日間' : '夜間';
+    if (lastLoggedTheme !== currentThemeName) {
+        console.log(`🌙 系統自動切換至：${currentThemeName}模式`);
+        lastLoggedTheme = currentThemeName; // 記憶這次印出的狀態
+    }
 }
-    
+
     function showBubble(text) { const b = document.getElementById('message-bubble'); if(b) { b.innerText = text; b.style.opacity = 1; setTimeout(() => b.style.opacity = 0, 5000); } }
     function triggerImport() { document.getElementById('import-input').click(); }
 

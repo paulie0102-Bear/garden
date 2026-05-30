@@ -564,6 +564,213 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
     z-index: 99999 !important; /* 👈 選單本體在最上層 */
 }
 
+/* 🎵 留聲機外框（底座，固定不動） */
+#garden-gramophone {
+    position: fixed;
+    bottom: calc(265px + env(safe-area-inset-bottom)); 
+    right: 20px; 
+    width: 90px; 
+    height: 90px; 
+    cursor: pointer; 
+    z-index: 90; 
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 50%;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    border: 2px solid #8561c5; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    touch-action: none;
+}
+
+/* 💿 純 CSS 打造的幾何黑膠唱片 */
+.vinyl-record {
+    position: relative;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    /* 🎨 黑膠特有的無數微細溝槽陰影 + 基礎底色 */
+    background: repeating-radial-gradient(
+        circle,
+        #111,
+        #111 2px,
+        #222 3px,
+        #111 4px
+    );
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.8), 0 4px 10px rgba(0,0,0,0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ✨ 黑膠唱片的立體反光層（沙漏型光影） */
+.vinyl-record::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border-radius: 50%;
+    /* 🌟 使用錐形漸層創造出對角的絲綢十字反光 */
+    background: conic-gradient(
+        from 0deg,
+        transparent 10%,
+        rgba(255, 255, 255, 0.15) 25%,
+        transparent 40%,
+        transparent 60%,
+        rgba(255, 255, 255, 0.15) 75%,
+        transparent 90%
+    );
+    pointer-events: none;
+}
+
+/* 🔄 當播放音樂時，只讓「反光層 (光影)」原地旋轉，實體黑膠不動！ */
+#garden-gramophone.playing .vinyl-record::before {
+    animation: spinReflect 4s linear infinite;
+}
+
+/* 🪕 唱片中心的標籤圓心（貼紙） */
+.vinyl-center {
+    width: 22px;
+    height: 22px;
+    background: #8561c5; /* 配合妳的紫色主題，也可以換成別的顏色 */
+    border-radius: 50%;
+    border: 2px solid #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
+}
+
+/* 📌 最中心穿過唱片機軸心的小黑點 */
+.vinyl-center::after {
+    content: '';
+    width: 4px;
+    height: 4px;
+    background: #111;
+    border-radius: 50%;
+}
+
+/* 🎬 讓光影優雅轉動的動畫 */
+@keyframes spinReflect {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* 🎴 歌單小卡片彈窗排版（完美適配 iOS/Android） */
+.music-grid {
+    display: flex;
+    flex-direction: column; /* 一條一條的小卡片列 */
+    gap: 12px;
+    margin-top: 15px;
+    max-height: 60vh; /* 防止歌單太長超出手機螢幕 */
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.music-card {
+    background: white;
+    padding: 12px 16px;
+    border-radius: 16px;
+    border: 2px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    transition: all 0.2s ease;
+}
+
+.music-card.owned { border-color: #8561c5; }
+.music-card.active { background: #f3e5f5; border-color: #9c27b0; }
+
+.music-info { text-align: left; }
+.music-title { font-size: 15px; font-weight: bold; color: #333; }
+.music-status { font-size: 12px; color: #888; margin-top: 2px; }
+
+.music-btn {
+    border: none;
+    border-radius: 12px;
+    padding: 8px 16px;
+    font-weight: bold;
+    cursor: pointer;
+    color: white;
+    min-width: 80px;
+    transition: background 0.2s;
+}
+
+/* 🎛️ 現正播放控制面板 */
+.now-playing-panel {
+    background: #f5f3f9;
+    padding: 16px;
+    border-radius: 20px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    border: 1px solid #e1daee;
+}
+
+.controls-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+/* 暫停/播放 圓形大按鈕 */
+.play-pause-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: none;
+    background: #8561c5;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(133, 97, 197, 0.3);
+    transition: transform 0.1s, background 0.2s;
+}
+.play-pause-btn:active { transform: scale(0.92); }
+
+/* 🔊 音量控制區塊 */
+.volume-ctrl {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.volume-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    background: #ddd;
+    border-radius: 5px;
+    outline: none;
+}
+
+/* 調整滑桿拉鈕外觀（完美適配行動端觸控） */
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #8561c5;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.volume-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #8561c5;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    border: none;
+}
+
 
     </style>
 </head>
@@ -687,6 +894,41 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
     </div>
 </div>
 
+<div id="garden-gramophone" onclick="openMusicPlayer()">
+    <div class="vinyl-record">
+        <div class="vinyl-center"></div>
+    </div>
+</div>
+
+<audio id="global-garden-bgm" loop></audio>
+
+<div id="music-modal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000;">
+    <div class="modal-content" style="background: white; padding: 20px; border-radius: 24px; width: 85%; max-width: 360px; text-align: center; position: relative;">
+        
+        <span onclick="closeMusicModal()" style="position: absolute; top: 15px; right: 20px; cursor: pointer; font-size: 18px; font-weight: bold;">❌</span>
+        
+        <div style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">🎵 花園點唱機</div>
+        <div style="font-size: 13px; color: #666;">用遊戲代幣解鎖妳喜歡的療癒背景音樂</div>
+        
+        <div class="now-playing-panel">
+            <div id="now-playing-title" style="font-size: 13px; font-weight: bold; color: #555; margin-bottom: 10px; text-align: left;">
+                📻 讀取音樂中...
+            </div>
+            <div class="controls-row">
+                <button id="modal-play-pause-btn" class="play-pause-btn" onclick="togglePlayPause()">⏸️</button>
+                
+                <div class="volume-ctrl">
+                    <span style="font-size: 14px;">🔈</span>
+                    <input type="range" id="volume-slider" class="volume-slider" min="0" max="1" step="0.05" value="0.5" oninput="changeVolume(this.value)">
+                    <span style="font-size: 14px;">🔊</span>
+                </div>
+            </div>
+        </div>
+        
+        <div id="music-container" class="music-grid"></div>
+    </div>
+</div>
+
 <!-- 🌟 全新新增：寫真館大圖檢視彈窗 -->
 <div id="photo-view-modal" onclick="closePhotoViewModal()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2000; justify-content:center; align-items:center; flex-direction:column; backdrop-filter:blur(10px);">
     <div style="position:relative; max-width:90%; max-height:70%; text-align:center;" onclick="event.stopPropagation()">
@@ -754,6 +996,9 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
             { id: 'fd14', name: '蜂蜜罐',     img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f36f.png' },
             { id: 'fd15', name: '派',         img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f967.png' },
             { id: 'fd16', name: '鬆餅',       img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f9c7.png' },
+        ],
+        materials: [
+            { id: 'm1', name: '彩虹色的人生', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/9.png' },
         ]
     };
 // 在常數區定義遊戲時間
@@ -808,6 +1053,199 @@ let gameState = {
 },
     'cloud': { name: '雲端之巔', price: 350, class: 'theme-cloud', preview: 'linear-gradient(#89f7fe, #66a6ff)', emojis: ['🌈', '🎈', '☁️'] }
 };
+
+
+
+// 🎵 1. 歌曲音樂庫設定 (價格與網址)
+const AUDIO_ASSETS = {
+    // 🎵 初始免費歌曲 (價格 0)
+    bgm_1: { id: 'bgm_1', name: '如果可以', price: 0, url: 'https://paulie0102-bear.github.io/garden/music/1.mp3' },
+    bgm_2: { id: 'bgm_2', name: '離開的一路上', price: 0, url: 'https://paulie0102-bear.github.io/garden/music/2.mp3' },
+    
+    // 🪙 代幣解鎖歌曲 (價格統一為 50)
+    bgm_3: { id: 'bgm_3', name: 'いつも何度でも', price: 0, url: 'https://paulie0102-bear.github.io/garden/music/3.mp3' },
+    bgm_4: { id: 'bgm_4', name: 'Totoro', price: 0, url: 'https://paulie0102-bear.github.io/garden/music/4.mp3' },
+    bgm_5: { id: 'bgm_5', name: 'Fairy Tail', price: 0, url: 'https://paulie0102-bear.github.io/garden/music/5.mp3' },
+    bgm_6: { id: 'bgm_6', name: '心海孤帆', price: 0, url: 'https://paulie0102-bear.github.io/garden/music/6.mp3' },
+    bgm_7: { id: 'bgm_7', name: '今はいいんだよ', price: 0, url: 'https://paulie0102-bear.github.io/garden/music/7.mp3' },
+    bgm_8: { id: 'bgm_8', name: '夢と葉桜', price: 0, url: 'https://paulie0102-bear.github.io/garden/music/8.mp3' },
+    bgm_9: { id: 'bgm_9', name: '不是因為天氣晴朗才愛你', price: 0, url: 'https://paulie0102-bear.github.io/garden/music/9.mp3' },
+    bgm_10: { id: 'bgm_10', name: '總有一工', price: 0, url: 'https://paulie0102-bear.github.io/garden/music/10.mp3' },
+    bgm_11: { id: 'bgm_11', name: '起風了', price: 0, url: 'https://paulie0102-bear.github.io/garden/music/11.mp3' },
+    bgm_12: { id: 'bgm_12', name: '總會有人', price: 0, url: 'https://paulie0102-bear.github.io/garden/music/12.mp3' },
+    bgm_13: { id: 'bgm_13', name: '想和你看五月的晚霞', price: 0, url: 'https://paulie0102-bear.github.io/garden/music/13.mp3' }
+};
+
+// 🔊 2. 跨平台播放核心控制 (相容 iOS/Android)
+let isAudioInitialized = false;
+
+// 🔊 跨平台播放核心控制 (升級版：整合音量與暫停功能)
+function playMusicLogic() {
+    const audio = document.getElementById('global-garden-bgm');
+    const gramophone = document.getElementById('garden-gramophone');
+    if (!audio) return;
+
+    const currentTrack = AUDIO_ASSETS[gameState.currentMusic || 'bgm_default'];
+    if (!currentTrack) return;
+
+    // 1. 如果切換了新歌，才需要更換 src
+    const currentSrc = audio.src ? decodeURIComponent(audio.src) : '';
+    if (!currentSrc.endsWith(currentTrack.url)) {
+        audio.src = currentTrack.url;
+    }
+
+    // 2. 套用玩家設定的音量 (預設值在 init 時已處理好)
+    audio.volume = gameState.musicVolume;
+
+    // 3. 根據「暫停狀態」決定要播放還是暫停
+    if (gameState.isMusicPaused) {
+        audio.pause();
+        if (gramophone) gramophone.classList.remove('playing'); // 黑膠停止旋轉
+    } else {
+        audio.play()
+            .then(() => {
+                if (gramophone) gramophone.classList.add('playing'); // 讓黑膠優雅旋轉光影
+            })
+            .catch(e => {
+                console.log("🔊 iOS/Android 瀏覽器等待玩家點擊互動後解鎖音訊機制");
+                if (gramophone) gramophone.classList.remove('playing');
+            });
+    }
+
+    // 4. 同步更新控制面板上的文字、按鈕與滑桿狀態
+    if (typeof updateControlPanelUI === 'function') {
+        updateControlPanelUI(currentTrack.name);
+    }
+}
+
+// 📱 跨平台防靜音黑洞：當玩家點擊螢幕任何地方時，嘗試解鎖背景音樂播放
+document.addEventListener('click', () => {
+    if (!isAudioInitialized && gameState.currentMusic) {
+        playMusicLogic();
+        isAudioInitialized = true; // 確保只觸發一次，不重複打擾
+    }
+}, { once: false });
+
+// 📥 3. 開啟播放器彈窗 & 渲染小卡片歌單 (整合控制面板狀態同步)
+function openMusicPlayer() {
+    const container = document.getElementById('music-container');
+    if (!container) return;
+    
+    container.innerHTML = ""; // 清空舊內容
+    
+    Object.keys(AUDIO_ASSETS).forEach(id => {
+        const track = AUDIO_ASSETS[id];
+        const isUnlocked = gameState.unlockedMusics.includes(id);
+        const isActive = gameState.currentMusic === id;
+        
+        const card = document.createElement('div');
+        card.className = `music-card ${isUnlocked ? 'owned' : ''} ${isActive ? 'active' : ''}`;
+        
+        // 配合新面板，把原來的「播放中/播放」文字和外觀稍微精緻化
+        let btnText = isUnlocked ? (isActive ? '播放中' : '播放') : `💰 ${track.price}`;
+        let btnColor = isUnlocked ? (isActive ? '#9c27b0' : '#64b5f6') : '#ffb74d';
+        let statusText = isUnlocked ? (isActive ? '✨ 現正熱播中' : '已收藏') : '尚未解鎖';
+
+        card.innerHTML = `
+            <div class="music-info">
+                <div class="music-title">${track.name}</div>
+                <div class="music-status">${statusText}</div>
+            </div>
+            <button class="music-btn" onclick="handleMusicAction('${id}')" style="background:${btnColor};">
+                ${btnText}
+            </button>
+        `;
+        container.appendChild(card);
+    });
+    
+    // 🌟 核心修正：打開彈窗時，同步更新最上方的「現正播放控制面板」狀態
+    const currentTrack = AUDIO_ASSETS[gameState.currentMusic || 'bgm_default'];
+    if (currentTrack && typeof updateControlPanelUI === 'function') {
+        updateControlPanelUI(currentTrack.name);
+    }
+    
+    document.getElementById('music-modal').style.display = 'flex';
+}
+
+// 🎛️ 更新控制面板介面上的按鈕狀態與滑桿
+function updateControlPanelUI(trackName) {
+    const titleText = document.getElementById('now-playing-title');
+    const playPauseBtn = document.getElementById('modal-play-pause-btn');
+    const volumeSlider = document.getElementById('volume-slider');
+
+    if (titleText) {
+        titleText.innerText = gameState.isMusicPaused 
+            ? `⏸️ 已暫停：${trackName}` 
+            : `🎵 現正播放：${trackName}`;
+    }
+    if (playPauseBtn) {
+        playPauseBtn.innerText = gameState.isMusicPaused ? '▶️' : '⏸️';
+    }
+    if (volumeSlider) {
+        volumeSlider.value = gameState.musicVolume;
+    }
+}
+
+// ⏯️ 切換 暫停 / 開始 狀態
+function togglePlayPause() {
+    gameState.isMusicPaused = !gameState.isMusicPaused;
+    
+    playMusicLogic(); // 重新整理播放狀態
+    autoSave();       // 記憶狀態
+}
+
+// 🎚️ 調整音量
+function changeVolume(value) {
+    const audio = document.getElementById('global-garden-bgm');
+    const val = parseFloat(value);
+    
+    gameState.musicVolume = val;
+    if (audio) {
+        audio.volume = val;
+    }
+    
+    // 這裡只存檔，不呼叫全域 updateUI()，防止滑動滑桿時畫面狂刷造成卡頓
+    if (typeof saveGameDataToDB === 'function') {
+        saveGameDataToDB(gameState); 
+    }
+}
+
+// 🛒 4. 音樂購買與切換決策 (完美覆刻妳的 handleShopAction 邏輯)
+function handleMusicAction(id) {
+    const track = AUDIO_ASSETS[id];
+    if (!track) return;
+
+    if (gameState.unlockedMusics.includes(id)) {
+        // A. 已經買過，直接切換播放
+        gameState.currentMusic = id;
+        closeMusicModal();
+        playMusicLogic(); // 立即更換音訊源播放
+        if (typeof showBubble === 'function') showBubble(`🎵 正在播放【${track.name}】`);
+    } 
+    else {
+        // B. 沒買過，走扣款扣代幣機制
+        if (gameState.coins >= track.price) {
+            gameState.coins -= track.price;
+            gameState.unlockedMusics.push(id);
+            gameState.currentMusic = id;
+            closeMusicModal();
+            playMusicLogic();
+            if (typeof showBubble === 'function') showBubble(`🎉 成功購入並播放【${track.name}】`);
+        } else {
+            // 代幣不足，不關閉視窗
+            const need = track.price - gameState.coins;
+            if (typeof showBubble === 'function') showBubble(`代幣還差 ${need} 枚，\n多去種植心願吧！🧩`);
+            return;
+        }
+    }
+    
+    if (typeof updateUI === 'function') updateUI();
+    if (typeof autoSave === 'function') autoSave();
+}
+
+function closeMusicModal() {
+    document.getElementById('music-modal').style.display = 'none';
+}
 
 // ==========================================
 // 🌟 全新 IndexedDB 核心控制區
@@ -921,10 +1359,10 @@ function getCurrentWeeklyPool() {
     // 算出今天是今年的第幾週 (1 ~ 53 週)
     const currentWeekNumber = Math.ceil((pastDaysOfWeek + startOfYear.getDay() + 1) / 7);
     
-    // 用週數對 3 取餘數，決定這週的卡池代號 (0, 1, 2)
+    // 🌟 核心修正 1：因為現在有 4 個卡池，所以改為對 4 取餘數 (結果會是 0, 1, 2, 3)
     const poolIndex = currentWeekNumber % 3;
     
-    // 定義輪動順序
+    // 定義 4 週一輪的動態順序
     switch(poolIndex) {
         case 0:
             return { type: 'flowers', name: '浪漫花卉週 🌸', data: ASSETS.flowers };
@@ -932,6 +1370,9 @@ function getCurrentWeeklyPool() {
             return { type: 'foods', name: '美味食物週 🍱', data: ASSETS.foods };
         case 2:
             return { type: 'roles', name: '神秘角色週 👥', data: ASSETS.roles };
+        case 3:
+            // 🌟 核心修正 2：新增第 4 個素材卡池（請確保妳的 ASSETS 裡有 materials 這個陣列）
+            return { type: 'materials', name: '稀有素材週 💎', data: ASSETS.materials };
     }
 }
 
@@ -1174,9 +1615,14 @@ function harvest() {
         
         if(totoroCard) totoroCard.style.display = 'none'; 
     }
+    // 🎵 播放器核心：每次 UI 更新都確保音樂狀態正確
+    if (typeof playMusicLogic === 'function') {
+        playMusicLogic();
+    }
 
+    // 💾 自動存檔
     if (typeof autoSave === 'function') autoSave();
-}
+} // ⬅️ 這是原本函數最底部的結尾大括號，這樣排版最乾淨！
 
     function createLvlHighDecorations() {
     // 1. 先移除舊的裝飾
@@ -1263,9 +1709,15 @@ async function loadGameOnStart() {
     }
 }
         // --- 同步修改：init 函數，確保重新調整視窗大小時裝飾位置正確 (選做，增加穩定性) ---
-        async function init() {
+       async function init() {
     // 🌟 關鍵修改：等待資料庫讀取完畢後，才繼續往下走 UI 渲染與定時器
     await loadGameOnStart();
+    
+    // 🎵 補上音樂播放器的安全防護機制（加在這裡最完美！）
+    gameState.unlockedMusics = gameState.unlockedMusics || ['bgm_1'];
+gameState.currentMusic = gameState.currentMusic || 'bgm_1';
+gameState.musicVolume = gameState.musicVolume !== undefined ? gameState.musicVolume : 0.5; // 預設音量 0.5
+gameState.isMusicPaused = gameState.isMusicPaused !== undefined ? gameState.isMusicPaused : false; // 預設不暫停
     
     // 1. 優先套用背景
     updateUI(); 

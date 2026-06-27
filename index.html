@@ -824,6 +824,108 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
     border: none;
 }
 
+/* 🌟 左右外包裝容器 (維持原樣) */
+.album-layout-wrapper {
+    display: flex;
+    flex-direction: row; /* 左右排列 */
+    width: 100%;
+    height: 70vh;        /* 設定固定高度讓內部可滾動 */
+    overflow: hidden;
+}
+
+/* 🌟 左側垂直書籤欄 (維持原樣) */
+.album-vertical-tabs {
+    display: flex;
+    flex-direction: column; /* 垂直排列 */
+    gap: 10px;
+    padding-right: 12px;
+    border-right: 2px solid #f0f0f0; /* 分隔線 */
+    min-width: 80px;        /* 確保書籤寬度足夠 */
+}
+
+/* 🌟 書籤按鈕基礎樣式 (維持原樣) */
+.album-vertical-tabs .album-tab-btn {
+    background-color: #f7f7f7;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px 0 0 8px; /* 圓角在左邊 */
+    padding: 10px 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #555;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* 🌟 當書籤被選中時的高亮狀態 (維持原樣) */
+.album-vertical-tabs .album-tab-btn.active {
+    background-color: #e91e63;
+    color: white;
+    font-weight: bold;
+    border-color: #e91e63;
+    transform: translateX(2px); /* 往右貼近分隔線 */
+    box-shadow: -2px 2px 5px rgba(233, 30, 99, 0.2);
+}
+
+/* 🔄 這裡改掉！右側卡片滾動區：從原本多欄網格改為「單欄垂直向下排」的 Flex 佈局 */
+.album-grid-content {
+    flex: 1;                /* 吃掉剩餘的所有寬度 */
+    display: flex;
+    flex-direction: column; /* 改為單欄上下排列，防止拉長變形 */
+    gap: 10px;              /* 橫卡之間的間距 */
+    padding: 0 5px 10px 15px; /* 左邊留空隙遠離書籤 */
+    overflow-y: auto;       /* 只有卡片區可以上下滾動 */
+    height: 100%;
+}
+
+/* 🌟 新增：全新橫式卡片基礎設計（左邊圖片，右邊文字） */
+.album-horizontal-card {
+    display: flex;
+    align-items: center;    /* 垂直置中 */
+    background-color: #ffffff;
+    border: 1px solid #eaeaea;
+    border-radius: 12px;
+    padding: 8px 12px;
+    gap: 15px;              /* 圖片與名字的間距 */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.album-horizontal-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+/* 🌟 新增：左側圖片，鎖定正方形尺寸，絕對不會被拉長或壓扁 */
+.album-horizontal-card img {
+    width: 45px;
+    height: 45px;
+    object-fit: contain;    /* 確保圖片維持完美比例 */
+    flex-shrink: 0;         /* 鎖死尺寸，絕對不被擠壓 */
+}
+
+/* 🌟 新增：右側文字包裹區 */
+.album-horizontal-card .card-info {
+    flex: 1;                /* 填滿剩餘右側空間 */
+    display: flex;
+    align-items: center;
+}
+
+/* 🌟 新增：名字樣式 */
+.album-horizontal-card .card-name {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333333;
+}
+
+/* 沒有資料時的提示（稍微修正移除了 grid 屬性） */
+.album-no-data {
+    text-align: center;
+    color: #888;
+    padding-top: 40px;
+    font-size: 14px;
+}
 
     </style>
 </head>
@@ -1026,6 +1128,10 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
             { id: 'f10', name: '哈密瓜', img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f348.png' },
             { id: 'f11', name: '牛頓的天敵', img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f34e.png' },
             { id: 'f12', name: '旺來', img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f34d.png' },
+            { id: 'f13', name: '天天有活力', img: 'https://paulie0102-Bear.github.io/pharm/bouquet_energy.png' },
+            { id: 'f14', name: '倏然夢', img: 'https://paulie0102-Bear.github.io/pharm/bouquet_dream.png' },
+            { id: 'f15', name: '成功之路', img: 'https://paulie0102-Bear.github.io/pharm/bouquet_success.png' },
+            { id: 'f16', name: '畢業快樂', img: 'https://paulie0102-Bear.github.io/pharm/bouquet_grad.png' },
             ],
 
         roles: [
@@ -1036,7 +1142,14 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
             { id: 'r5', name: '漢頓', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/5.png' },
             { id: 'r6', name: 'Quokka', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/6.png' },
             { id: 'r7', name: 'Quokka', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/7.png' },
-            { id: 'r8', name: 'Quokka', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/8.png' }
+            { id: 'r8', name: 'Quokka', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/8.png' },
+            { id: 'r9', name: 'Quokka', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/figure/1.png' },
+            { id: 'r10', name: 'Quokka', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/figure/2.png' },
+            { id: 'r11', name: 'Quokka', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/figure/3.png' },
+            { id: 'r12', name: 'Quokka', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/figure/4.png' },
+            { id: 'r13', name: 'Quokka', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/figure/5.png' },
+            { id: 'r14', name: 'Quokka', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/figure/6.png' },
+            
         ],
         foods: [
             { id: 'fd1', name: '草莓冰淇淋', img: 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f366.png' },
@@ -1059,6 +1172,10 @@ body.theme-night-study .pop-item { filter: drop-shadow(0 0 10px rgba(255,255,255
         materials: [
             { id: 'm1', name: '彩虹色的人生', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/9.png' },
             { id: 'm2', name: '隨筆', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/10.png' },
+            { id: 'm3', name: '怨念深重的大Boss', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/11.png' },
+            { id: 'm4', name: '水管工人大頭照', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/12.png' },
+            { id: 'm5', name: '熊&羊', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/13.png' },
+            { id: 'm5', name: 'Daisy跟Bobo', img: 'https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/seed/14.png' },
         ]
     };
 // 在常數區定義遊戲時間
@@ -1111,7 +1228,15 @@ let gameState = {
     preview: 'linear-gradient(#8b5a2b, #4a2c2a)', // 商店顯示深木色
     emojis: ['🍁', '🍵', '🎐', '🎋'] // 加入竹子，更有層次感
 },
-    'cloud': { name: '雲端之巔', price: 350, class: 'theme-cloud', preview: 'linear-gradient(#89f7fe, #66a6ff)', emojis: ['🌈', '🎈', '☁️'] }
+    'cloud': { name: '雲端之巔', price: 350, class: 'theme-cloud', preview: 'linear-gradient(#89f7fe, #66a6ff)', emojis: ['🌈', '🎈', '☁️'] },
+
+    'quokka': { 
+    name: '雪地', 
+    price: 10, 
+    class: 'theme-png-bg', // 🌟 統一給它們一個圖片背景專用的 class
+    preview: 'url(https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/1.png)', // 商店小格子預覽圖
+        img: 'url(https://raw.githubusercontent.com/paulie0102-Bear/garden/refs/heads/main/1.png)',         // 畫面上真正的背景圖片
+},
 };
 
 
@@ -1760,6 +1885,7 @@ function harvest() {
     const coinCountDisp = document.getElementById('coin-count');
     if (coinCountDisp) coinCountDisp.innerText = gameState.coins || 0;
 
+    // 1. 先把原本所有的漸層 class 清空
     Object.values(BACKGROUNDS).forEach(bg => { 
         if(bg.class) document.body.classList.remove(bg.class); 
     });
@@ -1767,10 +1893,25 @@ function harvest() {
 
     const currentBgData = BACKGROUNDS[gameState.currentBg];
 
+    // 2. 🌟 核心升級：判斷目前背景是「新版 PNG 圖片」還是「舊版代碼漸層」
     if (currentBgData && gameState.currentBg !== 'default') {
-        document.body.classList.add(currentBgData.class);
+        
+        if (currentBgData.img) {
+            // 🖼️ 情況 A：這是新加的 PNG 圖片商品！
+            document.body.style.background = currentBgData.img;
+            document.body.style.backgroundSize = 'cover';
+            document.body.style.backgroundPosition = 'center';
+            document.body.style.backgroundRepeat = 'no-repeat';
+        } else {
+            // 🎨 情況 B：這是原有的代碼漸層商品！清空背景圖，改套用原本的 CSS class
+            document.body.style.background = ''; 
+            document.body.classList.add(currentBgData.class);
+        }
+        
         window.currentRenderMode = gameState.currentBg; 
     } else {
+        // ☀️ 情況 C：預設日夜模式（清空自訂背景圖，跑 updateTheme 判斷時間切換）
+        document.body.style.background = ''; 
         updateTheme(); 
         window.currentRenderMode = document.body.classList.contains('day') ? 'day' : 'night';
     }
@@ -1978,7 +2119,7 @@ async function loadGameOnStart() {
     }
 
 
-    function openShop() {
+function openShop() {
     const container = document.getElementById('shop-container');
     if (!container) return;
     
@@ -1996,8 +2137,14 @@ async function loadGameOnStart() {
         let btnText = isUnlocked ? (isActive ? '使用中' : '切換') : `💰 ${bg.price}`;
         let btnColor = isUnlocked ? (isActive ? '#81c784' : '#64b5f6') : '#ffb74d';
 
+        // 🌟 核心防禦：如果 preview 是圖片網址，直接套用；若是顏色/漸層則正常渲染
+        // 同時加上 background-size: cover 確保商店預覽圖不會歪掉
+        const previewStyle = bg.preview.startsWith('url') 
+            ? `background: ${bg.preview} center/cover no-repeat;` 
+            : `background: ${bg.preview};`;
+
         card.innerHTML = `
-            <div class="bg-preview" style="background: ${bg.preview}"></div>
+            <div class="bg-preview" style="${previewStyle}"></div>
             <div style="font-size:14px; font-weight:bold; margin-bottom:4px;">${bg.name}</div>
             <button onclick="handleShopAction('${id}')" 
                 style="border:none; border-radius:10px; padding:8px; width:100%; background:${btnColor}; color:white; font-weight:bold; cursor:pointer;">
@@ -2253,18 +2400,81 @@ function updateTheme() {
     function triggerImport() { document.getElementById('import-input').click(); }
 
     // --- 圖鑑與天燈邏輯 ---
-    function toggleAlbum() {
-        const container = document.getElementById('list-container');
-        document.getElementById('list-title').innerText = "花卉美食圖鑑";
-        container.className = "scroll-list album-grid";
-        container.innerHTML = gameState.flowerAlbum.length === 0 ? "<p>圖鑑空空的...</p>" : "";
-        gameState.flowerAlbum.forEach(item => {
-            const card = document.createElement('div'); card.className = 'item-card';
-            card.innerHTML = `<img src="${item.img}"><p>${item.name}</p>`;
-            container.appendChild(card);
-        });
+    // 🌟 全新變數：紀錄玩家目前點選的圖鑑分類標籤，預設為 'all' (全部)
+let currentAlbumTab = 'all';
+
+function toggleAlbum() {
+    document.getElementById('list-title').innerText = "花卉美食圖鑑";
+    const container = document.getElementById('list-container');
+    
+    // 🛑 核心防禦：如果圖鑑空空如也
+    if (!gameState.flowerAlbum || gameState.flowerAlbum.length === 0) {
+        container.className = "scroll-list";
+        container.innerHTML = "<p style='text-align:center; padding:20px;'>圖鑑空空的...</p>";
         document.getElementById('list-modal').style.display = 'flex';
+        return;
     }
+
+    // 自動分類判斷器
+    const getAlbumItemType = (id) => {
+        if (!id) return 'flower';
+        if (id.startsWith('fd')) return 'food';     
+        if (id.startsWith('r'))  return 'role';     
+        if (id.startsWith('m'))  return 'material'; 
+        return 'flower';                            
+    };
+
+    // 根據目前點選的頁籤過濾資料
+    const filteredAlbum = gameState.flowerAlbum.filter(item => {
+        if (currentAlbumTab === 'all') return true;
+        return getAlbumItemType(item.id) === currentAlbumTab;
+    });
+
+    // 🌟 核心改動：將外層容器設為「左右佈局」的 wrapper
+    container.className = "album-layout-wrapper";
+    
+    // 🌟 建立垂直書籤 HTML（加上獨特類名以利 CSS 控制）
+    const tabsHtml = `
+        <div class="album-vertical-tabs">
+            <button class="album-tab-btn ${currentAlbumTab === 'all' ? 'active' : ''}" onclick="switchAlbumTab('all')">✨ 全部</button>
+            <button class="album-tab-btn ${currentAlbumTab === 'flower' ? 'active' : ''}" onclick="switchAlbumTab('flower')">🌸 花卉</button>
+            <button class="album-tab-btn ${currentAlbumTab === 'role' ? 'active' : ''}" onclick="switchAlbumTab('role')">🐱 角色</button>
+            <button class="album-tab-btn ${currentAlbumTab === 'food' ? 'active' : ''}" onclick="switchAlbumTab('food')">🍱 美食</button>
+            <button class="album-tab-btn ${currentAlbumTab === 'material' ? 'active' : ''}" onclick="switchAlbumTab('material')">💎 素材</button>
+        </div>
+    `;
+
+    // 🌟 建立右側純卡片的網格容器
+    let gridContentHtml = '<div class="album-grid-content">';
+    
+    if (filteredAlbum.length === 0) {
+        gridContentHtml += `<div class="album-no-data">這個分類還沒有收集到任何東西唷 🛠️</div>`;
+    } else {
+        filteredAlbum.forEach(item => {
+            // 🌟 修正：改為橫式結構（左邊圖片，右邊放名字盒子）
+            gridContentHtml += `
+                <div class="album-horizontal-card">
+                    <img src="${item.img}" alt="${item.name}">
+                    <div class="card-info">
+                        <p class="card-name">${item.name}</p>
+                    </div>
+                </div>
+            `;
+        });
+    }
+    gridContentHtml += '</div>';
+
+    // 🌟 關鍵補上：必須將組合好的 HTML 渲染回畫面的容器中！
+    container.innerHTML = tabsHtml + gridContentHtml;
+
+    // 打開圖鑑燈箱
+    document.getElementById('list-modal').style.display = 'flex';
+}
+
+function switchAlbumTab(tabName) {
+    currentAlbumTab = tabName;
+    toggleAlbum(); 
+}
 
     let currentLanternMode = '';
     function openLantern() { 
@@ -2635,45 +2845,103 @@ function launchLantern() {
 let selectedDiyObject = null; // 當前正在拖曳或縮放的物件 DOM
 
 // 1. 開啟 DIY 佈置面板
+// 🌟 全新變數：紀錄玩家目前點選的設計工坊分類標籤，預設為 'all' (全部)
+let currentDiyTab = 'all';
+
 function toggleDiyWorkshop() {
-    const container = document.getElementById('list-container'); 
     document.getElementById('list-title').innerText = "🎨 佈置設計工坊"; 
-    container.className = "scroll-list"; 
+    const container = document.getElementById('list-container'); 
     
-    // 如果玩家還沒有解鎖任何圖鑑品項
-    if (gameState.flowerAlbum.length === 0) {
+    // 🛑 核心防禦：如果玩家還沒有解鎖任何圖鑑品項
+    if (!gameState.flowerAlbum || gameState.flowerAlbum.length === 0) {
+        container.className = "scroll-list";
         container.innerHTML = "<p style='padding:20px;'>你的圖鑑空空的，先去種花解鎖圖鑑，才能用它們來佈置喔！</p>";
         document.getElementById('list-modal').style.display = 'flex';
         return;
     }
 
-    // 渲染圖鑑可選清單與藍圖管理
-    let html = `
-        <div style="background:#f0f4c3; padding:10px; border-radius:10px; margin-bottom:15px; text-align:left;">
-            <h4 style="margin:0 0 5px 0; color:#558b2f;">💾 藍圖存檔空間</h4>
-            <div id="diy-blueprint-list" style="display:flex; gap:10px; overflow-x:auto; padding:5px 0;"></div>
-            <button onclick="saveCurrentLayoutAsBlueprint()" style="margin-top:8px; background:#81c784; color:white; border:none; padding:5px 12px; border-radius:5px; cursor:pointer; font-size:12px;">+ 將當前佈置存為新藍圖</button>
+    // 自動分類判斷器（與圖鑑同步，確保舊存檔不爆掉）
+    const getDiyItemType = (id) => {
+        if (!id) return 'flower';
+        if (id.startsWith('fd')) return 'food';     
+        if (id.startsWith('r'))  return 'role';     
+        if (id.startsWith('m'))  return 'material'; 
+        return 'flower';                            
+    };
+
+    // 根據目前點選的設計工坊頁籤過濾資料
+    const filteredAlbum = gameState.flowerAlbum.filter(item => {
+        if (currentDiyTab === 'all') return true;
+        return getDiyItemType(item.id) === currentDiyTab;
+    });
+
+    // 🌟 核心改動：套用與圖鑑相同的「左右佈局」外包裝
+    container.className = "album-layout-wrapper";
+
+    // 🌟 1. 建立左側垂直書籤 HTML
+    const tabsHtml = `
+        <div class="album-vertical-tabs">
+            <button class="album-tab-btn ${currentDiyTab === 'all' ? 'active' : ''}" onclick="switchDiyTab('all')">✨ 全部</button>
+            <button class="album-tab-btn ${currentDiyTab === 'flower' ? 'active' : ''}" onclick="switchDiyTab('flower')">🌸 花卉</button>
+            <button class="album-tab-btn ${currentDiyTab === 'role' ? 'active' : ''}" onclick="switchDiyTab('role')">🐱 角色</button>
+            <button class="album-tab-btn ${currentDiyTab === 'food' ? 'active' : ''}" onclick="switchDiyTab('food')">🍱 美食</button>
+            <button class="album-tab-btn ${currentDiyTab === 'material' ? 'active' : ''}" onclick="switchDiyTab('material')">💎 素材</button>
         </div>
-        <h4 style="text-align:left; margin:5px 0; color:#37474f;">🌸 點擊圖鑑品項加入畫面：</h4>
-        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; padding:5px;">
     `;
 
-    // 依據玩家已解鎖的圖鑑去抓可以放出來的物件
-    gameState.flowerAlbum.forEach(item => {
-        // item 假設包含 { id, name, img } 或類似結構，依妳原本的圖鑑資料欄位調整
-        html += `
-            <div class="item-card" onclick="spawnDiyObject('${item.img}', '${item.name}')" style="cursor:pointer; padding:5px; text-align:center;">
-                <img src="${item.img}" style="width:50px; height:50px; object-fit:contain; display:block; margin:0 auto;">
-                <span style="font-size:11px; color:#555;">${item.name}</span>
+    // 🌟 2. 建立右側滾動內容區（包含：藍圖區 + 過濾後的品項網格）
+    // 因為工坊需要放置到畫面，右邊維持 3 欄式網格結構會比較好選，不再用橫式單行
+    let rightContentHtml = `
+        <div class="album-grid-content" style="display: block;">
+            <div style="background:#f0f4c3; padding:10px; border-radius:10px; margin-bottom:15px; text-align:left; width: 100%; box-sizing: border-box;">
+                <h4 style="margin:0 0 5px 0; color:#558b2f; font-size:14px;">💾 藍圖存檔空間</h4>
+                <div id="diy-blueprint-list" style="display:flex; gap:10px; overflow-x:auto; padding:5px 0;"></div>
+                <button onclick="saveCurrentLayoutAsBlueprint()" style="margin-top:8px; background:#81c784; color:white; border:none; padding:5px 12px; border-radius:5px; cursor:pointer; font-size:12px;">+ 將當前佈置存為新藍圖</button>
+            </div>
+            
+            <h4 style="text-align:left; margin:10px 0 5px 0; color:#37474f; font-size:14px;">🌸 點擊品項加入畫面：</h4>
+            
+            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; padding:5px 0;">
+    `;
+
+    if (filteredAlbum.length === 0) {
+        rightContentHtml += `
+            <div style="grid-column: 1 / -1; text-align: center; color: #888; padding: 20px; font-size:13px;">
+                這個分類裡還沒有可佈置的物件唷 🛠️
             </div>
         `;
-    });
-    
-    html += `</div>`;
-    container.innerHTML = html;
-    
-    renderBlueprintList();
+    } else {
+        filteredAlbum.forEach(item => {
+            rightContentHtml += `
+                <div class="item-card" onclick="spawnDiyObject('${item.img}', '${item.name}')" style="cursor:pointer; background:#ffffff; border:1px solid #eaeaea; border-radius:8px; padding:8px; text-align:center; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+                    <img src="${item.img}" style="width:40px; height:40px; object-fit:contain; display:block; margin:0 auto 5px auto;">
+                    <span style="font-size:11px; color:#555; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.name}</span>
+                </div>
+            `;
+        });
+    }
+
+    rightContentHtml += `
+            </div>
+        </div>
+    `;
+
+    // 🌟 3. 將左邊書籤與右邊內容合併，渲染到 container 裡
+    container.innerHTML = tabsHtml + rightContentHtml;
+
+    // 🌟 4. 重新渲染藍圖清單數據（原本的函式）
+    if (typeof renderBlueprintList === 'function') {
+        renderBlueprintList();
+    }
+
+    // 打開彈窗
     document.getElementById('list-modal').style.display = 'flex'; 
+}
+
+// 🌟 全新控制函式：點擊書籤時負責切換並重新刷洗工坊畫面
+function switchDiyTab(tabName) {
+    currentDiyTab = tabName;
+    toggleDiyWorkshop(); // 重新呼叫刷新
 }
 
 // 2. 生成物件到畫面上
